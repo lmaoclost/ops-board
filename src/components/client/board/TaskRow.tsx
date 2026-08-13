@@ -24,7 +24,7 @@ const LED: Record<Status, string> = {
 const PRIO_CLS: Record<Prio, string> = {
   1: "text-red-400 border-red-500/40 bg-red-500/10",
   2: "text-amber-400 border-amber-500/40 bg-amber-500/10",
-  3: "text-zinc-500 border-zinc-600",
+  3: "text-[var(--muted)] border-zinc-600",
 };
 
 export function TaskRow({ task, onToggle, onPrioCycle, onStatusChange, onEdit, onDelete }: TaskRowProps) {
@@ -33,7 +33,7 @@ export function TaskRow({ task, onToggle, onPrioCycle, onStatusChange, onEdit, o
   const done = task.status === "done";
 
   return (
-    <div className={`flex items-center gap-2.5 rounded-md px-2 py-1.5 transition-colors hover:bg-zinc-800/50 ${done ? "" : ""}`}>
+    <div className={`flex items-center gap-2.5 rounded-md px-2 py-1.5 transition-colors hover:bg-[var(--hover)] ${done ? "" : ""}`}>
       <button
         type="button"
         onClick={onToggle}
@@ -41,12 +41,12 @@ export function TaskRow({ task, onToggle, onPrioCycle, onStatusChange, onEdit, o
         aria-label="alternar concluída"
         className={`h-2 w-2 shrink-0 rounded-full ${task.blocked ? "bg-red-400" : LED[task.status]} ${done ? "bg-emerald-400" : ""} transition-transform hover:scale-125`}
       />
-      <span className="min-w-0 flex-1 text-[12.5px] leading-snug break-words text-zinc-300">
+      <span className="min-w-0 flex-1 text-[12.5px] leading-snug break-words text-[var(--text)]">
         <span
-          className={done ? "text-zinc-600 line-through decoration-zinc-700" : ""}
+          className={done ? "text-[var(--dim)] line-through decoration-zinc-700" : ""}
           dangerouslySetInnerHTML={{ __html: linkify(task.text) }}
         />
-        {task.note && <span className="text-zinc-600"> — {linkify(task.note)}</span>}
+        {task.note && <span className="text-[var(--dim)]"> — {linkify(task.note)}</span>}
       </span>
       {task.blocked && <span className="tag-blocked">bloqueada</span>}
       <button
@@ -63,7 +63,7 @@ export function TaskRow({ task, onToggle, onPrioCycle, onStatusChange, onEdit, o
             {fmtDate(task.due)} vencida
           </span>
         ) : (
-          <span className={`shrink-0 text-[10.5px] font-semibold ${dueSoon ? "text-amber-400" : "text-zinc-500"}`} title={`vencimento ${task.due}`}>
+          <span className={`shrink-0 text-[10.5px] font-semibold ${dueSoon ? "text-amber-400" : "text-[var(--muted)]"}`} title={`vencimento ${task.due}`}>
             {fmtDate(task.due)}
           </span>
         )
@@ -73,7 +73,7 @@ export function TaskRow({ task, onToggle, onPrioCycle, onStatusChange, onEdit, o
         value={task.status}
         onChange={(e) => onStatusChange(e.target.value as Status)}
         title="mudar status"
-        className="shrink-0 appearance-none rounded border border-zinc-800 bg-[#0b1016] px-1.5 py-0.5 text-[11px] text-zinc-500 outline-none cursor-pointer hover:border-zinc-600 hover:text-zinc-300"
+        className="shrink-0 appearance-none rounded border border-[var(--line)] bg-[var(--input)] px-1.5 py-0.5 text-[11px] text-[var(--muted)] outline-none cursor-pointer hover:border-zinc-600 hover:text-[var(--text)]"
       >
         {STATUS_ORDER.map((k) => (
           <option key={k} value={k}>

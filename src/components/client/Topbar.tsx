@@ -10,6 +10,8 @@ interface TopbarProps {
   onToggleView: () => void;
   onToggleTheme: () => void;
   onNewProject: () => void;
+  onExport: () => void;
+  onImport: () => void;
 }
 
 const DEBOUNCE_MS = 200;
@@ -23,6 +25,8 @@ export function Topbar({
   onToggleView,
   onToggleTheme,
   onNewProject,
+  onExport,
+  onImport,
 }: TopbarProps) {
   const [draft, setDraft] = useState(query);
   const timer = useRef<ReturnType<typeof setTimeout> | null>(null);
@@ -42,7 +46,7 @@ export function Topbar({
   }, [draft]);
 
   return (
-    <header className="sticky top-0 z-30 border-b border-zinc-800 bg-[#0a0d12]/95 backdrop-blur">
+    <header className="sticky top-0 z-30 border-b border-[var(--line)] bg-[var(--bg)]/95 backdrop-blur">
       <div className="mx-auto max-w-5xl px-4 py-3 flex flex-col gap-3 sm:flex-row sm:items-center sm:gap-6">
         <div className="flex items-center justify-between gap-4">
           <h1 className="text-sm font-bold tracking-tight text-zinc-200">
@@ -65,7 +69,13 @@ export function Topbar({
             >
               {view === "list" ? "kanban" : "lista"}
             </button>
-            <button type="button" onClick={onNewProject} className="chip text-emerald-400 border-zinc-700">
+            <button type="button" onClick={onExport} className="chip" title="exportar JSON (backup)">
+              ↓exportar
+            </button>
+            <button type="button" onClick={onImport} className="chip" title="importar JSON">
+              ↑importar
+            </button>
+            <button type="button" onClick={onNewProject} className="chip text-emerald-400 border-[var(--line-soft)]">
               <span className="mr-1 text-emerald-400">+</span>projeto
             </button>
           </div>
@@ -79,7 +89,7 @@ export function Topbar({
             <input
               value={draft}
               onChange={(e) => setDraft(e.target.value)}
-              className="w-full flex-1 min-w-0 bg-[#0b1016] border border-zinc-800 rounded-md px-2.5 py-1.5 text-xs text-zinc-300 outline-none focus:border-emerald-500/50"
+              className="w-full flex-1 min-w-0 bg-[var(--input)] border border-[var(--line)] rounded-md px-2.5 py-1.5 text-xs text-[var(--text)] outline-none focus:border-emerald-500/50"
               type="search"
               placeholder="grep tarefas..."
               autoComplete="off"
@@ -90,7 +100,7 @@ export function Topbar({
               <button
                 type="button"
                 onClick={onClearQuery}
-                className="absolute right-2 top-1/2 -translate-y-1/2 text-zinc-600 hover:text-zinc-300 cursor-pointer select-none"
+                className="absolute right-2 top-1/2 -translate-y-1/2 text-[var(--dim)] hover:text-[var(--text)] cursor-pointer select-none"
                 title="limpar busca"
                 aria-label="limpar busca"
               >

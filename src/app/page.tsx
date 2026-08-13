@@ -1,6 +1,6 @@
 "use client";
 
-import { useRef, useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 import { Board } from "@/components/client/board/Board";
 import { FilterChips } from "@/components/client/FilterChips";
 import { Modal } from "@/components/client/Modal";
@@ -8,6 +8,9 @@ import { Stats } from "@/components/client/Stats";
 import { Topbar } from "@/components/client/Topbar";
 import { useFilters } from "@/hooks/useFilters";
 import { useShortcuts } from "@/hooks/useShortcuts";
+import { useTheme } from "@/hooks/useTheme";
+import { celebrate } from "@/lib/celebrate";
+import { exportJson, parseImport } from "@/lib/io";
 import { blockedCount, countByStatus } from "@/lib/selectors";
 import { useBoard } from "@/lib/store";
 
@@ -28,10 +31,14 @@ export default function Home() {
   const toggleTask = useBoard((s) => s.toggleTask);
   const toggleSection = useBoard((s) => s.toggleSection);
   const moveTask = useBoard((s) => s.moveTask);
+  const importState = useBoard((s) => s.importState);
   const { filters, setQuery, toggleStatus, togglePrioSort, toggleView, clear } = useFilters();
+  const { isDark, toggle } = useTheme();
   const [newProjectOpen, setNewProjectOpen] = useState(false);
   const [toast, setToast] = useState<string | null>(null);
   const toastTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const fileRef = useRef<HTMLInputElement | null>(null);
+  const prevDone = useRef(0);
 
   const showToast = (msg: string) => {
     setToast(msg);
@@ -39,11 +46,42 @@ export default function Home() {
     toastTimer.current = setTimeout(() => setToast(null), 1600);
   };
 
+  const doneCount = countByStatus(projetos).done;
+  useEffect(() => {
+    if (doneCount > prevDone.current) celebrate();
+    prevDone.current = doneCount;
+  }, [doneCount]);
+
+  const handleExport = useCallback(() => {
+    const blob = new Blob([exportJson(projetos)], { type: "application/json" });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement("a");
+    a.href = url;
+    a.download = `opsboard-${new Date().toISOString().slice(0, 10)}.json`;
+    a.click();
+    URL.revokeObjectURL(url);
+    showToast("backup exportado");
+  }, [projetos]);
+
+  const handleImportFile = useCallback(
+    async (file: File) => {
+      try {
+        const text = await file.text();
+        const parsed = parseImport(text);
+        importState(parsed);
+        showToast(`importado: ${parsed.length} projeto(s)`);
+      } catch (e) {
+        showToast(e instanceof Error ? e.message : "import falhou");
+      }
+    },
+    [importState],
+  );
+
   useShortcuts(
     {
       onNewProject: () => setNewProjectOpen(true),
       onToggleView: toggleView,
-      onToggleTheme: () => showToast("tema completo na fase 3.4"),
+      onToggleTheme: toggle,
       onHelp: () =>
         showToast("p projeto · n tarefa · 1-5 filtros · k kanban · t tema · ? ajuda · esc limpa"),
       onClearFilters: clear,
@@ -56,16 +94,30 @@ export default function Home() {
   const counts = countByStatus(projetos);
 
   return (
-    <div className="min-h-screen bg-[#0a0d12] text-zinc-300">
+    <div className="min-h-screen bg-[var(--bg)] text-[var(--text)]">
       <Topbar
         query={filters.query}
         view={filters.view}
-        isDark
+        isDark={isDark}
         onQueryChange={setQuery}
         onClearQuery={() => setQuery("")}
         onToggleView={toggleView}
-        onToggleTheme={() => showToast("tema completo na fase 3.4")}
+        onToggleTheme={toggle}
         onNewProject={() => setNewProjectOpen(true)}
+        onExport={handleExport}
+        onImport={() => fileRef.current?.click()}
+      />
+      <input
+        ref={fileRef}
+        type="file"
+        accept="application/json,.json"
+        className="hidden"
+        aria-hidden
+        onChange={(e) => {
+          const f = e.target.files?.[0];
+          if (f) void handleImportFile(f);
+          e.target.value = "";
+        }}
       />
       <div className="mx-auto max-w-5xl px-4 pb-2">
         <FilterChips
@@ -124,7 +176,7 @@ export default function Home() {
       )}
 
       {toast && (
-        <div className="fixed bottom-5 left-1/2 -translate-x-1/2 z-50 bg-[#1c2532] border border-zinc-600 text-zinc-300 text-xs px-4 py-2 rounded-md shadow-lg">
+        <div className="fixed bottom-5 left-1/2 -translate-x-1/2 z-50 bg-[var(--panel-3)] border border-zinc-600 text-[var(--text)] text-xs px-4 py-2 rounded-md shadow-lg">
           {toast}
         </div>
       )}

@@ -26,33 +26,33 @@ export function Stats({ projetos, filters, onTogglePrioSort }: StatsProps) {
       : "status-dock: arraste tarefas p/ mudar status";
 
   return (
-    <div className="text-[11px] text-zinc-500 flex flex-wrap gap-x-4 gap-y-1" role="status">
+    <div className="text-[11px] text-[var(--muted)] flex flex-wrap gap-x-4 gap-y-1" role="status">
       <span>
-        <span className="text-zinc-700">total</span>{" "}
+        <span className="text-[var(--dimmer)]">total</span>{" "}
         <span className="font-bold text-zinc-200">{total}</span>
       </span>
       <span>
-        <span className="text-zinc-700">pendentes</span>{" "}
+        <span className="text-[var(--dimmer)]">pendentes</span>{" "}
         <span className="text-amber-400">{pendentes}</span>
       </span>
       <span>
-        <span className="text-zinc-700">concluídas</span>{" "}
+        <span className="text-[var(--dimmer)]">concluídas</span>{" "}
         <span className="text-emerald-400">{done}</span>{" "}
-        <span className="text-zinc-700">({pct}%)</span>
+        <span className="text-[var(--dimmer)]">({pct}%)</span>
       </span>
       <span>
-        <span className="text-zinc-700">hoje</span>{" "}
+        <span className="text-[var(--dimmer)]">hoje</span>{" "}
         <span className="text-emerald-400">+{doneToday}</span>
       </span>
       <button
         type="button"
         onClick={onTogglePrioSort}
-        className={`chip ${filters.prioSort ? "text-amber-400 border-current" : "text-zinc-500"}`}
+        className={`chip ${filters.prioSort ? "text-amber-400 border-current" : "text-[var(--muted)]"}`}
         title="ordenar por prioridade (P1 no topo)"
       >
         ↕ prio
       </button>
-      <span className="ml-auto text-zinc-600 hidden sm:inline">{hint}</span>
+      <span className="ml-auto text-[var(--dim)] hidden sm:inline">{hint}</span>
     </div>
   );
 }

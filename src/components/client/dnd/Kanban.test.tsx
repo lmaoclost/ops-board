@@ -34,9 +34,14 @@ describe("Kanban", () => {
     expect(screen.getByText("uprs")).toBeTruthy();
   });
 
-  it("mostra contagem por coluna", () => {
+it("mostra contagem por coluna", () => {
     render(<Kanban projetos={[projeto()]} />);
-    expect(screen.getAllByText("1", { selector: "span.text-zinc-700" })).toHaveLength(4);
+    expect(screen.getAllByText("1", { selector: "span" })).toHaveLength(4);
+  });
+
+  it("mostra origem projeto · seção no card", () => {
+    render(<Kanban projetos={[projeto()]} />);
+    expect(screen.getAllByText("P · geral")).toHaveLength(4);
   });
 
   it("estado vazio sem projetos", () => {
