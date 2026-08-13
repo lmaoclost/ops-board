@@ -24,7 +24,7 @@ const LED: Record<Status, string> = {
 const PRIO_CLS: Record<Prio, string> = {
   1: "text-red-400 border-red-500/40 bg-red-500/10",
   2: "text-amber-400 border-amber-500/40 bg-amber-500/10",
-  3: "text-[var(--muted)] border-zinc-600",
+  3: "text-[var(--muted-text)] border-zinc-600",
 };
 
 export function TaskRow({ task, onToggle, onPrioCycle, onStatusChange, onEdit, onDelete }: TaskRowProps) {
@@ -63,7 +63,7 @@ export function TaskRow({ task, onToggle, onPrioCycle, onStatusChange, onEdit, o
             {fmtDate(task.due)} vencida
           </span>
         ) : (
-          <span className={`shrink-0 text-[10.5px] font-semibold ${dueSoon ? "text-amber-400" : "text-[var(--muted)]"}`} title={`vencimento ${task.due}`}>
+          <span className={`shrink-0 text-[10.5px] font-semibold ${dueSoon ? "text-amber-400" : "text-[var(--muted-text)]"}`} title={`vencimento ${task.due}`}>
             {fmtDate(task.due)}
           </span>
         )
@@ -73,7 +73,7 @@ export function TaskRow({ task, onToggle, onPrioCycle, onStatusChange, onEdit, o
         value={task.status}
         onChange={(e) => onStatusChange(e.target.value as Status)}
         title="mudar status"
-        className="shrink-0 appearance-none rounded border border-[var(--line)] bg-[var(--input)] px-1.5 py-0.5 text-[11px] text-[var(--muted)] outline-none cursor-pointer hover:border-zinc-600 hover:text-[var(--text)]"
+        className="shrink-0 appearance-none rounded border border-[var(--line)] bg-[var(--field)] px-1.5 py-0.5 text-[11px] text-[var(--muted-text)] outline-none cursor-pointer hover:border-zinc-600 hover:text-[var(--text)]"
       >
         {STATUS_ORDER.map((k) => (
           <option key={k} value={k}>

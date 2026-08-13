@@ -1,6 +1,8 @@
 import confetti from "canvas-confetti";
 
 export function chime(): void {
+  const ua = (globalThis as { navigator?: { userActivation?: { hasBeenActive?: boolean } } }).navigator?.userActivation;
+  if (ua && !ua.hasBeenActive) return;
   const Ctx = (globalThis as { AudioContext?: unknown }).AudioContext ?? (typeof window !== "undefined" ? (window as { AudioContext?: unknown }).AudioContext : undefined);
   if (!Ctx) return;
   try {

@@ -89,7 +89,7 @@ export function Topbar({
             <input
               value={draft}
               onChange={(e) => setDraft(e.target.value)}
-              className="w-full flex-1 min-w-0 bg-[var(--input)] border border-[var(--line)] rounded-md px-2.5 py-1.5 text-xs text-[var(--text)] outline-none focus:border-emerald-500/50"
+              className="w-full flex-1 min-w-0 bg-[var(--field)] border border-[var(--line)] rounded-md px-2.5 py-1.5 text-xs text-[var(--text)] outline-none focus:border-emerald-500/50"
               type="search"
               placeholder="grep tarefas..."
               autoComplete="off"

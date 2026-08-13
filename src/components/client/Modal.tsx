@@ -72,7 +72,7 @@ export function Modal({ title, fields, submitLabel = "salvar", onSubmit, onCance
               <div key={f.key}>
                 <label
                   htmlFor={`field-${f.key}`}
-                  className="mb-1.5 block text-[11px] font-semibold uppercase tracking-wider text-[var(--muted)]"
+                  className="mb-1.5 block text-[11px] font-semibold uppercase tracking-wider text-[var(--muted-text)]"
                 >
                   {f.label}
                 </label>

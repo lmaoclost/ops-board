@@ -26,7 +26,7 @@ export function Stats({ projetos, filters, onTogglePrioSort }: StatsProps) {
       : "status-dock: arraste tarefas p/ mudar status";
 
   return (
-    <div className="text-[11px] text-[var(--muted)] flex flex-wrap gap-x-4 gap-y-1" role="status">
+    <div className="text-[11px] text-[var(--muted-text)] flex flex-wrap gap-x-4 gap-y-1" role="status">
       <span>
         <span className="text-[var(--dimmer)]">total</span>{" "}
         <span className="font-bold text-zinc-200">{total}</span>
@@ -47,7 +47,7 @@ export function Stats({ projetos, filters, onTogglePrioSort }: StatsProps) {
       <button
         type="button"
         onClick={onTogglePrioSort}
-        className={`chip ${filters.prioSort ? "text-amber-400 border-current" : "text-[var(--muted)]"}`}
+        className={`chip ${filters.prioSort ? "text-amber-400 border-current" : "text-[var(--muted-text)]"}`}
         title="ordenar por prioridade (P1 no topo)"
       >
         ↕ prio
