@@ -27,6 +27,7 @@ export default function Home() {
   const cycleTaskPrio = useBoard((s) => s.cycleTaskPrio);
   const toggleTask = useBoard((s) => s.toggleTask);
   const toggleSection = useBoard((s) => s.toggleSection);
+  const moveTask = useBoard((s) => s.moveTask);
   const { filters, setQuery, toggleStatus, togglePrioSort, toggleView, clear } = useFilters();
   const [newProjectOpen, setNewProjectOpen] = useState(false);
   const [toast, setToast] = useState<string | null>(null);
@@ -102,6 +103,8 @@ export default function Home() {
             onStatusChange: (pid, sid, tid, status) => setTaskStatus(pid, sid, tid, status),
             onEdit: (pid, sid, tid, patch) => editTask(pid, sid, tid, patch),
             onDelete: (pid, sid, tid) => deleteTask(pid, sid, tid),
+            onMoveTask: (pid, sid, tid, toPid, toSid, index) =>
+              moveTask({ pid, sid, tid }, { pid: toPid, sid: toSid }, index),
           }}
         />
       </main>

@@ -1,7 +1,8 @@
 import { useState } from "react";
+import { useDroppable } from "@dnd-kit/core";
 import { Modal } from "@/components/client/Modal";
 import type { TaskPatch, Task } from "@/lib/types";
-import { TaskRow } from "./TaskRow";
+import { SortableTaskItem } from "@/components/client/dnd/SortableTaskItem";
 import { esc } from "@/lib/escape";
 
 export interface SectionTaskActions {
@@ -28,10 +29,11 @@ export interface SectionProps {
   taskActions: SectionTaskActions;
 }
 
-export function Section({ section, onToggleSection, onAddTask, onRename, onDelete, taskActions }: SectionProps) {
+export function Section({ projectId, section, onToggleSection, onAddTask, onRename, onDelete, taskActions }: SectionProps) {
   const [draft, setDraft] = useState("");
   const [editingId, setEditingId] = useState<string | null>(null);
   const [renaming, setRenaming] = useState(false);
+  const { setNodeRef: setDropRef, isOver } = useDroppable({ id: `sec:${projectId}:${section.id}` });
 
   const open = !section.collapsed;
   const doneCount = section.tasks.filter((t) => t.status === "done").length;
@@ -112,9 +114,12 @@ export function Section({ section, onToggleSection, onAddTask, onRename, onDelet
               {esc(section.notes)}
             </div>
           )}
-          <div className="flex flex-col gap-0.5">
+          <div
+            ref={setDropRef}
+            className={`flex flex-col gap-0.5 rounded-md ${isOver ? "outline outline-1 outline-emerald-400/50" : ""}`}
+          >
             {section.tasks.map((t) => (
-              <TaskRow
+              <SortableTaskItem
                 key={t.id}
                 task={t}
                 onToggle={() => taskActions.onToggle(t.id)}
