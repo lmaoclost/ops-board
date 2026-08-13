@@ -1,26 +1,49 @@
 @import "tailwindcss";
 
-:root {
-  --background: #ffffff;
-  --foreground: #171717;
-}
-
 @theme inline {
-  --color-background: var(--background);
-  --color-foreground: var(--foreground);
-  --font-sans: var(--font-geist-sans);
-  --font-mono: var(--font-geist-mono);
+  --color-background: #0a0d12;
+  --color-foreground: #c6d0dd;
+  --font-mono: var(--font-mono);
 }
 
-@media (prefers-color-scheme: dark) {
-  :root {
-    --background: #0a0a0a;
-    --foreground: #ededed;
-  }
+html {
+  color-scheme: dark;
 }
 
 body {
-  background: var(--background);
-  color: var(--foreground);
-  font-family: Arial, Helvetica, sans-serif;
+  background: #0a0d12;
+  color: #c6d0dd;
+  font-family: var(--font-mono), ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+}
+
+/* ---------- chip (padrão de ação/filtro) ---------- */
+
+.chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  padding: 3px 10px;
+  border: 1px solid transparent;
+  border-radius: 6px;
+  font-size: 11px;
+  font-weight: 500;
+  letter-spacing: 0.05em;
+  cursor: pointer;
+  user-select: none;
+  color: #6b7787;
+  transition:
+    border-color 140ms,
+    background-color 140ms,
+    color 140ms,
+    transform 100ms;
+}
+.chip:hover {
+  color: #c6d0dd;
+  border-color: oklch(0.78 0.02 240 / 0.22);
+}
+.chip:active {
+  transform: scale(0.97);
+}
+.chip.border-current {
+  background: oklch(0.78 0.02 240 / 0.11);
 }
