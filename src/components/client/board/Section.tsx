@@ -59,7 +59,7 @@ export function Section({ projectId, section, onToggleSection, onAddTask, onRena
   };
 
   return (
-    <div className="border-t border-dashed border-zinc-700/70 first:border-t-0">
+    <div className="border-t border-dashed border-[var(--line-soft)] first:border-t-0">
       <div
         role="button"
         tabIndex={0}
@@ -70,15 +70,15 @@ export function Section({ projectId, section, onToggleSection, onAddTask, onRena
             onToggleSection();
           }
         }}
-        className="flex w-full items-center gap-2 bg-[#151c26] px-3.5 py-2 text-left hover:bg-[#1c2532]"
+        className="flex w-full items-center gap-2 bg-[var(--panel-2)] px-3.5 py-2 text-left hover:bg-[var(--panel-3)]"
         title="expandir/recolher"
       >
-        <span className={`text-[11px] text-zinc-700 transition-transform ${open ? "rotate-90" : ""}`}>▶</span>
-        <h3 className="text-[12px] font-semibold uppercase tracking-wider text-zinc-500">{section.title}</h3>
-        <span className="text-[11px] text-zinc-700">
+        <span className={`text-[11px] text-[var(--dimmer)] transition-transform ${open ? "rotate-90" : ""}`}>▶</span>
+        <h3 className="text-[12px] font-semibold uppercase tracking-wider text-[var(--muted)]">{section.title}</h3>
+        <span className="text-[11px] text-[var(--dimmer)]">
           {doneCount}/{section.tasks.length}
         </span>
-        {section.notes && <span className="ml-auto hidden text-[11px] text-zinc-700 sm:inline">notas</span>}
+        {section.notes && <span className="ml-auto hidden text-[11px] text-[var(--dimmer)] sm:inline">notas</span>}
         <span className="ml-auto flex items-center gap-0.5">
           <button
             type="button"
@@ -110,7 +110,7 @@ export function Section({ projectId, section, onToggleSection, onAddTask, onRena
       {open && (
         <div className="px-2 pb-2">
           {section.notes && (
-            <div className="whitespace-pre-wrap break-words px-2 pb-2 text-[11.5px] leading-relaxed text-zinc-500">
+            <div className="whitespace-pre-wrap break-words px-2 pb-2 text-[11.5px] leading-relaxed text-[var(--muted)]">
               {esc(section.notes)}
             </div>
           )}

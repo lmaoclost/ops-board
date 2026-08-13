@@ -43,8 +43,8 @@ export function ProjectCard({ project, collectActions, onAddSection, onRename, o
   };
 
   return (
-    <section className="rounded-lg border border-zinc-800 bg-[#0f141b]">
-      <div className="flex items-center gap-2 border-b border-zinc-800 px-3.5 py-2.5">
+    <section className="rounded-lg border border-[var(--line)] bg-[var(--panel)]">
+      <div className="flex items-center gap-2 border-b border-[var(--line)] px-3.5 py-2.5">
         <span className="font-bold text-emerald-400">##</span>
         <h2 className="break-words text-[13px] font-bold tracking-wide text-zinc-200">{esc(project.title)}</h2>
         {project.blocked && <span className="tag-blocked">stuck</span>}

@@ -5,7 +5,9 @@ import { STATUS_LABEL, STATUS_ORDER, type Project, type Status } from "@/lib/typ
 interface FlatTask {
   task: Project["sections"][number]["tasks"][number];
   pid: string;
+  ptitle: string;
   sid: string;
+  stitle: string;
 }
 
 interface KanbanProps {
@@ -13,7 +15,9 @@ interface KanbanProps {
 }
 
 function flatTasks(projetos: Project[]): FlatTask[] {
-  return projetos.flatMap((p) => p.sections.flatMap((s) => s.tasks.map((task) => ({ task, pid: p.id, sid: s.id }))));
+  return projetos.flatMap((p) =>
+    p.sections.flatMap((s) => s.tasks.map((task) => ({ task, pid: p.id, ptitle: p.title, sid: s.id, stitle: s.title }))),
+  );
 }
 
 function KanbanTask({ item }: { item: FlatTask }) {
@@ -22,14 +26,17 @@ function KanbanTask({ item }: { item: FlatTask }) {
     <div
       ref={setNodeRef}
       style={{ transform: CSS.Translate.toString(transform) }}
-      className={`cursor-grab rounded-md border border-zinc-800 bg-[#151c26] px-2.5 py-1.5 text-xs ${isDragging ? "opacity-50" : ""}`}
+      className={`cursor-grab rounded-md border border-[var(--line)] bg-[var(--panel-2)] px-2.5 py-1.5 text-xs ${isDragging ? "opacity-50" : ""}`}
       {...attributes}
       {...listeners}
     >
-      <span className={item.task.status === "done" ? "line-through text-zinc-600" : "text-zinc-300"}>
+      <span className={item.task.status === "done" ? "line-through text-[var(--dim)]" : "text-[var(--text)]"}>
         {item.task.text}
       </span>
-      {item.task.note && <span className="text-zinc-600"> — {item.task.note}</span>}
+      <span className="mt-0.5 block text-[10px] text-[var(--dim)]">
+        {item.ptitle} · {item.stitle}
+      </span>
+      {item.task.note && <span className="text-[var(--dim)]"> — {item.task.note}</span>}
     </div>
   );
 }
@@ -39,10 +46,10 @@ function DroppableCol({ status, items }: { status: Status; items: FlatTask[] }) 
   return (
     <div
       ref={setNodeRef}
-      className={`flex min-w-[200px] flex-1 flex-col rounded-lg border ${isOver ? "border-emerald-400/60" : "border-zinc-800"} bg-[#0f141b]`}
+      className={`flex min-w-[200px] flex-1 flex-col rounded-lg border ${isOver ? "border-emerald-400/60" : "border-[var(--line)]"} bg-[var(--panel)]`}
     >
-      <header className="border-b border-zinc-800 px-3 py-2 text-[11px] font-bold uppercase tracking-wider text-zinc-500">
-        {STATUS_LABEL[status]} <span className="text-zinc-700">{items.length}</span>
+      <header className="border-b border-[var(--line)] px-3 py-2 text-[11px] font-bold uppercase tracking-wider text-[var(--muted)]">
+        {STATUS_LABEL[status]} <span className="text-[var(--dimmer)]">{items.length}</span>
       </header>
       <div className="flex min-h-[48px] flex-col gap-1 p-2">
         {items.map((item) => (
@@ -56,7 +63,7 @@ function DroppableCol({ status, items }: { status: Status; items: FlatTask[] }) 
 export function Kanban({ projetos }: KanbanProps) {
   if (!projetos.length) {
     return (
-      <div className="fade-in rounded-lg border border-dashed border-zinc-700 p-10 text-center text-zinc-600">
+      <div className="fade-in rounded-lg border border-dashed border-[var(--line-soft)] p-10 text-center text-[var(--dim)]">
         <span className="block text-2xl">≡</span>
         <p>nenhuma tarefa para o kanban.</p>
       </div>

@@ -95,7 +95,7 @@ export function Board({ projetos, filters, onNewProject, projectActions, section
   let content;
   if (!projetos.length) {
     content = (
-      <div className="fade-in rounded-lg border border-dashed border-zinc-700 p-10 text-center text-zinc-600">
+      <div className="fade-in rounded-lg border border-dashed border-[var(--line-soft)] p-10 text-center text-[var(--dim)]">
         <span className="block text-2xl">_</span>
         <p className="mb-3">nenhum projeto na fila.</p>
         <button
@@ -109,7 +109,7 @@ export function Board({ projetos, filters, onNewProject, projectActions, section
     );
   } else if (!filtered.length) {
     content = (
-      <div className="fade-in rounded-lg border border-dashed border-zinc-700 p-10 text-center text-zinc-600">
+      <div className="fade-in rounded-lg border border-dashed border-[var(--line-soft)] p-10 text-center text-[var(--dim)]">
         <span className="block text-2xl">∅</span>
         <p>nada casa com o filtro.</p>
       </div>

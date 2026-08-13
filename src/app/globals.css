@@ -6,14 +6,48 @@
   --font-mono: var(--font-mono);
 }
 
+:root {
+  --bg: #0a0d12;
+  --panel: #0f141b;
+  --panel-2: #151c26;
+  --panel-3: #1c2532;
+  --input: #0b1016;
+  --line: #27272a;
+  --line-soft: oklch(0.16 0.005 240 / 0.62);
+  --hover: oklch(0.16 0.005 240 / 0.5);
+  --text: #c6d0dd;
+  --muted: #8b98a9;
+  --dim: rgba(198, 208, 221, 0.38);
+  --dimmer: rgba(198, 208, 221, 0.26);
+}
+
+html.light {
+  color-scheme: light;
+  --bg: #f2f4f7;
+  --panel: #ffffff;
+  --panel-2: #ffffff;
+  --panel-3: #e9edf2;
+  --input: #ffffff;
+  --line: #d8dde4;
+  --line-soft: #e3e8ee;
+  --hover: rgba(15, 23, 42, 0.05);
+  --text: #272c33;
+  --muted: #5b6572;
+  --dim: rgba(39, 44, 51, 0.45);
+  --dimmer: rgba(39, 44, 51, 0.3);
+}
+
 html {
   color-scheme: dark;
 }
 
 body {
-  background: #0a0d12;
-  color: #c6d0dd;
+  background: var(--bg);
+  color: var(--text);
   font-family: var(--font-mono), ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+  transition:
+    background-color 160ms,
+    color 160ms;
 }
 
 /* ---------- chip (padrão de ação/filtro) ---------- */

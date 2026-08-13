@@ -45,9 +45,9 @@ export function Modal({ title, fields, submitLabel = "salvar", onSubmit, onCance
         role="dialog"
         aria-modal="true"
         aria-labelledby={titleId}
-        className="w-full max-w-[460px] rounded-lg border border-zinc-700 bg-[#151c26] shadow-xl"
+        className="w-full max-w-[460px] rounded-lg border border-[var(--line-soft)] bg-[var(--panel-2)] shadow-xl"
       >
-        <div className="flex items-center justify-between px-4 py-3 border-b border-zinc-800">
+        <div className="flex items-center justify-between px-4 py-3 border-b border-[var(--line)]">
           <h3 id={titleId} className="text-[13px] font-bold text-zinc-200">
             {title}
           </h3>
@@ -72,7 +72,7 @@ export function Modal({ title, fields, submitLabel = "salvar", onSubmit, onCance
               <div key={f.key}>
                 <label
                   htmlFor={`field-${f.key}`}
-                  className="mb-1.5 block text-[11px] font-semibold uppercase tracking-wider text-zinc-500"
+                  className="mb-1.5 block text-[11px] font-semibold uppercase tracking-wider text-[var(--muted)]"
                 >
                   {f.label}
                 </label>
@@ -85,7 +85,7 @@ export function Modal({ title, fields, submitLabel = "salvar", onSubmit, onCance
                     className="input-line min-h-[72px] w-full resize-y"
                   />
                 ) : f.type === "checkbox" ? (
-                  <label className="flex items-center gap-2 text-xs text-zinc-300 cursor-pointer select-none">
+                  <label className="flex items-center gap-2 text-xs text-[var(--text)] cursor-pointer select-none">
                     <input
                       id={`field-${f.key}`}
                       data-modal-first={i === 0 ? "" : undefined}
