@@ -17,6 +17,7 @@ interface BoardStore {
   deleteTask: (pid: string, sid: string, tid: string) => void;
   setTaskStatus: (pid: string, sid: string, tid: string, status: Status) => void;
   setTaskPrio: (pid: string, sid: string, tid: string, prio: Prio) => void;
+  cycleTaskPrio: (pid: string, sid: string, tid: string) => void;
   toggleTask: (pid: string, sid: string, tid: string) => void;
   toggleSection: (pid: string, sid: string) => void;
   moveTask: (
@@ -191,6 +192,27 @@ export function createBoardStore(initial: Project[] = []) {
                 : p,
             ),
           })),
+
+        cycleTaskPrio: (pid, sid, tid) =>
+          set((s) => {
+            const t = findTask(s.projetos, pid, sid, tid);
+            if (!t) return s;
+            const next = (t.prio % 3) + 1 as Prio;
+            return {
+              projetos: s.projetos.map((p) =>
+                p.id === pid
+                  ? {
+                      ...p,
+                      sections: p.sections.map((sec) =>
+                        sec.id === sid
+                          ? { ...sec, tasks: sec.tasks.map((x) => (x.id === tid ? { ...x, prio: next } : x)) }
+                          : sec,
+                      ),
+                    }
+                  : p,
+              ),
+            };
+          }),
 
         toggleTask: (pid, sid, tid) =>
           set((s) => {

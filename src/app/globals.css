@@ -47,3 +47,137 @@ body {
 .chip.border-current {
   background: oklch(0.78 0.02 240 / 0.11);
 }
+
+/* ---------- inputs / buttons / icons ---------- */
+
+.input-line {
+  background: #0b1016;
+  border: 1px solid oklch(0.78 0.02 240 / 0.1);
+  border-radius: 6px;
+  color: #c6d0dd;
+  font-family: inherit;
+  font-size: 12px;
+  padding: 7px 10px;
+  outline: none;
+  transition:
+    border-color 140ms,
+    box-shadow 140ms;
+}
+.input-line::placeholder {
+  color: #424e60;
+}
+.input-line:hover {
+  border-color: oklch(0.78 0.02 240 / 0.22);
+}
+.input-line:focus {
+  border-color: color-mix(in srgb, #34d399 55%, transparent);
+  box-shadow: 0 0 0 3px color-mix(in srgb, #34d399 15%, transparent);
+}
+textarea.input-line {
+  resize: vertical;
+  min-height: 72px;
+}
+input[type="date"].input-line {
+  color-scheme: inherit;
+}
+
+.btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  padding: 7px 12px;
+  border-radius: 6px;
+  font-family: inherit;
+  font-size: 12px;
+  font-weight: 600;
+  cursor: pointer;
+  border: 1px solid transparent;
+  background: transparent;
+  color: #6b7787;
+  transition:
+    color 140ms,
+    transform 100ms;
+  white-space: nowrap;
+}
+.btn:hover {
+  color: #c6d0dd;
+}
+.btn:active {
+  transform: scale(0.97);
+}
+
+.btn-primary {
+  color: #0a0d12;
+  background: #34d399;
+  font-weight: 700;
+}
+.btn-primary:hover {
+  background: color-mix(in srgb, #34d399 82%, white);
+  color: #0a0d12;
+}
+
+.iconbtn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 26px;
+  height: 26px;
+  border-radius: 4px;
+  color: #4b586b;
+  cursor: pointer;
+  font-size: 13px;
+  line-height: 1;
+  background: transparent;
+  border: none;
+  transition:
+    color 120ms,
+    background-color 120ms;
+}
+.iconbtn:hover {
+  color: #c6d0dd;
+  background: oklch(0.78 0.02 240 / 0.12);
+}
+.iconbtn.danger:hover {
+  color: #f87171;
+  background: #2b1413;
+}
+
+/* ---------- tags ---------- */
+
+.tag-blocked,
+.tag-overdue {
+  flex: none;
+  font-size: 10px;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  padding: 2px 7px;
+  border-radius: 4px;
+  border: 1px solid currentColor;
+  color: #f87171;
+  background: #2b1413;
+}
+
+/* ---------- animação ---------- */
+
+.fade-in {
+  animation: fade 180ms cubic-bezier(0.23, 1, 0.32, 1);
+}
+@keyframes fade {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    transition-duration: 0.01ms !important;
+  }
+}

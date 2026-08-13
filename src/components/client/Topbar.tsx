@@ -28,6 +28,7 @@ export function Topbar({
   const timer = useRef<ReturnType<typeof setTimeout> | null>(null);
 
   useEffect(() => {
+    // eslint-disable-next-line react-hooks/set-state-in-effect
     setDraft(query);
   }, [query]);
 
