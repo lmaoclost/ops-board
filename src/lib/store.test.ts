@@ -96,6 +96,16 @@ describe("board store", () => {
     expect(store.getState().projetos[0].sections[0].tasks[0].prio).toBe(2);
   });
 
+  it("cicla prioridade 1→2→3→1", () => {
+    store.getState().setTaskPrio("p1", "s1", "t1", 1);
+    store.getState().cycleTaskPrio("p1", "s1", "t1");
+    expect(store.getState().projetos[0].sections[0].tasks[0].prio).toBe(2);
+    store.getState().cycleTaskPrio("p1", "s1", "t1");
+    expect(store.getState().projetos[0].sections[0].tasks[0].prio).toBe(3);
+    store.getState().cycleTaskPrio("p1", "s1", "t1");
+    expect(store.getState().projetos[0].sections[0].tasks[0].prio).toBe(1);
+  });
+
   it("alterna collapse de seção", () => {
     store.getState().toggleSection("p1", "s1");
     expect(store.getState().projetos[0].sections[0].collapsed).toBe(true);

@@ -1,0 +1,92 @@
+import { isDueSoon, isOverdue } from "@/lib/date";
+import { linkify } from "@/lib/escape";
+import { fmtDate } from "@/lib/date";
+import { PRIO_KEYS, STATUS_LABEL, STATUS_ORDER, type Prio, type Status, type Task } from "@/lib/types";
+
+export interface TaskRowProps {
+  task: Task;
+  onToggle: () => void;
+  onPrioCycle: () => void;
+  onStatusChange: (status: Status) => void;
+  onEdit: () => void;
+  onDelete: () => void;
+}
+
+export const NEXT_PRIO: Record<Prio, Prio> = { 1: 2, 2: 3, 3: 1 };
+
+const LED: Record<Status, string> = {
+  todo: "bg-slate-500",
+  doing: "bg-cyan-400",
+  waiting: "bg-amber-400",
+  done: "bg-emerald-400",
+};
+
+const PRIO_CLS: Record<Prio, string> = {
+  1: "text-red-400 border-red-500/40 bg-red-500/10",
+  2: "text-amber-400 border-amber-500/40 bg-amber-500/10",
+  3: "text-zinc-500 border-zinc-600",
+};
+
+export function TaskRow({ task, onToggle, onPrioCycle, onStatusChange, onEdit, onDelete }: TaskRowProps) {
+  const overdue = isOverdue(task.due, task.status);
+  const dueSoon = isDueSoon(task.due, task.status);
+  const done = task.status === "done";
+
+  return (
+    <div className={`flex items-center gap-2.5 rounded-md px-2 py-1.5 transition-colors hover:bg-zinc-800/50 ${done ? "" : ""}`}>
+      <button
+        type="button"
+        onClick={onToggle}
+        title="alternar concluída"
+        aria-label="alternar concluída"
+        className={`h-2 w-2 shrink-0 rounded-full ${task.blocked ? "bg-red-400" : LED[task.status]} ${done ? "bg-emerald-400" : ""} transition-transform hover:scale-125`}
+      />
+      <span className="min-w-0 flex-1 text-[12.5px] leading-snug break-words text-zinc-300">
+        <span
+          className={done ? "text-zinc-600 line-through decoration-zinc-700" : ""}
+          dangerouslySetInnerHTML={{ __html: linkify(task.text) }}
+        />
+        {task.note && <span className="text-zinc-600"> — {linkify(task.note)}</span>}
+      </span>
+      {task.blocked && <span className="tag-blocked">bloqueada</span>}
+      <button
+        type="button"
+        onClick={onPrioCycle}
+        title="prioridade: clique pra mudar"
+        className={`shrink-0 rounded px-1.5 py-0.5 border text-[10px] font-bold ${PRIO_CLS[task.prio]}`}
+      >
+        {PRIO_KEYS[task.prio]}
+      </button>
+      {task.due && (
+        overdue ? (
+          <span className="tag-overdue" title={`vencimento ${task.due}`}>
+            {fmtDate(task.due)} vencida
+          </span>
+        ) : (
+          <span className={`shrink-0 text-[10.5px] font-semibold ${dueSoon ? "text-amber-400" : "text-zinc-500"}`} title={`vencimento ${task.due}`}>
+            {fmtDate(task.due)}
+          </span>
+        )
+      )}
+      <select
+        aria-label="status"
+        value={task.status}
+        onChange={(e) => onStatusChange(e.target.value as Status)}
+        title="mudar status"
+        className="shrink-0 appearance-none rounded border border-zinc-800 bg-[#0b1016] px-1.5 py-0.5 text-[11px] text-zinc-500 outline-none cursor-pointer hover:border-zinc-600 hover:text-zinc-300"
+      >
+        {STATUS_ORDER.map((k) => (
+          <option key={k} value={k}>
+            {STATUS_LABEL[k]}
+          </option>
+        ))}
+      </select>
+      <button type="button" onClick={onEdit} className="iconbtn" title="editar" aria-label="editar">
+        ✎
+      </button>
+      <button type="button" onClick={onDelete} className="iconbtn danger" title="excluir" aria-label="excluir">
+        ×
+      </button>
+    </div>
+  );
+}
