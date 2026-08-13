@@ -4,24 +4,21 @@ Visualizador de projetos e tarefas com visual em console: lista e kanban, drag &
 
 Todos os dados ficam **apenas no navegador** (localStorage). Nada é enviado a servidores.
 
-## Rodar
+## Stack
 
-Abra `index.html` direto no navegador, ou sirva a pasta:
+Next.js (App Router) + TypeScript + Tailwind v4 + shadcn/ui
+
+## Desenvolvimento
 
 ```sh
-python3 -m http.server 8080
-# http://localhost:8080
+npm install
+npm run dev        # http://localhost:3000
+npm run lint       # eslint
+npm run typecheck  # tsc --noEmit
+npm run build      # produção
 ```
 
-## Funcionalidades
-
-- Projetos → seções → tarefas (CRUD completo)
-- Status: todo / em andamento / aguardando / concluída + bloqueada
-- Prioridade P1–P3, vencimento com aviso de atraso
-- Arrastar tarefa pra reordenar, mudar status ou coluna kanban
-- Busca e filtros por status; estatísticas (total, pendentes, % concluída, feitas hoje)
-- Export/import JSON (backup)
-- Atalhos: `p` projeto · `n` tarefa · `1–5` filtro · `k` kanban · `t` tema · `?` ajuda
+A versão clássica (HTML/CSS/JS vanilla) vive em `legacy/` como referência de paridade durante a migração.
 
 ## Privacidade (LGPD)
 
