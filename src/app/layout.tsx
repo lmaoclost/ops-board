@@ -13,7 +13,7 @@ export const metadata: Metadata = {
     "Visualizador de projetos e tarefas. Lista e kanban, drag & drop, prioridades e backup JSON. Dados ficam apenas no navegador.",
 };
 
-export default function RootLayout({ children }: LayoutProps<"/">) {
+export default function RootLayout({ children }: { children: React.ReactNode }) {
   return (
     <html lang="pt-BR" className={`${jetbrains.variable} antialiased`}>
       <body className="min-h-full font-mono">{children}</body>
