@@ -1,0 +1,89 @@
+<!doctype html>
+<html lang="pt-BR" class="dark">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>ops/board — controle de tarefas</title>
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 16'%3E%3Crect width='16' height='16' fill='%230a0d12'/%3E%3Ctext x='8' y='12' font-family='monospace' font-size='11' fill='%2334d399' text-anchor='middle'%3E%26gt%3B%3C/text%3E%3C/svg%3E">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;600;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="style.css">
+<script src="https://cdn.tailwindcss.com"></script>
+<script>
+  tailwind.config = {
+    darkMode: 'class',
+    theme: {
+      extend: {
+        fontFamily: {
+          mono: ['"JetBrains Mono"', 'ui-monospace', 'SFMono-Regular', 'Menlo', 'Consolas', 'monospace'],
+        },
+        colors: {
+          base: '#0a0d12',
+          raise: '#0f141b',
+          raise2: '#151c26',
+          raise3: '#1c2532',
+          line: 'oklch(0.78 0.02 240 / 0.10)',
+          ink: { DEFAULT: '#c6d0dd', dim: '#6b7787', faint: '#424e60' },
+          fired: { DEFAULT: '#34d399', soft: '#0c2b20' },
+          warn: { DEFAULT: '#fbbf24', soft: '#2a2012' },
+          gave: { DEFAULT: '#f87171', soft: '#2b1413' },
+          flow: { DEFAULT: '#22d3ee', soft: '#0a282e' },
+          led: { DEFAULT: '#a3b0c1' },
+        },
+      },
+    },
+  };
+</script>
+</head>
+<body class="bg-base text-ink font-mono antialiased min-h-screen">
+
+  <!-- TOPBAR -->
+  <header id="topbar" class="sticky top-0 z-30 border-b border-line bg-base/95 backdrop-blur">
+    <div class="mx-auto max-w-5xl px-4 py-3 flex flex-col gap-3 sm:flex-row sm:items-center sm:gap-6">
+
+      <div class="flex items-center justify-between gap-4">
+        <div class="flex items-baseline gap-2">
+          <h1 class="text-sm font-bold tracking-tight text-ink">ops<span class="text-fired">/</span>board</h1>
+          <span id="save-state" class="text-[10px] text-faint">—</span>
+        </div>
+        <div class="flex items-center gap-1.5">
+          <button id="theme-btn" class="chip chip-neutral" type="button" title="alternar tema claro/escuro (t)">☾</button>
+          <button id="view-btn" class="chip chip-neutral" type="button" title="alternar lista/kanban (k)">kanban</button>
+          <button id="btn-new-project" class="chip chip-accent" type="button">
+            <span class="mr-1 text-fired">+</span>projeto
+          </button>
+        </div>
+      </div>
+
+      <div class="flex-1 min-w-0">
+        <label class="block relative flex items-center gap-2">
+          <span class="prompt" aria-hidden="true">&gt;</span>
+          <input id="search" class="input-line w-full min-w-0 flex-1 pl-1" type="search" placeholder="grep tarefas..." autocomplete="off" spellcheck="false">
+          <kbd id="search-clear" class="hidden absolute right-2 top-1/2 -translate-y-1/2 cursor-pointer select-none text-faint hover:text-ink" title="limpar busca">x</kbd>
+        </label>
+      </div>
+
+      <div id="filters" class="flex flex-wrap items-center gap-1.5"></div>
+    </div>
+
+    <div id="stats" class="mx-auto max-w-5xl px-4 pb-2 text-[11px] text-dim flex flex-wrap gap-x-4 gap-y-1"></div>
+
+    <div id="utils" class="mx-auto max-w-5xl px-4 pb-3 flex items-center gap-1.5">
+      <button id="btn-export" class="chip chip-neutral" type="button" title="baixar backup JSON">⇓ export</button>
+      <button id="btn-import" class="chip chip-neutral" type="button" title="importar backup JSON">⇑ import</button>
+      <button id="btn-reset" class="chip chip-neutral" type="button" title="apagar todos os dados">⟲ reset</button>
+      <input id="import-file" type="file" accept=".json,application/json" class="hidden">
+      <span class="ml-auto text-[10px] text-faint hidden sm:inline">atalhos: p projeto · s seção · n tarefa · 1–5 filtro · k vista · t tema · ? ajuda</span>
+    </div>
+  </header>
+
+  <!-- BOARD -->
+  <main id="board" class="mx-auto max-w-5xl px-4 py-6 space-y-6"></main>
+
+  <!-- MODAL -->
+  <div id="modal-root"></div>
+
+  <script src="app.js"></script>
+</body>
+</html>
