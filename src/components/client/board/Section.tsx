@@ -74,7 +74,7 @@ export function Section({ projectId, section, onToggleSection, onAddTask, onRena
         title="expandir/recolher"
       >
         <span className={`text-[11px] text-[var(--dimmer)] transition-transform ${open ? "rotate-90" : ""}`}>▶</span>
-        <h3 className="text-[12px] font-semibold uppercase tracking-wider text-[var(--muted)]">{section.title}</h3>
+        <h3 className="text-[12px] font-semibold uppercase tracking-wider text-[var(--muted-text)]">{section.title}</h3>
         <span className="text-[11px] text-[var(--dimmer)]">
           {doneCount}/{section.tasks.length}
         </span>
@@ -110,7 +110,7 @@ export function Section({ projectId, section, onToggleSection, onAddTask, onRena
       {open && (
         <div className="px-2 pb-2">
           {section.notes && (
-            <div className="whitespace-pre-wrap break-words px-2 pb-2 text-[11.5px] leading-relaxed text-[var(--muted)]">
+            <div className="whitespace-pre-wrap break-words px-2 pb-2 text-[11.5px] leading-relaxed text-[var(--muted-text)]">
               {esc(section.notes)}
             </div>
           )}

@@ -1,24 +1,80 @@
 @import "tailwindcss";
+@import "tw-animate-css";
+@import "shadcn/tailwind.css";
+
+@custom-variant dark (&:is(.dark *));
 
 @theme inline {
-  --color-background: #0a0d12;
-  --color-foreground: #c6d0dd;
+  --color-background: var(--bg);
+  --color-foreground: var(--text);
+  --color-card: var(--panel);
+  --color-card-foreground: var(--text);
+  --color-popover: var(--panel-2);
+  --color-popover-foreground: var(--text);
+  --color-primary: var(--fired);
+  --color-primary-foreground: #052e21;
+  --color-secondary: var(--panel-3);
+  --color-secondary-foreground: var(--text);
+  --color-muted: var(--panel-3);
+  --color-muted-foreground: var(--muted-text);
+  --color-accent: var(--hover);
+  --color-accent-foreground: var(--text);
+  --color-destructive: var(--gave);
+  --color-border: var(--line);
+  --color-input: var(--line);
+  --color-ring: var(--fired);
+  --color-fired: var(--fired);
+  --color-gave: var(--gave);
+  --color-warn: var(--warn);
+  --color-flow: var(--flow);
   --font-mono: var(--font-mono);
+  --font-heading: var(--font-sans);
+  --font-sans: var(--font-sans);
+  --radius-sm: calc(var(--radius) * 0.6);
+  --radius-md: calc(var(--radius) * 0.8);
+  --radius-lg: var(--radius);
+  --radius-xl: calc(var(--radius) * 1.4);
+  --radius-2xl: calc(var(--radius) * 1.8);
+  --radius-3xl: calc(var(--radius) * 2.2);
+  --radius-4xl: calc(var(--radius) * 2.6);
 }
 
 :root {
+  --fired: #34d399;
+  --gave: #f87171;
+  --warn: #fbbf24;
+  --flow: #22d3ee;
   --bg: #0a0d12;
   --panel: #0f141b;
   --panel-2: #151c26;
   --panel-3: #1c2532;
-  --input: #0b1016;
+  --field: #0b1016;
   --line: #27272a;
   --line-soft: oklch(0.16 0.005 240 / 0.62);
   --hover: oklch(0.16 0.005 240 / 0.5);
   --text: #c6d0dd;
-  --muted: #8b98a9;
+  --muted-text: #8b98a9;
   --dim: rgba(198, 208, 221, 0.38);
   --dimmer: rgba(198, 208, 221, 0.26);
+  --background: var(--bg);
+  --foreground: var(--text);
+  --card: var(--panel);
+  --card-foreground: var(--text);
+  --popover: var(--panel-2);
+  --popover-foreground: var(--text);
+  --primary: var(--fired);
+  --primary-foreground: #052e21;
+  --secondary: var(--panel-3);
+  --secondary-foreground: var(--text);
+  --muted: var(--panel-3);
+  --muted-foreground: var(--muted-text);
+  --accent: var(--hover);
+  --accent-foreground: var(--text);
+  --destructive: var(--gave);
+  --border: var(--line);
+  --input: var(--line);
+  --ring: var(--fired);
+  --radius: 0.625rem;
 }
 
 html.light {
@@ -27,12 +83,12 @@ html.light {
   --panel: #ffffff;
   --panel-2: #ffffff;
   --panel-3: #e9edf2;
-  --input: #ffffff;
+  --field: #ffffff;
   --line: #d8dde4;
   --line-soft: #e3e8ee;
   --hover: rgba(15, 23, 42, 0.05);
   --text: #272c33;
-  --muted: #5b6572;
+  --muted-text: #5b6572;
   --dim: rgba(39, 44, 51, 0.45);
   --dimmer: rgba(39, 44, 51, 0.3);
 }
@@ -104,8 +160,8 @@ body {
   border-color: oklch(0.78 0.02 240 / 0.22);
 }
 .input-line:focus {
-  border-color: color-mix(in srgb, #34d399 55%, transparent);
-  box-shadow: 0 0 0 3px color-mix(in srgb, #34d399 15%, transparent);
+  border-color: color-mix(in srgb, var(--fired) 55%, transparent);
+  box-shadow: 0 0 0 3px color-mix(in srgb, var(--fired) 15%, transparent);
 }
 textarea.input-line {
   resize: vertical;
@@ -142,13 +198,13 @@ input[type="date"].input-line {
 }
 
 .btn-primary {
-  color: #0a0d12;
-  background: #34d399;
+  color: var(--primary-foreground);
+  background: var(--fired);
   font-weight: 700;
 }
 .btn-primary:hover {
-  background: color-mix(in srgb, #34d399 82%, white);
-  color: #0a0d12;
+  background: color-mix(in srgb, var(--fired) 82%, white);
+  color: var(--primary-foreground);
 }
 
 .iconbtn {
@@ -189,8 +245,8 @@ input[type="date"].input-line {
   padding: 2px 7px;
   border-radius: 4px;
   border: 1px solid currentColor;
-  color: #f87171;
-  background: #2b1413;
+  color: var(--gave);
+  background: color-mix(in srgb, var(--gave) 14%, transparent);
 }
 
 /* ---------- animação ---------- */
@@ -213,5 +269,11 @@ input[type="date"].input-line {
   *::after {
     animation-duration: 0.01ms !important;
     transition-duration: 0.01ms !important;
+  }
+}
+
+@layer base {
+  * {
+    @apply border-border outline-ring/50;
   }
 }

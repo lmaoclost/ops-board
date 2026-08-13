@@ -1,22 +1,36 @@
-import { useEffect, useState } from "react";
+import { useEffect, useSyncExternalStore } from "react";
 
 export const THEME_KEY = "opsboard.theme";
+const THEME_EVENT = "opsboard:theme";
 
 function readTheme(): boolean {
   if (typeof window === "undefined") return true;
   const saved = window.localStorage.getItem(THEME_KEY);
-  if (saved === "light") return false;
-  if (saved === "dark") return true;
-  return true;
+  return saved !== "light";
+}
+
+function subscribe(cb: () => void): () => void {
+  window.addEventListener("storage", cb);
+  window.addEventListener(THEME_EVENT, cb);
+  return () => {
+    window.removeEventListener("storage", cb);
+    window.removeEventListener(THEME_EVENT, cb);
+  };
 }
 
 export function useTheme() {
-  const [isDark, setIsDark] = useState<boolean>(readTheme);
+  const isDark = useSyncExternalStore(subscribe, readTheme, () => true);
 
   useEffect(() => {
     document.documentElement.classList.toggle("light", !isDark);
-    window.localStorage.setItem(THEME_KEY, isDark ? "dark" : "light");
   }, [isDark]);
 
-  return { isDark, toggle: () => setIsDark((d) => !d) };
+  return {
+    isDark,
+    toggle: () => {
+      const next = !readTheme();
+      window.localStorage.setItem(THEME_KEY, next ? "dark" : "light");
+      window.dispatchEvent(new Event(THEME_EVENT));
+    },
+  };
 }
