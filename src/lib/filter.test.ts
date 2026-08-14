@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { isFiltering, matchTask, projMatches, sectMatches, type Filters } from "./filter";
+import { isFiltering, matchTask, projMatches, sectMatches, sortTasks, type Filters } from "./filter";
 import type { Project, Section, Task } from "./types";
 
 const task = (over: Partial<Task> = {}): Task => ({
@@ -96,6 +96,32 @@ describe("projMatches", () => {
   it("não casa projeto sem seções correspondentes", () => {
     const p = project({ sections: [section({ tasks: [task({ text: "a" })] })] });
     expect(projMatches(p, { ...none, status: "doing" })).toBe(false);
+  });
+});
+
+describe("sortTasks", () => {
+  const mk = (prio: number, text: string) => ({ prio, text });
+
+  it("sem prioSort, retorna o mesmo array", () => {
+    const tasks = [mk(3, "a"), mk(1, "b")];
+    expect(sortTasks(tasks, false, (t) => t.prio)).toBe(tasks);
+  });
+
+  it("com prioSort, P1 no topo", () => {
+    const tasks = [mk(3, "a"), mk(1, "b"), mk(2, "c")];
+    expect(sortTasks(tasks, true, (t) => t.prio).map((t) => t.text)).toEqual(["b", "c", "a"]);
+  });
+
+  it("não muta o array original", () => {
+    const tasks = [mk(3, "a"), mk(1, "b")];
+    const out = sortTasks(tasks, true, (t) => t.prio);
+    expect(tasks.map((t) => t.prio)).toEqual([3, 1]);
+    expect(out).not.toBe(tasks);
+  });
+
+  it("empates preservam a ordem original (estável)", () => {
+    const tasks = [mk(1, "a"), mk(2, "b"), mk(1, "c")];
+    expect(sortTasks(tasks, true, (t) => t.prio).map((t) => t.text)).toEqual(["a", "c", "b"]);
   });
 });
 

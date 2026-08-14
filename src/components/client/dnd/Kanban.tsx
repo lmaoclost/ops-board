@@ -1,5 +1,6 @@
 import { useDraggable, useDroppable } from "@dnd-kit/core";
 import { CSS } from "@dnd-kit/utilities";
+import { sortTasks } from "@/lib/filter";
 import { STATUS_LABEL, STATUS_ORDER, type Project, type Status } from "@/lib/types";
 
 interface FlatTask {
@@ -12,6 +13,7 @@ interface FlatTask {
 
 interface KanbanProps {
   projetos: Project[];
+  prioSort?: boolean;
 }
 
 function flatTasks(projetos: Project[]): FlatTask[] {
@@ -60,7 +62,7 @@ function DroppableCol({ status, items }: { status: Status; items: FlatTask[] }) 
   );
 }
 
-export function Kanban({ projetos }: KanbanProps) {
+export function Kanban({ projetos, prioSort }: KanbanProps) {
   if (!projetos.length) {
     return (
       <div className="fade-in rounded-lg border border-dashed border-[var(--line-soft)] p-10 text-center text-[var(--dim)]">
@@ -70,7 +72,7 @@ export function Kanban({ projetos }: KanbanProps) {
     );
   }
 
-  const tasks = flatTasks(projetos);
+  const tasks = sortTasks(flatTasks(projetos), !!prioSort, (i) => i.task.prio);
 
   return (
     <div className="fade-in flex flex-wrap gap-3">
