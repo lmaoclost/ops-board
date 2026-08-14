@@ -1,5 +1,13 @@
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
+import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip";
 import { isDueSoon, isOverdue } from "@/lib/date";
 import { linkify } from "@/lib/escape";
 import { fmtDate } from "@/lib/date";
@@ -55,14 +63,19 @@ export function TaskRow({ task, onToggle, onPrioCycle, onStatusChange, onEdit, o
           bloqueada
         </Badge>
       )}
-      <button
-        type="button"
-        onClick={onPrioCycle}
-        title="prioridade: clique pra mudar"
-        className={`shrink-0 rounded px-1.5 py-0.5 border text-[10px] font-bold ${PRIO_CLS[task.prio]}`}
-      >
-        {PRIO_KEYS[task.prio]}
-      </button>
+      <Tooltip>
+        <TooltipTrigger render={
+          <button
+            type="button"
+            onClick={onPrioCycle}
+            aria-label="prioridade: clique pra mudar"
+            className={`shrink-0 rounded px-1.5 py-0.5 border text-[10px] font-bold ${PRIO_CLS[task.prio]}`}
+          >
+            {PRIO_KEYS[task.prio]}
+          </button>
+        } />
+        <TooltipContent side="top">prioridade: clique pra mudar</TooltipContent>
+      </Tooltip>
       {task.due &&
         (overdue ? (
           <Badge
@@ -80,19 +93,26 @@ export function TaskRow({ task, onToggle, onPrioCycle, onStatusChange, onEdit, o
             {fmtDate(task.due)}
           </span>
         ))}
-      <select
-        aria-label="status"
+      <Select
         value={task.status}
-        onChange={(e) => onStatusChange(e.target.value as Status)}
-        title="mudar status"
-        className="shrink-0 appearance-none rounded border border-[var(--line)] bg-[var(--field)] px-1.5 py-0.5 text-[11px] text-[var(--muted-text)] outline-none cursor-pointer hover:border-zinc-600 hover:text-[var(--text)]"
+        onValueChange={(v) => onStatusChange(v as Status)}
       >
-        {STATUS_ORDER.map((k) => (
-          <option key={k} value={k}>
-            {STATUS_LABEL[k]}
-          </option>
-        ))}
-      </select>
+        <SelectTrigger
+          size="sm"
+          aria-label="status"
+          title="mudar status"
+          className="h-7 border-[var(--line)] bg-[var(--field)] px-2 text-[11px] text-[var(--muted-text)] hover:border-zinc-600 hover:text-[var(--text)]"
+        >
+          <SelectValue />
+        </SelectTrigger>
+        <SelectContent>
+          {STATUS_ORDER.map((k) => (
+            <SelectItem key={k} value={k} className="py-1 text-xs">
+              {STATUS_LABEL[k]}
+            </SelectItem>
+          ))}
+        </SelectContent>
+      </Select>
       <Button type="button" variant="ghost" size="icon-xs" onClick={onEdit} title="editar" aria-label="editar">
         ✎
       </Button>

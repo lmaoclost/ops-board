@@ -1,6 +1,7 @@
 import { useEffect, useRef, useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
+import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip";
 import type { View } from "@/lib/filter";
 
 interface TopbarProps {
@@ -55,16 +56,22 @@ export function Topbar({
             ops<span className="text-emerald-400">/</span>board
           </h1>
           <div className="flex items-center gap-1.5">
-            <Button
-              type="button"
-              variant="ghost"
-              size="xs"
-              onClick={onToggleTheme}
-              className="text-[var(--muted-text)] hover:text-[var(--text)]"
-              title="alternar tema claro/escuro (t)"
-            >
-              {isDark ? "☾" : "☀"}
-            </Button>
+            <Tooltip>
+            <TooltipTrigger
+              render={
+                <Button
+                  type="button"
+                  variant="ghost"
+                  size="xs"
+                  onClick={onToggleTheme}
+                  className="text-[var(--muted-text)] hover:text-[var(--text)]"
+                >
+                  {isDark ? "☾" : "☀"}
+                </Button>
+              }
+            />
+            <TooltipContent side="bottom">alternar tema claro/escuro (t)</TooltipContent>
+          </Tooltip>
             <Button
               type="button"
               variant="ghost"

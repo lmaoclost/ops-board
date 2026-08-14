@@ -13,5 +13,12 @@ export function countByStatus(projetos: Project[]): Record<Status, number> {
 export const blockedCount = (projetos: Project[]): number =>
   allTasks(projetos).filter((t) => t.blocked).length;
 
+const localDay = (iso: string): string => {
+  const d = new Date(iso);
+  const m = String(d.getMonth() + 1).padStart(2, "0");
+  const day = String(d.getDate()).padStart(2, "0");
+  return `${d.getFullYear()}-${m}-${day}`;
+};
+
 export const doneTodayCount = (projetos: Project[]): number =>
-  allTasks(projetos).filter((t) => t.doneAt && t.doneAt.slice(0, 10) === todayISO()).length;
+  allTasks(projetos).filter((t) => t.doneAt && localDay(t.doneAt) === todayISO()).length;
