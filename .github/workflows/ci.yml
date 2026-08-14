@@ -18,6 +18,12 @@ jobs:
 
       - run: npm ci
 
+      - name: Auditoria de dependências
+        run: npm audit --audit-level=high
+
+      - name: Sanidade de dependências
+        run: npm ls
+
       - name: Lint
         run: npm run lint
 
