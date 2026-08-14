@@ -1,17 +1,14 @@
 import { todayISO } from "./date";
 import type { Project, Status, Task } from "./types";
 
-export const allTasks = (projetos: Project[]): Task[] =>
-  projetos.flatMap((p) => p.sections.flatMap((s) => s.tasks));
-
-export function countByStatus(projetos: Project[]): Record<Status, number> {
-  const m: Record<Status, number> = { todo: 0, doing: 0, waiting: 0, done: 0 };
-  for (const t of allTasks(projetos)) m[t.status]++;
-  return m;
+export interface BoardStats {
+  byStatus: Record<Status, number>;
+  total: number;
+  done: number;
+  pendentes: number;
+  doneToday: number;
+  blocked: number;
 }
-
-export const blockedCount = (projetos: Project[]): number =>
-  allTasks(projetos).filter((t) => t.blocked).length;
 
 const localDay = (iso: string): string => {
   const d = new Date(iso);
@@ -20,5 +17,29 @@ const localDay = (iso: string): string => {
   return `${d.getFullYear()}-${m}-${day}`;
 };
 
-export const doneTodayCount = (projetos: Project[]): number =>
-  allTasks(projetos).filter((t) => t.doneAt && localDay(t.doneAt) === todayISO()).length;
+/** Derivada em uma única varredura: evita múltiplos allTasks()/filter() por render. */
+export function deriveStats(projetos: Project[]): BoardStats {
+  const byStatus: Record<Status, number> = { todo: 0, doing: 0, waiting: 0, done: 0 };
+  let total = 0;
+  let done = 0;
+  let doneToday = 0;
+  let blocked = 0;
+  const today = todayISO();
+  for (const p of projetos) {
+    for (const s of p.sections) {
+      for (const t of s.tasks) {
+        total++;
+        byStatus[t.status]++;
+        if (t.blocked) blocked++;
+        if (t.status === "done") {
+          done++;
+          if (t.doneAt && localDay(t.doneAt) === today) doneToday++;
+        }
+      }
+    }
+  }
+  return { byStatus, total, done, pendentes: total - done, doneToday, blocked };
+}
+
+export const allTasks = (projetos: Project[]): Task[] =>
+  projetos.flatMap((p) => p.sections.flatMap((s) => s.tasks));

@@ -4,6 +4,7 @@ import { describe, expect, it, vi } from "vitest";
 import { Stats } from "../../components/client/Stats";
 import { defaultFilters, type Filters } from "../../lib/filter";
 import { todayISO } from "../../lib/date";
+import { deriveStats, type BoardStats } from "../../lib/selectors";
 import type { Project } from "../../lib/types";
 
 const projeto = (tasks: Project["sections"][number]["tasks"]): Project => ({
@@ -25,17 +26,19 @@ const task = (over: Partial<Project["sections"][number]["tasks"][number]> = {}):
   ...over,
 });
 
+const statsOf = (projetos: Project[]): BoardStats => deriveStats(projetos);
+
 describe("Stats", () => {
   it("mostra total, pendentes, concluídas com % e feitas hoje", () => {
     render(
       <Stats
-        projetos={[
+        stats={statsOf([
           projeto([
             task(),
             task({ id: "t2", status: "doing" }),
             task({ id: "t3", status: "done", doneAt: todayISO() + "T09:00:00.000Z" }),
           ]),
-        ]}
+        ])}
         filters={defaultFilters}
         onTogglePrioSort={() => {}}
       />,
@@ -49,7 +52,7 @@ describe("Stats", () => {
   it("casa 0% sem tarefas concluídas", () => {
     render(
       <Stats
-        projetos={[projeto([task()])]}
+        stats={statsOf([projeto([task()])])}
         filters={defaultFilters}
         onTogglePrioSort={() => {}}
       />,
@@ -60,7 +63,7 @@ describe("Stats", () => {
   it("toggle de prioridade invoca callback", async () => {
     const onTogglePrioSort = vi.fn();
     render(
-      <Stats projetos={[projeto([])]} filters={defaultFilters} onTogglePrioSort={onTogglePrioSort} />,
+      <Stats stats={statsOf([projeto([])])} filters={defaultFilters} onTogglePrioSort={onTogglePrioSort} />,
     );
     await userEvent.click(screen.getByRole("button", { name: "↕ prio" }));
     expect(onTogglePrioSort).toHaveBeenCalledTimes(1);
@@ -68,20 +71,20 @@ describe("Stats", () => {
 
   it("destaca dica de kanban quando em kanban", () => {
     const f: Filters = { ...defaultFilters, view: "kanban" };
-    render(<Stats projetos={[]} filters={f} onTogglePrioSort={() => {}} />);
+    render(<Stats stats={statsOf([])} filters={f} onTogglePrioSort={() => {}} />);
     expect(screen.getByText(/kanban: arraste/i)).toBeTruthy();
   });
 
   it("expõe contadores por data-testid estável", () => {
     render(
       <Stats
-        projetos={[
+        stats={statsOf([
           projeto([
             task(),
             task({ id: "t2", status: "doing" }),
             task({ id: "t3", status: "done", doneAt: todayISO() + "T09:00:00.000Z" }),
           ]),
-        ]}
+        ])}
         filters={defaultFilters}
         onTogglePrioSort={() => {}}
       />,
