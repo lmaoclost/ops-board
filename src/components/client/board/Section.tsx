@@ -13,7 +13,6 @@ import { Input } from "@/components/ui/input";
 import { sortTasks } from "@/lib/filter";
 import type { TaskPatch, Task } from "@/lib/types";
 import { SortableTaskItem } from "@/components/client/dnd/SortableTaskItem";
-import { esc } from "@/lib/escape";
 
 export interface SectionTaskActions {
   onToggle: (tid: string) => void;
@@ -136,7 +135,7 @@ export function Section({ projectId, section, onToggleSection, onAddTask, onRena
         <div className="px-2 pb-2">
           {section.notes && (
             <div className="whitespace-pre-wrap break-words px-2 pb-2 text-[11.5px] leading-relaxed text-[var(--muted-text)]">
-              {esc(section.notes)}
+              {section.notes}
             </div>
           )}
           <div

@@ -38,4 +38,16 @@ describe("linkify", () => {
     const out = linkify('https://exemplo.com/" onmouseover="alert(1)');
     expect(out).not.toContain('onmouseover="');
   });
+
+  it("& não é duplicado no href (query params)", () => {
+    const out = linkify("https://exemplo.com/search?a=1&b=2");
+    expect(out).toContain('href="https://exemplo.com/search?a=1&amp;b=2"');
+    expect(out).not.toContain("&amp;amp;");
+  });
+
+  it("não vira link para svg/onload/data", () => {
+    expect(linkify("<svg onload=alert(1)>")).not.toContain("<a ");
+    expect(linkify("data:text/html,<script>x</script>")).not.toContain("<a ");
+    expect(linkify("vbscript:msgbox(1)")).not.toContain("<a ");
+  });
 });
