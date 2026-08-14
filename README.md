@@ -15,8 +15,12 @@ npm install
 npm run dev        # http://localhost:3000
 npm run lint       # eslint
 npm run typecheck  # tsc --noEmit
+npm test           # unit + componentes (vitest)
+npm run e2e        # e2e (playwright, chromium; instala navegador na 1ª vez)
 npm run build      # produção
 ```
+
+PRs passam por CI (`.github/workflows/ci.yml`): lint, typecheck, testes e e2e precisam estar verdes para merge.
 
 A versão clássica (HTML/CSS/JS vanilla) vive em `legacy/` como referência de paridade durante a migração.
 
