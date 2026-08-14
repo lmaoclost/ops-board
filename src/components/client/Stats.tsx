@@ -1,3 +1,4 @@
+import { Button } from "@/components/ui/button";
 import { countByStatus, doneTodayCount } from "@/lib/selectors";
 import type { Project } from "@/lib/types";
 import type { Filters } from "@/lib/filter";
@@ -44,14 +45,16 @@ export function Stats({ projetos, filters, onTogglePrioSort }: StatsProps) {
         <span className="text-[var(--dimmer)]">hoje</span>{" "}
         <span className="text-emerald-400">+{doneToday}</span>
       </span>
-      <button
+      <Button
         type="button"
+        variant={filters.prioSort ? "outline" : "ghost"}
+        size="xs"
         onClick={onTogglePrioSort}
-        className={`chip ${filters.prioSort ? "text-amber-400 border-current" : "text-[var(--muted-text)]"}`}
+        className={`text-[var(--muted-text)] ${filters.prioSort ? "border-current text-amber-400 bg-[var(--hover)]" : ""}`}
         title="ordenar por prioridade (P1 no topo)"
       >
         ↕ prio
-      </button>
+      </Button>
       <span className="ml-auto text-[var(--dim)] hidden sm:inline">{hint}</span>
     </div>
   );

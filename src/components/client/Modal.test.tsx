@@ -28,7 +28,7 @@ describe("Modal", () => {
     expect(screen.getByLabelText("título")).toBeTruthy();
     expect(screen.getByLabelText("prioridade")).toHaveValue("3");
     expect(screen.getByLabelText("nota")).toHaveValue("x");
-    expect(screen.getByLabelText("bloquear")).toBeChecked();
+    expect(screen.getByRole("switch", { name: "bloquear" })).toBeChecked();
   });
 
   it("submete valores coletados e edita campos", async () => {

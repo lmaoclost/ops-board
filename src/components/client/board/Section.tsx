@@ -1,6 +1,8 @@
 import { useState } from "react";
 import { useDroppable } from "@dnd-kit/core";
 import { Modal } from "@/components/client/Modal";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
 import type { TaskPatch, Task } from "@/lib/types";
 import { SortableTaskItem } from "@/components/client/dnd/SortableTaskItem";
 import { esc } from "@/lib/escape";
@@ -80,30 +82,32 @@ export function Section({ projectId, section, onToggleSection, onAddTask, onRena
         </span>
         {section.notes && <span className="ml-auto hidden text-[11px] text-[var(--dimmer)] sm:inline">notas</span>}
         <span className="ml-auto flex items-center gap-0.5">
-          <button
+          <Button
             type="button"
+            variant="ghost"
+            size="icon-xs"
             onClick={(e) => {
               e.stopPropagation();
               setRenaming(true);
             }}
-            className="iconbtn"
             title="renomear seção"
             aria-label="renomear seção"
           >
             ✎
-          </button>
-          <button
+          </Button>
+          <Button
             type="button"
+            variant="destructive"
+            size="icon-xs"
             onClick={(e) => {
               e.stopPropagation();
               onDelete();
             }}
-            className="iconbtn danger"
             title="excluir seção"
             aria-label="excluir seção"
           >
             ×
-          </button>
+          </Button>
         </span>
       </div>
 
@@ -134,7 +138,7 @@ export function Section({ projectId, section, onToggleSection, onAddTask, onRena
             <span className="text-emerald-400 font-bold text-xs" aria-hidden>
               &gt;
             </span>
-            <input
+            <Input
               value={draft}
               onChange={(e) => setDraft(e.target.value)}
               onKeyDown={(e) => {
@@ -144,7 +148,7 @@ export function Section({ projectId, section, onToggleSection, onAddTask, onRena
                   setDraft("");
                 }
               }}
-              className="input-line min-w-0 flex-1"
+              className="min-w-0 flex-1 bg-[var(--field)] border-[var(--line)]"
               placeholder="nova tarefa…"
               autoComplete="off"
               spellCheck={false}

@@ -1,5 +1,7 @@
 import { useState } from "react";
 import { Modal } from "@/components/client/Modal";
+import { Badge } from "@/components/ui/badge";
+import { Button } from "@/components/ui/button";
 import { esc } from "@/lib/escape";
 import type { Project, Status, TaskPatch } from "@/lib/types";
 import { Section, type SectionTaskActions as SectionLevelTaskActions } from "./Section";
@@ -47,37 +49,44 @@ export function ProjectCard({ project, collectActions, onAddSection, onRename, o
       <div className="flex items-center gap-2 border-b border-[var(--line)] px-3.5 py-2.5">
         <span className="font-bold text-emerald-400">##</span>
         <h2 className="break-words text-[13px] font-bold tracking-wide text-zinc-200">{esc(project.title)}</h2>
-        {project.blocked && <span className="tag-blocked">stuck</span>}
+        {project.blocked && (
+          <Badge variant="destructive" className="rounded-[4px] px-1.5 text-[10px] font-bold uppercase tracking-[0.08em]">
+            stuck
+          </Badge>
+        )}
         <span className="ml-auto flex items-center gap-1">
-          <button
+          <Button
             type="button"
+            variant="ghost"
+            size="icon-xs"
             onClick={() => setModal({ kind: "add-section" })}
-            className="iconbtn"
             title="adicionar seção"
             aria-label="adicionar seção"
           >
             +
-          </button>
-          <button
+          </Button>
+          <Button
             type="button"
+            variant="ghost"
+            size="icon-xs"
             onClick={() => setModal({ kind: "rename" })}
-            className="iconbtn"
             title="renomear projeto"
             aria-label="renomear projeto"
           >
             ✎
-          </button>
-          <button
+          </Button>
+          <Button
             type="button"
+            variant="destructive"
+            size="icon-xs"
             onClick={() => {
               if (window.confirm(`excluir projeto "${project.title}"?`)) onDelete(project.id);
             }}
-            className="iconbtn danger"
             title="excluir projeto"
             aria-label="excluir projeto"
           >
             ×
-          </button>
+          </Button>
         </span>
       </div>
 
