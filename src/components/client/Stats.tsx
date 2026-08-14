@@ -31,7 +31,7 @@ export function Stats({ projetos, filters, onTogglePrioSort }: StatsProps) {
     <div className="text-[11px] text-[var(--muted-text)] flex flex-wrap gap-x-4 gap-y-1" role="status">
       <span>
         <span className="text-[var(--dimmer)]">total</span>{" "}
-        <span className="font-bold text-zinc-200">{total}</span>
+        <span className="font-bold text-[var(--text)]">{total}</span>
       </span>
       <span>
         <span className="text-[var(--dimmer)]">pendentes</span>{" "}
