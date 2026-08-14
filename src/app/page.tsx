@@ -14,6 +14,8 @@ import { celebrate } from "@/lib/celebrate";
 import { exportJson, parseImport } from "@/lib/io";
 import { blockedCount, countByStatus } from "@/lib/selectors";
 import { useBoard, setStorageErrorHandler } from "@/lib/store";
+import { Dialog, DialogClose, DialogContent, DialogTitle } from "@/components/ui/dialog";
+import { Button } from "@/components/ui/button";
 
 export default function Home() {
   const projetos = useBoard((s) => s.projetos);
@@ -33,6 +35,8 @@ export default function Home() {
   const toggleSection = useBoard((s) => s.toggleSection);
   const moveTask = useBoard((s) => s.moveTask);
   const importState = useBoard((s) => s.importState);
+  const reset = useBoard((s) => s.reset);
+  const [confirmClearOpen, setConfirmClearOpen] = useState(false);
   const { filters, setQuery, toggleStatus, togglePrioSort, toggleView, clear } = useFilters();
   const { resolvedTheme, setTheme } = useTheme();
   const isDark = resolvedTheme !== "light";
@@ -168,6 +172,59 @@ export default function Home() {
           }}
         />
       </main>
+
+      <footer className="mx-auto max-w-5xl px-4 pb-8 text-center">
+        <button
+          type="button"
+          onClick={() => setConfirmClearOpen(true)}
+          className="text-[11px] text-[var(--dimmer)] underline underline-offset-2 hover:text-red-400 cursor-pointer"
+          title="remove todos os projetos deste navegador"
+        >
+          apagar todos os dados
+        </button>
+      </footer>
+
+      {confirmClearOpen && (
+        <Dialog open onOpenChange={(o) => { if (!o) setConfirmClearOpen(false); }}>
+          <DialogContent
+            showCloseButton={false}
+            className="!sm:max-w-[380px] gap-0 rounded-lg border border-[var(--line-soft)] bg-[var(--panel-2)] p-0 text-[var(--text)] shadow-xl"
+          >
+            <div className="flex items-center justify-between border-b border-[var(--line)] px-4 py-3">
+              <DialogTitle className="text-[13px] font-bold text-[var(--text)]">apagar todos os dados</DialogTitle>
+              <DialogClose
+                render={
+                  <Button type="button" variant="ghost" size="icon-xs" title="fechar" aria-label="fechar">
+                    ×
+                  </Button>
+                }
+              />
+            </div>
+            <div className="px-4 py-4 text-xs leading-relaxed text-[var(--muted-text)]">
+              Isso remove {projetos.length} projeto(s) deste navegador. Considere exportar um backup antes.
+              Esta ação não pode ser desfeita.
+            </div>
+            <div className="flex justify-end gap-2 px-4 pb-4">
+              <Button type="button" variant="ghost" size="xs" onClick={() => setConfirmClearOpen(false)}>
+                cancelar
+              </Button>
+              <Button
+                type="button"
+                variant="default"
+                size="sm"
+                className="bg-red-500 hover:bg-red-600"
+                onClick={() => {
+                  reset();
+                  setConfirmClearOpen(false);
+                  showToast("todos os dados apagados");
+                }}
+              >
+                apagar tudo
+              </Button>
+            </div>
+          </DialogContent>
+        </Dialog>
+      )}
 
       {newProjectOpen && (
         <Modal
