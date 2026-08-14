@@ -1,4 +1,5 @@
 import { useEffect, useRef, useState } from "react";
+import Link from "next/link";
 import { useMounted } from "@/hooks/useMounted";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -108,7 +109,7 @@ export function Topbar({
               type="button"
               variant="ghost"
               size="xs"
-              render={<a href="/privacidade" />}
+              render={<Link href="/privacidade" />}
               className="text-[var(--muted-text)] hover:text-[var(--text)]"
               title="política de privacidade"
             >

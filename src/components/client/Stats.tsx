@@ -1,25 +1,18 @@
 import { Button } from "@/components/ui/button";
 import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip";
-import { countByStatus, doneTodayCount } from "@/lib/selectors";
-import type { Project } from "@/lib/types";
+import type { BoardStats } from "@/lib/selectors";
 import type { Filters } from "@/lib/filter";
-import { todayISO } from "@/lib/date";
 
 interface StatsProps {
-  projetos: Project[];
+  stats: BoardStats;
   filters: Filters;
   onTogglePrioSort: () => void;
 }
 
 const fmtPct = (done: number, total: number) => (total ? Math.round((done / total) * 100) : 0);
 
-export function Stats({ projetos, filters, onTogglePrioSort }: StatsProps) {
-  const counts = countByStatus(projetos);
-  const done = counts.done;
-  const total = Object.values(counts).reduce((a, b) => a + b, 0);
-  const pendentes = total - done;
-  const doneToday = doneTodayCount(projetos);
-
+export function Stats({ stats, filters, onTogglePrioSort }: StatsProps) {
+  const { done, total, pendentes, doneToday } = stats;
   const pct = fmtPct(done, total);
 
   const hint =

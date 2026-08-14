@@ -1,6 +1,6 @@
 "use client";
 
-import { useCallback, useEffect, useRef, useState } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { Board } from "@/components/client/board/Board";
 import { FilterChips } from "@/components/client/FilterChips";
 import { Modal } from "@/components/client/Modal";
@@ -12,7 +12,7 @@ import { useShortcuts } from "@/hooks/useShortcuts";
 import { useTheme } from "next-themes";
 import { celebrate } from "@/lib/celebrate";
 import { exportJson, parseImport } from "@/lib/io";
-import { blockedCount, countByStatus } from "@/lib/selectors";
+import { deriveStats } from "@/lib/selectors";
 import { useBoard, setStorageErrorHandler } from "@/lib/store";
 import { Dialog, DialogClose, DialogContent, DialogTitle } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
@@ -58,11 +58,11 @@ export default function Home() {
     return () => setStorageErrorHandler(null);
   }, [showToast]);
 
-  const doneCount = countByStatus(projetos).done;
+  const stats = useMemo(() => deriveStats(projetos), [projetos]);
   useEffect(() => {
-    if (doneCount > prevDone.current) celebrate();
-    prevDone.current = doneCount;
-  }, [doneCount]);
+    if (stats.done > prevDone.current) celebrate();
+    prevDone.current = stats.done;
+  }, [stats.done]);
 
   const handleExport = useCallback(() => {
     const blob = new Blob([exportJson(projetos)], { type: "application/json" });
@@ -103,7 +103,7 @@ export default function Home() {
     { isModalOpen: () => newProjectOpen },
   );
 
-  const counts = countByStatus(projetos);
+  const counts = stats.byStatus;
 
   return (
     <div className="min-h-screen bg-[var(--bg)] text-[var(--text)]">
@@ -134,7 +134,7 @@ export default function Home() {
       <div className="mx-auto max-w-5xl px-4 pb-2">
         <FilterChips
           counts={counts}
-          blockedCount={blockedCount(projetos)}
+          blockedCount={stats.blocked}
           active={filters.status}
           filtering={!!filters.query || !!filters.status}
           onToggleStatus={toggleStatus}
@@ -142,7 +142,7 @@ export default function Home() {
         />
       </div>
       <div className="mx-auto max-w-5xl px-4 pb-2">
-        <Stats projetos={projetos} filters={filters} onTogglePrioSort={togglePrioSort} />
+        <Stats stats={stats} filters={filters} onTogglePrioSort={togglePrioSort} />
       </div>
 
       <main className="mx-auto max-w-5xl px-4 py-6">
