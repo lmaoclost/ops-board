@@ -49,7 +49,8 @@ export function resolveDrop(args: {
     const overTid = over.replace(/^task:/, "");
     const overRef = findTaskRef(projetos, overTid);
     if (!overRef) return { kind: "none" };
-    const destSec = projetos.find((p) => p.id === overRef.pid)?.sections.find((s) => s.id === overRef.sid)!;
+    const destSec = projetos.find((p) => p.id === overRef.pid)?.sections.find((s) => s.id === overRef.sid);
+    if (!destSec) return { kind: "none" };
     return {
       kind: "move",
       src,
