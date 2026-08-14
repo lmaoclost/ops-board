@@ -8,7 +8,7 @@ import { Stats } from "@/components/client/Stats";
 import { Topbar } from "@/components/client/Topbar";
 import { useFilters } from "@/hooks/useFilters";
 import { useShortcuts } from "@/hooks/useShortcuts";
-import { useTheme } from "@/hooks/useTheme";
+import { useTheme } from "next-themes";
 import { celebrate } from "@/lib/celebrate";
 import { exportJson, parseImport } from "@/lib/io";
 import { blockedCount, countByStatus } from "@/lib/selectors";
@@ -33,7 +33,9 @@ export default function Home() {
   const moveTask = useBoard((s) => s.moveTask);
   const importState = useBoard((s) => s.importState);
   const { filters, setQuery, toggleStatus, togglePrioSort, toggleView, clear } = useFilters();
-  const { isDark, toggle } = useTheme();
+  const { resolvedTheme, setTheme } = useTheme();
+  const isDark = resolvedTheme !== "light";
+  const toggleTheme = () => setTheme(isDark ? "light" : "dark");
   const [newProjectOpen, setNewProjectOpen] = useState(false);
   const [toast, setToast] = useState<string | null>(null);
   const toastTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
@@ -81,7 +83,7 @@ export default function Home() {
     {
       onNewProject: () => setNewProjectOpen(true),
       onToggleView: toggleView,
-      onToggleTheme: toggle,
+      onToggleTheme: toggleTheme,
       onHelp: () =>
         showToast("p projeto · n tarefa · 1-5 filtros · k kanban · t tema · ? ajuda · esc limpa"),
       onClearFilters: clear,
@@ -102,7 +104,7 @@ export default function Home() {
         onQueryChange={setQuery}
         onClearQuery={() => setQuery("")}
         onToggleView={toggleView}
-        onToggleTheme={toggle}
+        onToggleTheme={toggleTheme}
         onNewProject={() => setNewProjectOpen(true)}
         onExport={handleExport}
         onImport={() => fileRef.current?.click()}

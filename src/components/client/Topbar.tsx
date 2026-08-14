@@ -1,4 +1,5 @@
 import { useEffect, useRef, useState } from "react";
+import { useMounted } from "@/hooks/useMounted";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip";
@@ -33,6 +34,7 @@ export function Topbar({
 }: TopbarProps) {
   const [draft, setDraft] = useState(query);
   const timer = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const mounted = useMounted();
 
   useEffect(() => {
     // eslint-disable-next-line react-hooks/set-state-in-effect
@@ -52,7 +54,7 @@ export function Topbar({
     <header className="sticky top-0 z-30 border-b border-[var(--line)] bg-[var(--bg)]/95 backdrop-blur">
       <div className="mx-auto max-w-5xl px-4 py-3 flex flex-col gap-3 sm:flex-row sm:items-center sm:gap-6">
         <div className="flex items-center justify-between gap-4">
-          <h1 className="text-sm font-bold tracking-tight text-zinc-200">
+          <h1 className="text-sm font-bold tracking-tight text-[var(--text)]">
             ops<span className="text-emerald-400">/</span>board
           </h1>
           <div className="flex items-center gap-1.5">
@@ -66,7 +68,7 @@ export function Topbar({
                   onClick={onToggleTheme}
                   className="text-[var(--muted-text)] hover:text-[var(--text)]"
                 >
-                  {isDark ? "☾" : "☀"}
+                  {mounted ? (isDark ? "☾" : "☀") : "☾"}
                 </Button>
               }
             />

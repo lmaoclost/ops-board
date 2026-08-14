@@ -55,7 +55,7 @@ export function ProjectCard({ project, collectActions, onAddSection, onRename, o
     <section className="rounded-lg border border-[var(--line)] bg-[var(--panel)]">
       <div className="flex items-center gap-2 border-b border-[var(--line)] px-3.5 py-2.5">
         <span className="font-bold text-emerald-400">##</span>
-        <h2 className="break-words text-[13px] font-bold tracking-wide text-zinc-200">{esc(project.title)}</h2>
+        <h2 className="break-words text-[13px] font-bold tracking-wide text-[var(--text)]">{esc(project.title)}</h2>
         {project.blocked && (
           <Badge variant="destructive" className="rounded-[4px] px-1.5 text-[10px] font-bold uppercase tracking-[0.08em]">
             stuck
