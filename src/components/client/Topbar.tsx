@@ -104,6 +104,16 @@ export function Topbar({
             >
               ↑importar
             </Button>
+            <Button
+              type="button"
+              variant="ghost"
+              size="xs"
+              render={<a href="/privacidade" />}
+              className="text-[var(--muted-text)] hover:text-[var(--text)]"
+              title="política de privacidade"
+            >
+              privacidade
+            </Button>
             <Button type="button" variant="default" size="sm" onClick={onNewProject}>
               <span className="mr-1">+</span>projeto
             </Button>
