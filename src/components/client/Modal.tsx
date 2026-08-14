@@ -1,4 +1,10 @@
-import { useEffect, useId, useState } from "react";
+import { useId, useState } from "react";
+import {
+  Dialog,
+  DialogClose,
+  DialogContent,
+  DialogTitle,
+} from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -32,35 +38,22 @@ export function Modal({ title, fields, submitLabel = "salvar", onSubmit, onCance
     Object.fromEntries(fields.filter((f) => f.type === "checkbox").map((f) => [f.key, Boolean(f.value)])),
   );
 
-  useEffect(() => {
-    document.querySelector<HTMLElement>("[data-modal-first]")?.focus();
-    const onKey = (e: KeyboardEvent) => {
-      if (e.key === "Escape") onCancel();
-    };
-    window.addEventListener("keydown", onKey);
-    return () => window.removeEventListener("keydown", onKey);
-  }, [onCancel]);
-
   return (
-    <div
-      className="fixed inset-0 z-50 flex items-start justify-center bg-black/70 backdrop-blur-sm px-4 pt-[12vh]"
-      onMouseDown={(e) => {
-        if (e.target === e.currentTarget) onCancel();
-      }}
-    >
-      <div
-        role="dialog"
-        aria-modal="true"
-        aria-labelledby={titleId}
-        className="w-full max-w-[460px] rounded-lg border border-[var(--line-soft)] bg-[var(--panel-2)] shadow-xl"
+    <Dialog open onOpenChange={(o) => { if (!o) onCancel(); }}>
+      <DialogContent
+        showCloseButton={false}
+        initialFocus={() => document.querySelector<HTMLElement>("[data-modal-first]")}
+        className="!sm:max-w-[460px] gap-0 rounded-lg border border-[var(--line-soft)] bg-[var(--panel-2)] p-0 text-[var(--text)] shadow-xl"
       >
-        <div className="flex items-center justify-between px-4 py-3 border-b border-[var(--line)]">
-          <h3 id={titleId} className="text-[13px] font-bold text-zinc-200">
-            {title}
-          </h3>
-          <Button type="button" variant="ghost" size="icon-xs" onClick={onCancel} title="fechar" aria-label="fechar">
-            ×
-          </Button>
+        <div className="flex items-center justify-between border-b border-[var(--line)] px-4 py-3">
+          <DialogTitle className="text-[13px] font-bold text-[var(--text)]">{title}</DialogTitle>
+          <DialogClose
+            render={
+              <Button type="button" variant="ghost" size="icon-xs" title="fechar" aria-label="fechar">
+                ×
+              </Button>
+            }
+          />
         </div>
         <form
           onSubmit={(e) => {
@@ -94,14 +87,12 @@ export function Modal({ title, fields, submitLabel = "salvar", onSubmit, onCance
                     className="input-line min-h-[72px] w-full resize-y"
                   />
                 ) : f.type === "checkbox" ? (
-                  <div className="flex items-center gap-2">
-                    <Switch
-                      id={`field-${f.key}`}
-                      data-modal-first={i === 0 ? "" : undefined}
-                      checked={checks[f.key] ?? false}
-                      onCheckedChange={(c) => setChecks((prev) => ({ ...prev, [f.key]: c }))}
-                    />
-                  </div>
+                  <Switch
+                    id={`field-${f.key}`}
+                    data-modal-first={i === 0 ? "" : undefined}
+                    checked={checks[f.key] ?? false}
+                    onCheckedChange={(c) => setChecks((prev) => ({ ...prev, [f.key]: c }))}
+                  />
                 ) : f.type === "select" ? (
                   <select
                     id={`field-${f.key}`}
@@ -147,7 +138,7 @@ export function Modal({ title, fields, submitLabel = "salvar", onSubmit, onCance
             </Button>
           </div>
         </form>
-      </div>
-    </div>
+      </DialogContent>
+    </Dialog>
   );
 }

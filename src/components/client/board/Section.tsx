@@ -2,6 +2,13 @@ import { useState } from "react";
 import { useDroppable } from "@dnd-kit/core";
 import { Modal } from "@/components/client/Modal";
 import { Button } from "@/components/ui/button";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuSeparator,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
 import { Input } from "@/components/ui/input";
 import type { TaskPatch, Task } from "@/lib/types";
 import { SortableTaskItem } from "@/components/client/dnd/SortableTaskItem";
@@ -82,32 +89,44 @@ export function Section({ projectId, section, onToggleSection, onAddTask, onRena
         </span>
         {section.notes && <span className="ml-auto hidden text-[11px] text-[var(--dimmer)] sm:inline">notas</span>}
         <span className="ml-auto flex items-center gap-0.5">
-          <Button
-            type="button"
-            variant="ghost"
-            size="icon-xs"
-            onClick={(e) => {
-              e.stopPropagation();
-              setRenaming(true);
-            }}
-            title="renomear seção"
-            aria-label="renomear seção"
-          >
-            ✎
-          </Button>
-          <Button
-            type="button"
-            variant="destructive"
-            size="icon-xs"
-            onClick={(e) => {
-              e.stopPropagation();
-              onDelete();
-            }}
-            title="excluir seção"
-            aria-label="excluir seção"
-          >
-            ×
-          </Button>
+          <DropdownMenu>
+            <DropdownMenuTrigger
+              render={
+                <Button
+                  type="button"
+                  variant="ghost"
+                  size="icon-xs"
+                  onClick={(e) => e.stopPropagation()}
+                  title="ações da seção"
+                  aria-label="ações da seção"
+                >
+                  ⋯
+                </Button>
+              }
+            />
+            <DropdownMenuContent align="end" className="bg-[var(--panel-2)] text-[var(--text)]">
+              <DropdownMenuItem
+                className="text-xs"
+                onClick={(e) => {
+                  e.stopPropagation();
+                  setRenaming(true);
+                }}
+              >
+                renomear seção
+              </DropdownMenuItem>
+              <DropdownMenuSeparator className="bg-[var(--line)]" />
+              <DropdownMenuItem
+                variant="destructive"
+                className="text-xs"
+                onClick={(e) => {
+                  e.stopPropagation();
+                  onDelete();
+                }}
+              >
+                excluir seção
+              </DropdownMenuItem>
+            </DropdownMenuContent>
+          </DropdownMenu>
         </span>
       </div>
 

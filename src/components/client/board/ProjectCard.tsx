@@ -2,6 +2,13 @@ import { useState } from "react";
 import { Modal } from "@/components/client/Modal";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuSeparator,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
 import { esc } from "@/lib/escape";
 import type { Project, Status, TaskPatch } from "@/lib/types";
 import { Section, type SectionTaskActions as SectionLevelTaskActions } from "./Section";
@@ -55,38 +62,45 @@ export function ProjectCard({ project, collectActions, onAddSection, onRename, o
           </Badge>
         )}
         <span className="ml-auto flex items-center gap-1">
-          <Button
-            type="button"
-            variant="ghost"
-            size="icon-xs"
-            onClick={() => setModal({ kind: "add-section" })}
-            title="adicionar seção"
-            aria-label="adicionar seção"
-          >
-            +
-          </Button>
-          <Button
-            type="button"
-            variant="ghost"
-            size="icon-xs"
-            onClick={() => setModal({ kind: "rename" })}
-            title="renomear projeto"
-            aria-label="renomear projeto"
-          >
-            ✎
-          </Button>
-          <Button
-            type="button"
-            variant="destructive"
-            size="icon-xs"
-            onClick={() => {
-              if (window.confirm(`excluir projeto "${project.title}"?`)) onDelete(project.id);
-            }}
-            title="excluir projeto"
-            aria-label="excluir projeto"
-          >
-            ×
-          </Button>
+          <DropdownMenu>
+            <DropdownMenuTrigger
+              render={
+                <Button
+                  type="button"
+                  variant="ghost"
+                  size="icon-xs"
+                  title="ações do projeto"
+                  aria-label="ações do projeto"
+                >
+                  ⋯
+                </Button>
+              }
+            />
+            <DropdownMenuContent align="end" className="bg-[var(--panel-2)] text-[var(--text)]">
+              <DropdownMenuItem
+                className="text-xs"
+                onClick={() => setModal({ kind: "add-section" })}
+              >
+                adicionar seção
+              </DropdownMenuItem>
+              <DropdownMenuItem
+                className="text-xs"
+                onClick={() => setModal({ kind: "rename" })}
+              >
+                renomear projeto
+              </DropdownMenuItem>
+              <DropdownMenuSeparator className="bg-[var(--line)]" />
+              <DropdownMenuItem
+                variant="destructive"
+                className="text-xs"
+                onClick={() => {
+                  if (window.confirm(`excluir projeto "${project.title}"?`)) onDelete(project.id);
+                }}
+              >
+                excluir projeto
+              </DropdownMenuItem>
+            </DropdownMenuContent>
+          </DropdownMenu>
         </span>
       </div>
 

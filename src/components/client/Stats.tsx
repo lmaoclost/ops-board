@@ -1,4 +1,5 @@
 import { Button } from "@/components/ui/button";
+import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip";
 import { countByStatus, doneTodayCount } from "@/lib/selectors";
 import type { Project } from "@/lib/types";
 import type { Filters } from "@/lib/filter";
@@ -45,16 +46,22 @@ export function Stats({ projetos, filters, onTogglePrioSort }: StatsProps) {
         <span className="text-[var(--dimmer)]">hoje</span>{" "}
         <span className="text-emerald-400">+{doneToday}</span>
       </span>
-      <Button
-        type="button"
-        variant={filters.prioSort ? "outline" : "ghost"}
-        size="xs"
-        onClick={onTogglePrioSort}
-        className={`text-[var(--muted-text)] ${filters.prioSort ? "border-current text-amber-400 bg-[var(--hover)]" : ""}`}
-        title="ordenar por prioridade (P1 no topo)"
-      >
-        ↕ prio
-      </Button>
+      <Tooltip>
+        <TooltipTrigger
+          render={
+            <Button
+              type="button"
+              variant={filters.prioSort ? "outline" : "ghost"}
+              size="xs"
+              onClick={onTogglePrioSort}
+              className={`text-[var(--muted-text)] ${filters.prioSort ? "border-current text-amber-400 bg-[var(--hover)]" : ""}`}
+            >
+              ↕ prio
+            </Button>
+          }
+        />
+        <TooltipContent side="bottom">ordenar por prioridade (P1 no topo)</TooltipContent>
+      </Tooltip>
       <span className="ml-auto text-[var(--dim)] hidden sm:inline">{hint}</span>
     </div>
   );

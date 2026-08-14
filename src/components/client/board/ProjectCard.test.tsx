@@ -36,6 +36,10 @@ const base = (over: Partial<ProjectCardProps> = {}): ProjectCardProps => ({
 });
 
 describe("ProjectCard", () => {
+  const openMenu = async () => {
+    await userEvent.click(screen.getByLabelText("ações do projeto"));
+  };
+
   it("mostra título e seções", () => {
     render(<ProjectCard {...base()} />);
     expect(screen.getByText("Projeto Alfa")).toBeTruthy();
@@ -50,7 +54,8 @@ describe("ProjectCard", () => {
   it("adiciona seção via modal", async () => {
     const p = base();
     render(<ProjectCard {...p} />);
-    await userEvent.click(screen.getByTitle("adicionar seção"));
+    await openMenu();
+    await userEvent.click(await screen.findByRole("menuitem", { name: "adicionar seção" }));
     const input = await screen.findByLabelText("título");
     await userEvent.type(input, "dev{Enter}");
     expect(p.onAddSection).toHaveBeenCalledWith("dev");
@@ -59,7 +64,8 @@ describe("ProjectCard", () => {
   it("renomeia via modal preenchido", async () => {
     const p = base();
     render(<ProjectCard {...p} />);
-    await userEvent.click(screen.getByTitle("renomear projeto"));
+    await openMenu();
+    await userEvent.click(await screen.findByRole("menuitem", { name: "renomear projeto" }));
     const input = await screen.findByLabelText("título");
     await userEvent.clear(input);
     await userEvent.type(input, "Renomeado{Enter}");
@@ -70,7 +76,8 @@ describe("ProjectCard", () => {
     const confirmSpy = vi.spyOn(window, "confirm").mockReturnValue(true);
     const p = base();
     render(<ProjectCard {...p} />);
-    await userEvent.click(screen.getByTitle("excluir projeto"));
+    await openMenu();
+    await userEvent.click(await screen.findByRole("menuitem", { name: "excluir projeto" }));
     expect(confirmSpy).toHaveBeenCalled();
     expect(p.onDelete).toHaveBeenCalledWith("p1");
     confirmSpy.mockRestore();
@@ -80,7 +87,8 @@ describe("ProjectCard", () => {
     const confirmSpy = vi.spyOn(window, "confirm").mockReturnValue(false);
     const p = base();
     render(<ProjectCard {...p} />);
-    await userEvent.click(screen.getByTitle("excluir projeto"));
+    await openMenu();
+    await userEvent.click(await screen.findByRole("menuitem", { name: "excluir projeto" }));
     expect(p.onDelete).not.toHaveBeenCalled();
     confirmSpy.mockRestore();
   });
