@@ -43,7 +43,10 @@ export function TaskRow({ task, onToggle, onPrioCycle, onStatusChange, onEdit, o
   const done = task.status === "done";
 
   return (
-    <div className={`flex items-center gap-2.5 rounded-md px-2 py-1.5 transition-colors hover:bg-[var(--hover)] ${done ? "" : ""}`}>
+    <div
+      data-testid="task-row"
+      className={`flex items-center gap-2.5 rounded-md px-2 py-1.5 transition-colors hover:bg-[var(--hover)] ${done ? "" : ""}`}
+    >
       <button
         type="button"
         onClick={onToggle}
