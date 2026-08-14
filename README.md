@@ -31,6 +31,7 @@ A versão clássica (HTML/CSS/JS vanilla) vive em `legacy/` como referência de 
 - Aviso de privacidade no primeiro acesso + política em `/privacidade`
 - Lint bloqueia PII (e-mails, CPFs, telefones) em literais; CSP estrito; `npm audit` no CI
 - Documento de conformidade completo em [`docs/lgpd.md`](docs/lgpd.md) (mapeamento art. 18, base legal, retenção, incidentes)
+- Auditoria OWASP Top 10 em [`docs/security.md`](docs/security.md) (headers, XSS, integridade, componentes)
 
 ## Licença
 
