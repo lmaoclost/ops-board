@@ -14,6 +14,8 @@ test("responde com headers de segurança", async ({ request }) => {
   expect(h["referrer-policy"]).toBe("no-referrer");
   expect(h["permissions-policy"]).toContain("geolocation=()");
   expect(h["permissions-policy"]).toContain("microphone=()");
+  expect(h["strict-transport-security"]).toContain("max-age=63072000");
+  expect(h["x-powered-by"]).toBeUndefined();
 });
 
 test("nenhuma violação de CSP no fluxo principal", async ({ page }) => {
