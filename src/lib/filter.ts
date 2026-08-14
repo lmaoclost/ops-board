@@ -40,5 +40,5 @@ export function projMatches(p: Project, f: Filters): boolean {
 /** Ordena tarefas por prioridade (P1 no topo) quando prioSort; estável; não muta a origem. */
 export function sortTasks<T>(tasks: T[], prioSort: boolean, key: (t: T) => number): T[] {
   if (!prioSort) return tasks;
-  return [...tasks].sort((a, b) => key(a) - key(b));
+  return tasks.toSorted((a, b) => key(a) - key(b));
 }

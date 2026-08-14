@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { countByStatus, doneTodayCount, blockedCount } from "./selectors";
+import { deriveStats } from "./selectors";
 import type { Project } from "./types";
 
 const projetos: Project[] = [
@@ -34,19 +34,25 @@ const projetos: Project[] = [
 ];
 
 describe("selectors", () => {
-  it("conta por status", () => {
-    expect(countByStatus(projetos)).toEqual({ todo: 1, doing: 1, waiting: 0, done: 2 });
+  it("deriva contagens em uma passada", () => {
+    expect(deriveStats(projetos)).toEqual({
+      byStatus: { todo: 1, doing: 1, waiting: 0, done: 2 },
+      total: 4,
+      done: 2,
+      pendentes: 2,
+      doneToday: 1,
+      blocked: 1,
+    });
   });
 
-  it("conta bloqueadas", () => {
-    expect(blockedCount(projetos)).toBe(1);
-  });
-
-  it("conta concluídas hoje", () => {
-    expect(doneTodayCount(projetos)).toBe(1);
-  });
-
-  it("lista todas as tarefas achatadas", () => {
-    expect(projetos.flatMap((p) => p.sections.flatMap((s) => s.tasks))).toHaveLength(4);
+  it("vazio zera tudo", () => {
+    expect(deriveStats([])).toEqual({
+      byStatus: { todo: 0, doing: 0, waiting: 0, done: 0 },
+      total: 0,
+      done: 0,
+      pendentes: 0,
+      doneToday: 0,
+      blocked: 0,
+    });
   });
 });

@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
+import Link from "next/link";
 import { Button } from "@/components/ui/button";
 
 const NOTICE_KEY = "opsboard.notice-v1";
@@ -33,7 +34,7 @@ export function PrivacyNotice() {
         tudo pelos controles do quadro. Veja a política completa na página de privacidade.
       </p>
       <div className="mt-3 flex items-center justify-end gap-2">
-        <Button type="button" variant="ghost" size="xs" render={<a href="/privacidade" />}>
+        <Button type="button" variant="ghost" size="xs" render={<Link href="/privacidade" />}>
           política completa
         </Button>
         <Button type="button" variant="default" size="sm" onClick={dismiss}>
