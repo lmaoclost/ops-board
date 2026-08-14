@@ -28,7 +28,8 @@ export interface ProjectCardProps {
   };
   onAddSection: (title: string) => void;
   onRename: (id: string, title: string, blocked: boolean) => void;
-onDelete: (id: string) => void;
+  onDelete: (id: string) => void;
+  prioSort?: boolean;
 }
 
 type ModalState =
@@ -36,7 +37,7 @@ type ModalState =
   | { kind: "add-section" }
   | null;
 
-export function ProjectCard({ project, collectActions, onAddSection, onRename, onDelete }: ProjectCardProps) {
+export function ProjectCard({ project, collectActions, onAddSection, onRename, onDelete, prioSort }: ProjectCardProps) {
   const [modal, setModal] = useState<ModalState>(null);
   const actions = collectActions(project.id);
 
@@ -122,6 +123,7 @@ export function ProjectCard({ project, collectActions, onAddSection, onRename, o
             onRename={(title) => actions.sectionActions.onRename(s.id, title)}
             onDelete={() => actions.sectionActions.onDelete(s.id)}
             taskActions={secTaskActions}
+            prioSort={prioSort}
           />
         );
       })}

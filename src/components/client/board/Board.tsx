@@ -115,7 +115,7 @@ export function Board({ projetos, filters, onNewProject, projectActions, section
       </div>
     );
   } else if (filters.view === "kanban") {
-    content = <Kanban projetos={filtered} />;
+    content = <Kanban projetos={filtered} prioSort={filters.prioSort} />;
   } else {
     content = (
       <div className="fade-in flex flex-col gap-4">
@@ -127,6 +127,7 @@ export function Board({ projetos, filters, onNewProject, projectActions, section
             onAddSection={(title) => projectActions.onAddSection(p.id, title)}
             onRename={(id, title, blocked) => projectActions.onRename(id, title, blocked)}
             onDelete={(id) => projectActions.onDelete(id)}
+            prioSort={filters.prioSort}
           />
         ))}
       </div>
