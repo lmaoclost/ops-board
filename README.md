@@ -27,8 +27,10 @@ A versão clássica (HTML/CSS/JS vanilla) vive em `legacy/` como referência de 
 ## Privacidade (LGPD)
 
 - Sem seed, sem telemetria, sem terceiros processando dados
-- Export exporta tudo; Reset apaga tudo (direitos do titular)
-- Ver `docs/` (a partir dos issues de conformidade)
+- Export exporta tudo; `apagar todos os dados` (rodapé) apaga tudo (direitos do titular)
+- Aviso de privacidade no primeiro acesso + política em `/privacidade`
+- Lint bloqueia PII (e-mails, CPFs, telefones) em literais; CSP estrito; `npm audit` no CI
+- Documento de conformidade completo em [`docs/lgpd.md`](docs/lgpd.md) (mapeamento art. 18, base legal, retenção, incidentes)
 
 ## Licença
 
