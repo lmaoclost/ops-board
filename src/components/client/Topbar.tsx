@@ -1,4 +1,6 @@
 import { useEffect, useRef, useState } from "react";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
 import type { View } from "@/lib/filter";
 
 interface TopbarProps {
@@ -53,31 +55,49 @@ export function Topbar({
             ops<span className="text-emerald-400">/</span>board
           </h1>
           <div className="flex items-center gap-1.5">
-            <button
+            <Button
               type="button"
+              variant="ghost"
+              size="xs"
               onClick={onToggleTheme}
-              className="chip"
+              className="text-[var(--muted-text)] hover:text-[var(--text)]"
               title="alternar tema claro/escuro (t)"
             >
               {isDark ? "☾" : "☀"}
-            </button>
-            <button
+            </Button>
+            <Button
               type="button"
+              variant="ghost"
+              size="xs"
               onClick={onToggleView}
-              className="chip"
+              className="text-[var(--muted-text)] hover:text-[var(--text)]"
               title="alternar lista/kanban (k)"
             >
               {view === "list" ? "kanban" : "lista"}
-            </button>
-            <button type="button" onClick={onExport} className="chip" title="exportar JSON (backup)">
+            </Button>
+            <Button
+              type="button"
+              variant="ghost"
+              size="xs"
+              onClick={onExport}
+              className="text-[var(--muted-text)] hover:text-[var(--text)]"
+              title="exportar JSON (backup)"
+            >
               ↓exportar
-            </button>
-            <button type="button" onClick={onImport} className="chip" title="importar JSON">
+            </Button>
+            <Button
+              type="button"
+              variant="ghost"
+              size="xs"
+              onClick={onImport}
+              className="text-[var(--muted-text)] hover:text-[var(--text)]"
+              title="importar JSON"
+            >
               ↑importar
-            </button>
-            <button type="button" onClick={onNewProject} className="chip text-emerald-400 border-[var(--line-soft)]">
-              <span className="mr-1 text-emerald-400">+</span>projeto
-            </button>
+            </Button>
+            <Button type="button" variant="default" size="sm" onClick={onNewProject}>
+              <span className="mr-1">+</span>projeto
+            </Button>
           </div>
         </div>
 
@@ -86,10 +106,10 @@ export function Topbar({
             <span className="text-emerald-400 font-bold text-xs" aria-hidden>
               &gt;
             </span>
-            <input
+            <Input
               value={draft}
               onChange={(e) => setDraft(e.target.value)}
-              className="w-full flex-1 min-w-0 bg-[var(--field)] border border-[var(--line)] rounded-md px-2.5 py-1.5 text-xs text-[var(--text)] outline-none focus:border-emerald-500/50"
+              className="w-full flex-1 min-w-0 bg-[var(--field)] border-[var(--line)] pr-7 text-xs"
               type="search"
               placeholder="grep tarefas..."
               autoComplete="off"

@@ -1,3 +1,5 @@
+import { Badge } from "@/components/ui/badge";
+import { Button } from "@/components/ui/button";
 import { isDueSoon, isOverdue } from "@/lib/date";
 import { linkify } from "@/lib/escape";
 import { fmtDate } from "@/lib/date";
@@ -48,7 +50,11 @@ export function TaskRow({ task, onToggle, onPrioCycle, onStatusChange, onEdit, o
         />
         {task.note && <span className="text-[var(--dim)]"> — {linkify(task.note)}</span>}
       </span>
-      {task.blocked && <span className="tag-blocked">bloqueada</span>}
+      {task.blocked && (
+        <Badge variant="destructive" className="rounded-[4px] px-1.5 text-[10px] font-bold uppercase tracking-[0.08em]">
+          bloqueada
+        </Badge>
+      )}
       <button
         type="button"
         onClick={onPrioCycle}
@@ -57,17 +63,23 @@ export function TaskRow({ task, onToggle, onPrioCycle, onStatusChange, onEdit, o
       >
         {PRIO_KEYS[task.prio]}
       </button>
-      {task.due && (
-        overdue ? (
-          <span className="tag-overdue" title={`vencimento ${task.due}`}>
+      {task.due &&
+        (overdue ? (
+          <Badge
+            variant="destructive"
+            className="rounded-[4px] px-1.5 text-[10px] font-bold uppercase tracking-[0.08em]"
+            title={`vencimento ${task.due}`}
+          >
             {fmtDate(task.due)} vencida
-          </span>
+          </Badge>
         ) : (
-          <span className={`shrink-0 text-[10.5px] font-semibold ${dueSoon ? "text-amber-400" : "text-[var(--muted-text)]"}`} title={`vencimento ${task.due}`}>
+          <span
+            className={`shrink-0 text-[10.5px] font-semibold ${dueSoon ? "text-amber-400" : "text-[var(--muted-text)]"}`}
+            title={`vencimento ${task.due}`}
+          >
             {fmtDate(task.due)}
           </span>
-        )
-      )}
+        ))}
       <select
         aria-label="status"
         value={task.status}
@@ -81,12 +93,19 @@ export function TaskRow({ task, onToggle, onPrioCycle, onStatusChange, onEdit, o
           </option>
         ))}
       </select>
-      <button type="button" onClick={onEdit} className="iconbtn" title="editar" aria-label="editar">
+      <Button type="button" variant="ghost" size="icon-xs" onClick={onEdit} title="editar" aria-label="editar">
         ✎
-      </button>
-      <button type="button" onClick={onDelete} className="iconbtn danger" title="excluir" aria-label="excluir">
+      </Button>
+      <Button
+        type="button"
+        variant="destructive"
+        size="icon-xs"
+        onClick={onDelete}
+        title="excluir"
+        aria-label="excluir"
+      >
         ×
-      </button>
+      </Button>
     </div>
   );
 }

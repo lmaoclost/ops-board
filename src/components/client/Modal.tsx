@@ -1,4 +1,8 @@
-import { useEffect, useId } from "react";
+import { useEffect, useId, useState } from "react";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import { Switch } from "@/components/ui/switch";
 
 export interface ModalFieldOption {
   value: string | number;
@@ -24,6 +28,9 @@ interface ModalProps {
 
 export function Modal({ title, fields, submitLabel = "salvar", onSubmit, onCancel }: ModalProps) {
   const titleId = useId();
+  const [checks, setChecks] = useState<Record<string, boolean>>(() =>
+    Object.fromEntries(fields.filter((f) => f.type === "checkbox").map((f) => [f.key, Boolean(f.value)])),
+  );
 
   useEffect(() => {
     document.querySelector<HTMLElement>("[data-modal-first]")?.focus();
@@ -51,18 +58,20 @@ export function Modal({ title, fields, submitLabel = "salvar", onSubmit, onCance
           <h3 id={titleId} className="text-[13px] font-bold text-zinc-200">
             {title}
           </h3>
-          <button type="button" onClick={onCancel} className="iconbtn" title="fechar" aria-label="fechar">
+          <Button type="button" variant="ghost" size="icon-xs" onClick={onCancel} title="fechar" aria-label="fechar">
             ×
-          </button>
+          </Button>
         </div>
         <form
           onSubmit={(e) => {
             e.preventDefault();
             const values: Record<string, string | boolean> = {};
             for (const f of fields) {
-              const input = document.getElementById(`field-${f.key}`) as HTMLInputElement | null;
-              if (f.type === "checkbox") values[f.key] = input?.checked ?? false;
-              else values[f.key] = input?.value ?? "";
+              if (f.type === "checkbox") values[f.key] = checks[f.key] ?? false;
+              else {
+                const input = document.getElementById(`field-${f.key}`) as HTMLInputElement | null;
+                values[f.key] = input?.value ?? "";
+              }
             }
             onSubmit(values);
           }}
@@ -70,12 +79,12 @@ export function Modal({ title, fields, submitLabel = "salvar", onSubmit, onCance
           <div className="flex flex-col gap-3 px-4 py-4">
             {fields.map((f, i) => (
               <div key={f.key}>
-                <label
+                <Label
                   htmlFor={`field-${f.key}`}
                   className="mb-1.5 block text-[11px] font-semibold uppercase tracking-wider text-[var(--muted-text)]"
                 >
                   {f.label}
-                </label>
+                </Label>
                 {f.type === "textarea" ? (
                   <textarea
                     id={`field-${f.key}`}
@@ -85,16 +94,14 @@ export function Modal({ title, fields, submitLabel = "salvar", onSubmit, onCance
                     className="input-line min-h-[72px] w-full resize-y"
                   />
                 ) : f.type === "checkbox" ? (
-                  <label className="flex items-center gap-2 text-xs text-[var(--text)] cursor-pointer select-none">
-                    <input
+                  <div className="flex items-center gap-2">
+                    <Switch
                       id={`field-${f.key}`}
                       data-modal-first={i === 0 ? "" : undefined}
-                      type="checkbox"
-                      defaultChecked={Boolean(f.value)}
-                      className="accent-emerald-400"
+                      checked={checks[f.key] ?? false}
+                      onCheckedChange={(c) => setChecks((prev) => ({ ...prev, [f.key]: c }))}
                     />
-                    {f.label}
-                  </label>
+                  </div>
                 ) : f.type === "select" ? (
                   <select
                     id={`field-${f.key}`}
@@ -117,7 +124,7 @@ export function Modal({ title, fields, submitLabel = "salvar", onSubmit, onCance
                     className="input-line w-full"
                   />
                 ) : (
-                  <input
+                  <Input
                     id={`field-${f.key}`}
                     data-modal-first={i === 0 ? "" : undefined}
                     type="text"
@@ -125,19 +132,19 @@ export function Modal({ title, fields, submitLabel = "salvar", onSubmit, onCance
                     placeholder={f.placeholder}
                     autoComplete="off"
                     spellCheck={false}
-                    className="input-line w-full"
+                    className="bg-[var(--field)]"
                   />
                 )}
               </div>
             ))}
           </div>
           <div className="flex justify-end gap-2 px-4 pb-3.5">
-            <button type="button" onClick={onCancel} className="btn">
+            <Button type="button" variant="ghost" size="sm" onClick={onCancel}>
               cancelar
-            </button>
-            <button type="submit" className="btn-primary">
+            </Button>
+            <Button type="submit" variant="default" size="sm">
               {submitLabel}
-            </button>
+            </Button>
           </div>
         </form>
       </div>

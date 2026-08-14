@@ -1,3 +1,4 @@
+import { Button } from "@/components/ui/button";
 import type { StatusFilter } from "@/lib/filter";
 import type { Status } from "@/lib/types";
 import { STATUS_LABEL } from "@/lib/types";
@@ -32,27 +33,32 @@ export function FilterChips({ counts, blockedCount, active, filtering, onToggleS
         const count = key === "blocked" ? blockedCount : counts[key as Status];
         const isActive = active === key;
         return (
-          <button
+          <Button
             key={key}
             type="button"
+            variant={isActive ? "outline" : "ghost"}
+            size="xs"
             onClick={() => onToggleStatus(key)}
             title={`filtra: ${key === "blocked" ? "bloqueadas" : STATUS_LABEL[key as Status]}`}
-            className={`chip ${cls} ${isActive ? "border-current" : ""} ${isActive ? "" : "opacity-60"}`}
+            aria-pressed={isActive}
+            className={`${cls} ${isActive ? "border-current bg-[var(--hover)]" : "opacity-60"}`}
           >
             {label}
             <span className="opacity-60">{count}</span>
-          </button>
+          </Button>
         );
       })}
       {filtering && (
-        <button
+        <Button
           type="button"
+          variant="ghost"
+          size="xs"
           onClick={onClear}
-          className="chip font-bold text-zinc-400"
+          className="font-bold text-[var(--muted-text)]"
           title="limpar filtros (status + busca)"
         >
           ✕ limpar
-        </button>
+        </Button>
       )}
     </div>
   );
