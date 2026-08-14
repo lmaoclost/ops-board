@@ -147,3 +147,74 @@ describe("board store", () => {
     expect(store.getState().projetos).toEqual(novo);
   });
 });
+
+describe("persistência", () => {
+  beforeEach(() => {
+    localStorage.clear();
+  });
+
+  it("rehidrata estado salvo pelo próprio app", () => {
+    localStorage.setItem(
+      "opsboard.v1",
+      JSON.stringify({
+        state: { projetos: [{ id: "p1", title: "P", blocked: false, sections: [{ id: "s1", title: "geral", notes: "", collapsed: false, tasks: [{ id: "t1", text: "x", status: "todo", note: "", blocked: false, prio: 3, due: "", doneAt: null }] }] }] },
+        version: 2,
+      }),
+    );
+    const s = createBoardStore();
+    expect(s.getState().projetos).toHaveLength(1);
+    expect(s.getState().projetos[0].sections[0].tasks[0].text).toBe("x");
+  });
+
+  it("migra esquema v1 sem perder dados (defaults aplicados)", () => {
+    localStorage.setItem(
+      "opsboard.v1",
+      JSON.stringify({
+        state: {
+          projetos: [
+            {
+              id: "p1",
+              title: "P",
+              blocked: false,
+              sections: [
+                {
+                  id: "s1",
+                  title: "geral",
+                  tasks: [{ id: "t1", text: "x", status: "urgente", prio: 9, blocked: "sim", due: 5, note: 42, doneAt: "2026-01-01T00:00:00.000Z" }],
+                },
+              ],
+            },
+          ],
+        },
+        version: 1,
+      }),
+    );
+    const s = createBoardStore();
+    expect(s.getState().projetos).toHaveLength(1);
+    const t = s.getState().projetos[0].sections[0].tasks[0];
+    expect(t.text).toBe("x");
+    expect(t.status).toBe("todo");
+    expect(t.prio).toBe(3);
+    expect(t.blocked).toBe(true);
+    expect(t.due).toBe("5");
+    expect(t.note).toBe("42");
+    expect(t.doneAt).toBe("2026-01-01T00:00:00.000Z");
+  });
+
+  it("estado vazio volta com projetos vazios", () => {
+    const s = createBoardStore();
+    expect(s.getState().projetos).toEqual([]);
+  });
+
+  it("v1 com lista vazia normaliza sem quebrar", () => {
+    localStorage.setItem("opsboard.v1", JSON.stringify({ state: { projetos: [] }, version: 1 }));
+    const s = createBoardStore();
+    expect(s.getState().projetos).toEqual([]);
+  });
+
+  it("v1 sem campo projetos retorna lista vazia", () => {
+    localStorage.setItem("opsboard.v1", JSON.stringify({ state: { foo: 1 }, version: 1 }));
+    const s = createBoardStore();
+    expect(s.getState().projetos).toEqual([]);
+  });
+});

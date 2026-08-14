@@ -66,6 +66,38 @@ describe("resolveDrop", () => {
     const r = resolveDrop({ projetos: [projeto()], active: "task:t1", over: "sec:pp:xx" });
     expect(r.kind).toBe("none");
   });
+
+  it("retorna none para tarefa ativa inexistente", () => {
+    const r = resolveDrop({ projetos: [projeto()], active: "task:fantasma", over: "task:t1" });
+    expect(r.kind).toBe("none");
+  });
+
+it("retorna none quando o alvo task não existe", () => {
+    const r = resolveDrop({ projetos: [projeto()], active: "task:t1", over: "task:fantasma" });
+    expect(r.kind).toBe("none");
+  });
+
+  it("move para outra seção no índice do alvo", () => {
+    const comTarefaNaSegunda = projeto({
+      sections: [
+        projeto().sections[0],
+        { id: "s2", title: "dev", notes: "", collapsed: false, tasks: [
+          { id: "t4", text: "d", status: "todo", note: "", blocked: false, prio: 3, due: "", doneAt: null },
+        ] },
+      ],
+    });
+    const r = resolveDrop({ projetos: [comTarefaNaSegunda], active: "task:t1", over: "task:t4" });
+    expect(r.kind).toBe("move");
+    if (r.kind !== "move") return;
+    expect(r.dest).toEqual({ pid: "p1", sid: "s2" });
+    expect(r.index).toBe(0);
+  });
+});
+
+  it("retorna none quando a seção de origem sumiu", () => {
+    const r = resolveDrop({ projetos: [projeto()], active: "task:t1", over: "boss:xyz" });
+    expect(r.kind).toBe("none");
+  });
 });
 
 describe("insertIndex", () => {
