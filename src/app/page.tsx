@@ -4,6 +4,7 @@ import { useCallback, useEffect, useRef, useState } from "react";
 import { Board } from "@/components/client/board/Board";
 import { FilterChips } from "@/components/client/FilterChips";
 import { Modal } from "@/components/client/Modal";
+import { PrivacyNotice } from "@/components/client/PrivacyNotice";
 import { Stats } from "@/components/client/Stats";
 import { Topbar } from "@/components/client/Topbar";
 import { useFilters } from "@/hooks/useFilters";
@@ -181,6 +182,8 @@ export default function Home() {
           onCancel={() => setNewProjectOpen(false)}
         />
       )}
+
+      <PrivacyNotice />
 
       {toast && (
         <div className="fixed bottom-5 left-1/2 -translate-x-1/2 z-50 bg-[var(--panel-3)] border border-zinc-600 text-[var(--text)] text-xs px-4 py-2 rounded-md shadow-lg">
