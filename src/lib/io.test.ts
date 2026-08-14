@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { exportJson, parseImport } from "./io";
+import { exportJson, MAX_BYTES, MAX_PROJECTS, MAX_TASKS, parseImport } from "./io";
 import type { Project } from "./types";
 
 const projeto = (): Project => ({
@@ -78,5 +78,59 @@ describe("parseImport", () => {
 
   it("formata JSON com indentação", () => {
     expect(exportJson([projeto()])).toContain("\n  ");
+  });
+
+  it("rejeita prio fora de 1..3", () => {
+    for (const prio of [0, 4, 1.5]) {
+      const raw = JSON.parse(exportJson([projeto()]));
+      raw.projetos[0].sections[0].tasks[0].prio = prio;
+      expect(() => parseImport(JSON.stringify(raw))).toThrow(/inválido/i);
+    }
+  });
+
+  it("rejeita tarefa sem campos obrigatórios (note/doneAt)", () => {
+    const raw = JSON.parse(exportJson([projeto()]));
+    delete raw.projetos[0].sections[0].tasks[0].doneAt;
+    expect(() => parseImport(JSON.stringify(raw))).toThrow(/inválido/i);
+  });
+
+  it("rejeita IDs duplicados (projeto, seção, tarefa)", () => {
+    const raw = JSON.parse(exportJson([projeto()]));
+    raw.projetos[0].sections.push(raw.projetos[0].sections[0]);
+    expect(() => parseImport(JSON.stringify(raw))).toThrow(/duplicado/i);
+
+    const raw2 = JSON.parse(exportJson([projeto(), projeto()]));
+    expect(() => parseImport(JSON.stringify(raw2))).toThrow(/duplicado/i);
+
+    const raw3 = JSON.parse(exportJson([projeto()]));
+    raw3.projetos[0].sections[0].tasks.push(raw3.projetos[0].sections[0].tasks[0]);
+    expect(() => parseImport(JSON.stringify(raw3))).toThrow(/duplicado/i);
+  });
+
+  it("rejeita arquivo acima de 2 MB", () => {
+    const big = JSON.stringify({ projetos: [] }).padEnd(MAX_BYTES + 1, " ");
+    expect(() => parseImport(big)).toThrow(/muito grande/i);
+  });
+
+  it("rejeita número de nós acima dos limites", () => {
+    const manyTasks = JSON.parse(exportJson([projeto()]));
+    manyTasks.projetos[0].sections[0].tasks = Array.from({ length: MAX_TASKS + 1 }, (_, i) => ({
+      ...manyTasks.projetos[0].sections[0].tasks[0],
+      id: `t${i}`,
+    }));
+    expect(() => parseImport(JSON.stringify(manyTasks))).toThrow(/limite/i);
+
+    const manyProjects = Array.from({ length: MAX_PROJECTS + 1 }, (_, i) => {
+      const p = JSON.parse(exportJson([projeto()])).projetos[0];
+      return { ...p, id: `p${i}` };
+    });
+    expect(() => parseImport(JSON.stringify(manyProjects))).toThrow(/limite/i);
+  });
+
+  it("exporta apenas projetos (sem outros campos de estado)", () => {
+    const out = exportJson([projeto()]);
+    expect(out).toContain('"projetos"');
+    expect(out).not.toContain('"filtros"');
+    expect(out).not.toContain("version");
   });
 });

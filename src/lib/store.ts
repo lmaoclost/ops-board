@@ -4,6 +4,24 @@ import { migrateLegacy, normalizeState, SCHEMA_VERSION } from "./migrate";
 import type { Prio, Project, Section, Status, TaskPatch } from "./types";
 import { uid } from "./uid";
 
+let storageErrorHandler: (() => void) | null = null;
+
+export function setStorageErrorHandler(fn: (() => void) | null) {
+  storageErrorHandler = fn;
+}
+
+const safeLocalStorage = {
+  getItem: (name: string) => localStorage.getItem(name),
+  setItem: (name: string, value: string) => {
+    try {
+      localStorage.setItem(name, value);
+    } catch {
+      storageErrorHandler?.();
+    }
+  },
+  removeItem: (name: string) => localStorage.removeItem(name),
+};
+
 interface BoardStore {
   projetos: Project[];
   addProject: (title: string) => void;
@@ -292,7 +310,7 @@ export function createBoardStore(initial: Project[] = []) {
       {
         name: "opsboard.v1",
         version: SCHEMA_VERSION,
-        storage: createJSONStorage(() => localStorage),
+        storage: createJSONStorage(() => safeLocalStorage),
         migrate: (persisted, version) => {
           if (version < SCHEMA_VERSION) {
             const legacy = migrateLegacy(persisted);

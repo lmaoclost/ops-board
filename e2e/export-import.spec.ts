@@ -92,6 +92,49 @@ test("import de arquivo corrompido mostra erro e não muda nada", async ({ page 
   await expect(page.getByText("nenhum projeto na fila.")).toBeVisible();
 });
 
+test("import de JSON válido com estrutura inválida mostra erro claro", async ({ page }) => {
+  await page.goto("/");
+  const injetado = {
+    projetos: [
+      {
+        id: "p1",
+        title: "alpha",
+        blocked: false,
+        sections: [
+          {
+            id: "s1",
+            title: "geral",
+            notes: "",
+            collapsed: false,
+            tasks: [{ id: "t1", text: "x", status: "todo", prio: "urgente", note: "", blocked: false, due: "", doneAt: null }],
+          },
+        ],
+      },
+    ],
+  };
+  await page.locator('input[type="file"]').setInputFiles({
+    name: "injetado.json",
+    mimeType: "application/json",
+    buffer: Buffer.from(JSON.stringify(injetado)),
+  });
+
+  await expect(page.getByText("dados inválidos: estrutura de projeto, seção ou tarefa incorreta")).toBeVisible();
+  await expect(page.getByText("nenhum projeto na fila.")).toBeVisible();
+});
+
+test("import de arquivo gigante é rejeitado sem quebrar o estado", async ({ page }) => {
+  await page.goto("/");
+  const gigante = JSON.stringify({ projetos: [] }).padEnd(2 * 1024 * 1024 + 1, " ");
+  await page.locator('input[type="file"]').setInputFiles({
+    name: "gigante.json",
+    mimeType: "application/json",
+    buffer: Buffer.from(gigante),
+  });
+
+  await expect(page.getByText("arquivo muito grande (máx. 2 MB)")).toBeVisible();
+  await expect(page.getByText("nenhum projeto na fila.")).toBeVisible();
+});
+
 test("migra localStorage v1 → v2 no carregamento", async ({ page }) => {
   const v1 = {
     state: {

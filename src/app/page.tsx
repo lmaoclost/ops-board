@@ -12,7 +12,7 @@ import { useTheme } from "next-themes";
 import { celebrate } from "@/lib/celebrate";
 import { exportJson, parseImport } from "@/lib/io";
 import { blockedCount, countByStatus } from "@/lib/selectors";
-import { useBoard } from "@/lib/store";
+import { useBoard, setStorageErrorHandler } from "@/lib/store";
 
 export default function Home() {
   const projetos = useBoard((s) => s.projetos);
@@ -42,11 +42,16 @@ export default function Home() {
   const fileRef = useRef<HTMLInputElement | null>(null);
   const prevDone = useRef(0);
 
-  const showToast = (msg: string) => {
+  const showToast = useCallback((msg: string) => {
     setToast(msg);
     if (toastTimer.current) clearTimeout(toastTimer.current);
     toastTimer.current = setTimeout(() => setToast(null), 1600);
-  };
+  }, []);
+
+  useEffect(() => {
+    setStorageErrorHandler(() => showToast("armazenamento cheio: alterações podem não ser salvas"));
+    return () => setStorageErrorHandler(null);
+  }, [showToast]);
 
   const doneCount = countByStatus(projetos).done;
   useEffect(() => {
