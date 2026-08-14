@@ -1,5 +1,5 @@
-import { beforeEach, describe, expect, it } from "vitest";
-import { createBoardStore } from "./store";
+import { beforeEach, describe, expect, it, vi } from "vitest";
+import { createBoardStore, setStorageErrorHandler } from "./store";
 import type { Project } from "./types";
 
 const seedProjeto = (): Project => ({
@@ -216,5 +216,22 @@ describe("persistência", () => {
     localStorage.setItem("opsboard.v1", JSON.stringify({ state: { foo: 1 }, version: 1 }));
     const s = createBoardStore();
     expect(s.getState().projetos).toEqual([]);
+  });
+});
+describe("storage error handler (quota)", () => {
+  it("notifica quando setItem falha (quota excedida)", () => {
+    const store = createBoardStore();
+    const handler = vi.fn();
+    setStorageErrorHandler(handler);
+    const spy = vi.spyOn(Storage.prototype, "setItem").mockImplementation(() => {
+      throw new DOMException("quota", "QuotaExceededError");
+    });
+    try {
+      store.setState({ projetos: [seedProjeto()] });
+    } finally {
+      spy.mockRestore();
+      setStorageErrorHandler(null);
+    }
+    expect(handler).toHaveBeenCalled();
   });
 });
