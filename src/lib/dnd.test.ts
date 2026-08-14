@@ -92,7 +92,6 @@ it("retorna none quando o alvo task não existe", () => {
     expect(r.dest).toEqual({ pid: "p1", sid: "s2" });
     expect(r.index).toBe(0);
   });
-});
 
   it("retorna none quando a seção de origem sumiu", () => {
     const r = resolveDrop({ projetos: [projeto()], active: "task:t1", over: "boss:xyz" });
