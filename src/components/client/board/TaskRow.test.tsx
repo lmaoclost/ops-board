@@ -23,6 +23,11 @@ const base = (over: Partial<TaskRowProps["task"]> = {}): TaskRowProps => ({
 });
 
 describe("TaskRow", () => {
+  it("renderiza linha com data-testid estável", () => {
+    render(<TaskRow {...base()} />);
+    expect(screen.getByTestId("task-row")).toBeInTheDocument();
+  });
+
   it("renderiza texto com link e nota", () => {
     render(<TaskRow {...base()} />);
     const link = screen.getByRole("link", { name: "https://exemplo.com" });

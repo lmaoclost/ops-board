@@ -71,4 +71,24 @@ describe("Stats", () => {
     render(<Stats projetos={[]} filters={f} onTogglePrioSort={() => {}} />);
     expect(screen.getByText(/kanban: arraste/i)).toBeTruthy();
   });
+
+  it("expõe contadores por data-testid estável", () => {
+    render(
+      <Stats
+        projetos={[
+          projeto([
+            task(),
+            task({ id: "t2", status: "doing" }),
+            task({ id: "t3", status: "done", doneAt: todayISO() + "T09:00:00.000Z" }),
+          ]),
+        ]}
+        filters={defaultFilters}
+        onTogglePrioSort={() => {}}
+      />,
+    );
+    expect(screen.getByTestId("stat-total")).toHaveTextContent("3");
+    expect(screen.getByTestId("stat-pending")).toHaveTextContent("2");
+    expect(screen.getByTestId("stat-done")).toHaveTextContent("1");
+    expect(screen.getByTestId("stat-today")).toHaveTextContent("+1");
+  });
 });

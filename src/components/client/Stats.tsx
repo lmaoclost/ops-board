@@ -31,20 +31,20 @@ export function Stats({ projetos, filters, onTogglePrioSort }: StatsProps) {
     <div className="text-[11px] text-[var(--muted-text)] flex flex-wrap gap-x-4 gap-y-1" role="status">
       <span>
         <span className="text-[var(--dimmer)]">total</span>{" "}
-        <span className="font-bold text-[var(--text)]">{total}</span>
+        <span data-testid="stat-total" className="font-bold text-[var(--text)]">{total}</span>
       </span>
       <span>
         <span className="text-[var(--dimmer)]">pendentes</span>{" "}
-        <span className="text-amber-400">{pendentes}</span>
+        <span data-testid="stat-pending" className="text-amber-400">{pendentes}</span>
       </span>
       <span>
         <span className="text-[var(--dimmer)]">concluídas</span>{" "}
-        <span className="text-emerald-400">{done}</span>{" "}
+        <span data-testid="stat-done" className="text-emerald-400">{done}</span>{" "}
         <span className="text-[var(--dimmer)]">({pct}%)</span>
       </span>
       <span>
         <span className="text-[var(--dimmer)]">hoje</span>{" "}
-        <span className="text-emerald-400">+{doneToday}</span>
+        <span data-testid="stat-today" className="text-emerald-400">+{doneToday}</span>
       </span>
       <Tooltip>
         <TooltipTrigger
