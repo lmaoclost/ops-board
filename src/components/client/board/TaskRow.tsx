@@ -59,7 +59,12 @@ export function TaskRow({ task, onToggle, onPrioCycle, onStatusChange, onEdit, o
           className={done ? "text-[var(--dim)] line-through decoration-zinc-700" : ""}
           dangerouslySetInnerHTML={{ __html: linkify(task.text) }}
         />
-        {task.note && <span className="text-[var(--dim)]"> — {linkify(task.note)}</span>}
+        {task.note && (
+          <span
+            className="text-[var(--dim)]"
+            dangerouslySetInnerHTML={{ __html: ` — ${linkify(task.note)}` }}
+          />
+        )}
       </span>
       {task.blocked && (
         <Badge variant="destructive" className="rounded-[4px] px-1.5 text-[10px] font-bold uppercase tracking-[0.08em]">
