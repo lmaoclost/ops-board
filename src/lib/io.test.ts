@@ -80,6 +80,12 @@ describe("parseImport", () => {
     expect(exportJson([projeto()])).toContain("\n  ");
   });
 
+  it("round-trip export → import restaura 100% do estado", () => {
+    const original = [projeto()];
+    const restored = parseImport(exportJson(original));
+    expect(restored).toEqual(original);
+  });
+
   it("rejeita prio fora de 1..3", () => {
     for (const prio of [0, 4, 1.5]) {
       const raw = JSON.parse(exportJson([projeto()]));

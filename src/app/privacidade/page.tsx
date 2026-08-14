@@ -25,7 +25,7 @@ const SECTIONS = [
   },
   {
     title: "5. Como apagar todos os dados",
-    body: "O botão exportar baixa um backup. Para apagar tudo: nas configurações do navegador, em 'Dados do site', remova os dados do domínio deste app — ou apague os projetos um a um no quadro.",
+    body: "No rodapé do quadro há o botão 'apagar todos os dados' — ele pede confirmação explícita e remove todos os projetos do navegador. Para apagar um item específico, use os controles de exclusão do próprio projeto/seção/tarefa. O botão exportar baixa um backup antes de qualquer exclusão. Também é possível remover os dados nas configurações do navegador, em 'Dados do site'.",
   },
   {
     title: "6. Contato",
