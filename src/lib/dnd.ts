@@ -49,17 +49,14 @@ export function resolveDrop(args: {
     const overTid = over.replace(/^task:/, "");
     const overRef = findTaskRef(projetos, overTid);
     if (!overRef) return { kind: "none" };
-    const srcSec = projetos.find((p) => p.id === src.pid)?.sections.find((s) => s.id === src.sid);
-    if (!srcSec) return { kind: "none" };
-    const srcIdx = srcSec.tasks.findIndex((t) => t.id === src.tid);
-    const overIdx = srcSec.tasks.findIndex((t) => t.id === overTid);
-    const sameSection = src.pid === overRef.pid && src.sid === overRef.sid;
-    if (!sameSection) {
-      const destSec = projetos.find((p) => p.id === overRef.pid)?.sections.find((s) => s.id === overRef.sid);
-      if (!destSec) return { kind: "none" };
-      return { kind: "move", src, dest: { pid: overRef.pid, sid: overRef.sid }, index: overIdx };
-    }
-    return { kind: "move", src, dest: { pid: src.pid, sid: src.sid }, index: overIdx };
+    const destSec = projetos.find((p) => p.id === overRef.pid)?.sections.find((s) => s.id === overRef.sid);
+    if (!destSec) return { kind: "none" };
+    return {
+      kind: "move",
+      src,
+      dest: { pid: overRef.pid, sid: overRef.sid },
+      index: destSec.tasks.findIndex((t) => t.id === overTid),
+    };
   }
 
   if (over.startsWith("k:")) {
