@@ -12,7 +12,7 @@
   --color-popover: var(--panel-2);
   --color-popover-foreground: var(--text);
   --color-primary: var(--fired);
-  --color-primary-foreground: #052e21;
+  --color-primary-foreground: var(--primary-foreground);
   --color-secondary: var(--panel-3);
   --color-secondary-foreground: var(--text);
   --color-muted: var(--panel-3);
@@ -58,6 +58,7 @@
   --muted-text: #8b98a9;
   --dim: #7d8a9c;
   --dimmer: #707c8c;
+  --primary-foreground: #052e21;
   --background: var(--bg);
   --foreground: var(--text);
   --card: var(--panel);
@@ -65,7 +66,6 @@
   --popover: var(--panel-2);
   --popover-foreground: var(--text);
   --primary: var(--fired);
-  --primary-foreground: #052e21;
   --secondary: var(--panel-3);
   --secondary-foreground: var(--text);
   --muted: var(--panel-3);
@@ -81,12 +81,13 @@
 
 html.light {
   color-scheme: light;
-  --fired: #047857;
+  --fired: #059669;
   --gave: #b91c1c;
   --warn: #b45309;
   --flow: #0e7490;
-  --todo: #475569;
+  --todo: #2563eb;
   --violet: #7c3aed;
+  --primary-foreground: #f0fdf4;
   --bg: #f2f4f7;
   --panel: #ffffff;
   --panel-2: #ffffff;

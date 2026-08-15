@@ -21,8 +21,8 @@ export function SortableTaskItem({ task, onToggle, onPrioCycle, onStatusChange, 
   return (
     <div
       ref={setNodeRef}
-      style={{ transform: CSS.Transform.toString(transform), transition }}
-      className={isDragging ? "opacity-40" : ""}
+      style={{ transform: CSS.Transform.toString(transform), transition: isDragging ? "none" : transition }}
+      className={`rounded-md ${isDragging ? "opacity-90 shadow-lg ring-2 ring-[var(--fired)]/70 z-10" : ""}`}
       {...attributes}
       {...listeners}
     >
