@@ -28,16 +28,16 @@ export function Stats({ stats, filters, onTogglePrioSort }: StatsProps) {
       </span>
       <span>
         <span className="text-[var(--dimmer)]">pendentes</span>{" "}
-        <span data-testid="stat-pending" className="text-amber-400">{pendentes}</span>
+        <span data-testid="stat-pending" className="text-[var(--warn)]">{pendentes}</span>
       </span>
       <span>
         <span className="text-[var(--dimmer)]">concluídas</span>{" "}
-        <span data-testid="stat-done" className="text-emerald-400">{done}</span>{" "}
+        <span data-testid="stat-done" className="text-[var(--fired)]">{done}</span>{" "}
         <span className="text-[var(--dimmer)]">({pct}%)</span>
       </span>
       <span>
         <span className="text-[var(--dimmer)]">hoje</span>{" "}
-        <span data-testid="stat-today" className="text-emerald-400">+{doneToday}</span>
+        <span data-testid="stat-today" className="text-[var(--fired)]">+{doneToday}</span>
       </span>
       <Tooltip>
         <TooltipTrigger
@@ -47,7 +47,7 @@ export function Stats({ stats, filters, onTogglePrioSort }: StatsProps) {
               variant={filters.prioSort ? "outline" : "ghost"}
               size="xs"
               onClick={onTogglePrioSort}
-              className={`text-[var(--muted-text)] ${filters.prioSort ? "border-current text-amber-400 bg-[var(--hover)]" : ""}`}
+              className={`text-[var(--muted-text)] ${filters.prioSort ? "border-current text-[var(--warn)] bg-[var(--hover)]" : ""}`}
             >
               ↕ prio
             </Button>

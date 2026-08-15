@@ -140,7 +140,7 @@ export function Section({ projectId, section, onToggleSection, onAddTask, onRena
           )}
           <div
             ref={setDropRef}
-            className={`flex flex-col gap-0.5 rounded-md ${isOver ? "outline outline-1 outline-emerald-400/50" : ""}`}
+            className={`flex flex-col gap-0.5 rounded-md ${isOver ? "outline outline-1 outline-[var(--fired)]/50" : ""}`}
           >
             {sortTasks(section.tasks, !!prioSort, (t) => t.prio).map((t) => (
               <SortableTaskItem
@@ -155,7 +155,7 @@ export function Section({ projectId, section, onToggleSection, onAddTask, onRena
             ))}
           </div>
           <div className="flex items-center gap-2 px-2 pt-2">
-            <span className="text-emerald-400 font-bold text-xs" aria-hidden>
+            <span className="text-[var(--fired)] font-bold text-xs" aria-hidden>
               &gt;
             </span>
             <Input

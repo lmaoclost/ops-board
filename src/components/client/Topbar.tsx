@@ -1,7 +1,7 @@
 import { useEffect, useRef, useState } from "react";
 import Link from "next/link";
 import { useMounted } from "@/hooks/useMounted";
-import { Button } from "@/components/ui/button";
+import { Button, buttonVariants } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip";
 import type { View } from "@/lib/filter";
@@ -56,7 +56,7 @@ export function Topbar({
       <div className="mx-auto max-w-5xl px-4 py-3 flex flex-col gap-3 sm:flex-row sm:items-center sm:gap-6">
         <div className="flex items-center justify-between gap-4">
           <h1 className="text-sm font-bold tracking-tight text-[var(--text)]">
-            ops<span className="text-emerald-400">/</span>board
+            ops<span className="text-[var(--fired)]">/</span>board
           </h1>
           <div className="flex items-center gap-1.5">
             <Tooltip>
@@ -105,16 +105,13 @@ export function Topbar({
             >
               ↑importar
             </Button>
-            <Button
-              type="button"
-              variant="ghost"
-              size="xs"
-              render={<Link href="/privacidade" />}
-              className="text-[var(--muted-text)] hover:text-[var(--text)]"
+            <Link
+              href="/privacidade"
+              className={buttonVariants({ variant: "ghost", size: "xs" }) + " text-[var(--muted-text)] hover:text-[var(--text)]"}
               title="política de privacidade"
             >
               privacidade
-            </Button>
+            </Link>
             <Button type="button" variant="default" size="sm" onClick={onNewProject}>
               <span className="mr-1">+</span>projeto
             </Button>
@@ -123,7 +120,7 @@ export function Topbar({
 
         <div className="flex-1 min-w-0">
           <label className="block relative flex items-center gap-2">
-            <span className="text-emerald-400 font-bold text-xs" aria-hidden>
+            <span className="text-[var(--fired)] font-bold text-xs" aria-hidden>
               &gt;
             </span>
             <Input
