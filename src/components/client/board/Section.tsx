@@ -13,6 +13,7 @@ import { Input } from "@/components/ui/input";
 import { sortTasks } from "@/lib/filter";
 import type { TaskPatch, Task } from "@/lib/types";
 import { SortableTaskItem } from "@/components/client/dnd/SortableTaskItem";
+import { TaskEditModal } from "@/components/client/board/TaskEditModal";
 
 export interface SectionTaskActions {
   onToggle: (tid: string) => void;
@@ -44,6 +45,7 @@ export function Section({ projectId, section, onToggleSection, onAddTask, onRena
   const [editingId, setEditingId] = useState<string | null>(null);
   const [renaming, setRenaming] = useState(false);
   const { setNodeRef: setDropRef, isOver } = useDroppable({ id: `sec:${projectId}:${section.id}` });
+  const { setNodeRef: setEndRef, isOver: isEndOver } = useDroppable({ id: `sec-end:${projectId}:${section.id}` });
 
   const open = !section.collapsed;
   const doneCount = section.tasks.filter((t) => t.status === "done").length;
@@ -55,41 +57,24 @@ export function Section({ projectId, section, onToggleSection, onAddTask, onRena
     if (String(v.title).trim()) onRename(String(v.title).trim());
   };
 
-  const submitTask = (v: Record<string, string | boolean>) => {
-    if (editingId) {
-      taskActions.onEdit(editingId, {
-        text: String(v.text).trim(),
-        note: String(v.note).trim(),
-        blocked: Boolean(v.blocked),
-        prio: (Number(v.prio) || 3) as Task["prio"],
-        due: String(v.due ?? ""),
-      });
-      setEditingId(null);
-    }
-  };
-
   return (
     <div className="border-t border-dashed border-[var(--line-soft)] first:border-t-0">
-      <div
-        role="button"
-        tabIndex={0}
-        onClick={onToggleSection}
-        onKeyDown={(e) => {
-          if (e.key === "Enter" || e.key === " ") {
-            e.preventDefault();
-            onToggleSection();
-          }
-        }}
-        className="flex w-full items-center gap-2 bg-[var(--panel-2)] px-3.5 py-2 text-left hover:bg-[var(--panel-3)]"
-        title="expandir/recolher"
-      >
-        <span className={`text-[11px] text-[var(--dimmer)] transition-transform ${open ? "rotate-90" : ""}`}>▶</span>
-        <h3 className="text-[12px] font-semibold uppercase tracking-wider text-[var(--muted-text)]">{section.title}</h3>
-        <span className="text-[11px] text-[var(--dimmer)]">
-          {doneCount}/{section.tasks.length}
-        </span>
-        {section.notes && <span className="ml-auto hidden text-[11px] text-[var(--dimmer)] sm:inline">notas</span>}
-        <span className="ml-auto flex items-center gap-0.5">
+      <div className="flex w-full items-center gap-2 bg-[var(--panel-2)] px-3.5 py-2 hover:bg-[var(--panel-3)]">
+        <button
+          type="button"
+          onClick={onToggleSection}
+          aria-expanded={open}
+          className="flex min-w-0 flex-1 items-center gap-2 text-left"
+          title="expandir/recolher"
+        >
+          <span className={`text-[11px] text-[var(--dimmer)] transition-transform ${open ? "rotate-90" : ""}`}>▶</span>
+          <h3 className="text-[12px] font-semibold uppercase tracking-wider text-[var(--muted-text)]">{section.title}</h3>
+          <span className="text-[11px] text-[var(--dimmer)]">
+            {doneCount}/{section.tasks.length}
+          </span>
+          {section.notes && <span className="ml-auto hidden text-[11px] text-[var(--dimmer)] sm:inline">notas</span>}
+        </button>
+        <span className="flex items-center gap-0.5">
           <DropdownMenu>
             <DropdownMenuTrigger
               render={
@@ -97,7 +82,6 @@ export function Section({ projectId, section, onToggleSection, onAddTask, onRena
                   type="button"
                   variant="ghost"
                   size="icon-xs"
-                  onClick={(e) => e.stopPropagation()}
                   title="ações da seção"
                   aria-label="ações da seção"
                 >
@@ -153,6 +137,11 @@ export function Section({ projectId, section, onToggleSection, onAddTask, onRena
                 onDelete={() => taskActions.onDelete(t.id)}
               />
             ))}
+            <div
+              ref={setEndRef}
+              className={`h-2 rounded ${isEndOver ? "bg-[var(--fired)]/30" : ""}`}
+              title="soltar no fim"
+            />
           </div>
           <div className="flex items-center gap-2 px-2 pt-2">
             <span className="text-[var(--fired)] font-bold text-xs" aria-hidden>
@@ -189,27 +178,12 @@ export function Section({ projectId, section, onToggleSection, onAddTask, onRena
       )}
 
       {editing && (
-        <Modal
-          title="editar tarefa"
-          submitLabel="salvar"
-          fields={[
-            { key: "text", label: "tarefa", value: editing.text },
-            {
-              key: "prio",
-              label: "prioridade",
-              type: "select",
-              value: editing.prio,
-              options: [
-                { value: 1, label: "P1 — urgente" },
-                { value: 2, label: "P2 — em breve" },
-                { value: 3, label: "P3 — normal" },
-              ],
-            },
-            { key: "due", label: "vencimento", type: "date", value: editing.due },
-            { key: "note", label: "nota", type: "textarea", value: editing.note, placeholder: "detalhe opcional…" },
-            { key: "blocked", label: "marcar como bloqueada / stuck", type: "checkbox", value: editing.blocked },
-          ]}
-          onSubmit={submitTask}
+        <TaskEditModal
+          task={editing}
+          onSubmit={(patch) => {
+            taskActions.onEdit(editing.id, patch);
+            setEditingId(null);
+          }}
           onCancel={() => setEditingId(null)}
         />
       )}

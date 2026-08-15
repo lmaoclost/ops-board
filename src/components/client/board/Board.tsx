@@ -48,12 +48,13 @@ export interface BoardProps {
   projetos: Project[];
   filters: Filters;
   onNewProject: () => void;
+  onClearFilters: () => void;
   projectActions: BoardProjectActions;
   sectionActions: BoardSectionActions;
   taskActions: BoardTaskActions;
 }
 
-export function Board({ projetos, filters, onNewProject, projectActions, sectionActions, taskActions }: BoardProps) {
+export function Board({ projetos, filters, onNewProject, onClearFilters, projectActions, sectionActions, taskActions }: BoardProps) {
   const sensors = useSensors(
     useSensor(PointerSensor, { activationConstraint: { distance: 6 } }),
     useSensor(TouchSensor, { activationConstraint: { distance: 6 } }),
@@ -112,11 +113,24 @@ export function Board({ projetos, filters, onNewProject, projectActions, section
     content = (
       <div className="fade-in rounded-lg border border-dashed border-[var(--line-soft)] p-10 text-center text-[var(--dim)]">
         <span className="block text-2xl">∅</span>
-        <p>nada casa com o filtro.</p>
+        <p className="mb-3">nada casa com o filtro.</p>
+        <button
+          type="button"
+          onClick={onClearFilters}
+          className="rounded-md bg-[var(--fired)] px-3 py-1.5 text-xs font-bold text-primary-foreground"
+        >
+          ✕ limpar filtros
+        </button>
       </div>
     );
   } else if (filters.view === "kanban") {
-    content = <Kanban projetos={filtered} prioSort={filters.prioSort} />;
+    content = (
+      <Kanban
+        projetos={filtered}
+        prioSort={filters.prioSort}
+        onEditTask={(pid, sid, tid, patch) => taskActions.onEdit(pid, sid, tid, patch)}
+      />
+    );
   } else {
     content = (
       <div className="fade-in flex flex-col gap-4">

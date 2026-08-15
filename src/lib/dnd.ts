@@ -38,6 +38,13 @@ export function resolveDrop(args: {
   const src = findTaskRef(projetos, tid);
   if (!src) return { kind: "none" };
 
+  if (over.startsWith("sec-end:")) {
+    const [, pid, sid] = over.split(":");
+    const destSec = projetos.find((p) => p.id === pid)?.sections.find((s) => s.id === sid);
+    if (!destSec) return { kind: "none" };
+    return { kind: "move", src, dest: { pid, sid }, index: destSec.tasks.length };
+  }
+
   if (over.startsWith("sec:")) {
     const [, pid, sid] = over.split(":");
     const destSec = projetos.find((p) => p.id === pid)?.sections.find((s) => s.id === sid);

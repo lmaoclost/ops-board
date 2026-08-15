@@ -48,6 +48,22 @@ describe("resolveDrop", () => {
     expect(r.index).toBe(0);
   });
 
+  it("drop no fim da seção (sec-end) faz append no final", () => {
+    const r = resolveDrop({ projetos: [projeto()], active: "task:t1", over: "sec-end:p1:s1" });
+    expect(r.kind).toBe("move");
+    if (r.kind !== "move") return;
+    expect(r.dest).toEqual({ pid: "p1", sid: "s1" });
+    expect(r.index).toBe(projeto().sections[0].tasks.length);
+  });
+
+  it("drop no fim de seção vazia faz append no índice 0", () => {
+    const r = resolveDrop({ projetos: [projeto()], active: "task:t1", over: "sec-end:p1:s2" });
+    expect(r.kind).toBe("move");
+    if (r.kind !== "move") return;
+    expect(r.dest).toEqual({ pid: "p1", sid: "s2" });
+    expect(r.index).toBe(0);
+  });
+
   it("drop em coluna kanban marca status", () => {
     const r = resolveDrop({ projetos: [projeto()], active: "task:t1", over: "k:done" });
     expect(r.kind).toBe("status");
