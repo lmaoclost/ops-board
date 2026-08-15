@@ -5,6 +5,9 @@ const CSP = [
   // 'unsafe-inline' em script: único script inline do app é o ThemeScript
   // (antiflash de tema do next-themes); sem ele há FOUC no primeiro load.
   "script-src 'self' 'unsafe-inline'",
+  // worker-src blob: libera o worker em blob do canvas-confetti (confete);
+  // sem ele o confete cai para fallback no main thread com erro de console.
+  "worker-src 'self' blob:",
   // 'unsafe-inline' em style: transform inline do dnd-kit (drag & drop)
   "style-src 'self' 'unsafe-inline'",
   "img-src 'self' data:",

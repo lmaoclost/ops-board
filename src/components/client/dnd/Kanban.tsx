@@ -27,9 +27,9 @@ function flatTasks(projetos: Project[]): FlatTask[] {
 }
 
 const PRIO_CLS: Record<Prio, string> = {
-  1: "bg-[var(--gave)] text-primary-foreground",
-  2: "bg-[var(--warn)] text-primary-foreground",
-  3: "bg-[var(--panel-3)] text-[var(--muted-text)]",
+  1: "text-[var(--gave)] border-[var(--gave)]/40 bg-[var(--gave)]/10",
+  2: "text-[var(--warn)] border-[var(--warn)]/40 bg-[var(--warn)]/10",
+  3: "text-[var(--muted-text)] border-[var(--line)]",
 };
 
 function KanbanTask({ item, onEdit }: { item: FlatTask; onEdit: () => void }) {
@@ -40,7 +40,7 @@ function KanbanTask({ item, onEdit }: { item: FlatTask; onEdit: () => void }) {
     <div
       ref={setNodeRef}
       style={{ transform: CSS.Translate.toString(transform) }}
-      className={`cursor-grab rounded-md border border-[var(--line)] bg-[var(--panel-2)] px-2.5 py-1.5 text-xs hover:bg-[var(--panel-3)] ${isDragging ? "opacity-50" : ""}`}
+      className={`cursor-grab rounded-md border border-[var(--line)] bg-[var(--panel-2)] px-2.5 py-1.5 text-xs hover:bg-[var(--panel-3)] ${isDragging ? "opacity-90 shadow-lg ring-2 ring-[var(--fired)]/70 z-10" : ""}`}
       data-testid="kanban-task"
       {...attributes}
       {...listeners}
@@ -64,7 +64,7 @@ function KanbanTask({ item, onEdit }: { item: FlatTask; onEdit: () => void }) {
             {item.ptitle} · {item.stitle}
           </span>
         </button>
-        <span className={`shrink-0 rounded px-1 py-0.5 text-[9px] font-bold ${PRIO_CLS[item.task.prio]}`}>
+        <span className={`shrink-0 rounded border px-1 py-0.5 text-[9px] font-bold ${PRIO_CLS[item.task.prio]}`}>
           {PRIO_KEYS[item.task.prio]}
         </span>
       </div>

@@ -21,7 +21,7 @@ export function Stats({ stats, filters, onTogglePrioSort }: StatsProps) {
       : "lista: arraste tarefas entre seções/projetos p/ mover";
 
   return (
-    <div className="text-[11px] text-[var(--muted-text)] flex flex-wrap gap-x-4 gap-y-1" role="status">
+    <div className="text-[11px] leading-[26px] text-[var(--muted-text)] flex flex-wrap items-center gap-x-4 gap-y-1" role="status">
       <span>
         <span className="text-[var(--dimmer)]">total</span>{" "}
         <span data-testid="stat-total" className="font-bold text-[var(--text)]">{total}</span>
