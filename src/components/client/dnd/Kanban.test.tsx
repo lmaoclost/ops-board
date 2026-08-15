@@ -85,7 +85,7 @@ describe("Kanban", () => {
     expect(screen.getByText(/bloqueada/)).toBeTruthy();
   });
 
-  it("clique no card abre o modal de edição e submit chama onEditTask", () => {
+it("clique no card abre o modal de edição e submit chama onEditTask", () => {
     const onEditTask = vi.fn();
     renderKanban({ onEditTask });
     fireEvent.click(screen.getByRole("button", { name: /editar tarefa correr pra base/ }));
@@ -93,5 +93,22 @@ describe("Kanban", () => {
     fireEvent.change(screen.getByLabelText("tarefa"), { target: { value: "correr pro topo" } });
     fireEvent.click(screen.getByText("salvar"));
     expect(onEditTask).toHaveBeenCalledWith("p1", "s1", "t1", expect.objectContaining({ text: "correr pro topo" }));
+  });
+
+  it("click após drag (>6px) não abre o modal", () => {
+    const onEditTask = vi.fn();
+    renderKanban({ onEditTask });
+    const card = screen.getByRole("button", { name: /editar tarefa correr pra base/ });
+    fireEvent.pointerDown(card, { clientX: 10, clientY: 10 });
+    fireEvent.click(card, { clientX: 40, clientY: 10 });
+    expect(screen.queryByText("editar tarefa")).toBeNull();
+  });
+
+  it("click sem movimento abre o modal", () => {
+    renderKanban();
+    const card = screen.getByRole("button", { name: /editar tarefa correr pra base/ });
+    fireEvent.pointerDown(card, { clientX: 10, clientY: 10 });
+    fireEvent.click(card, { clientX: 12, clientY: 11 });
+    expect(screen.getByText("editar tarefa")).toBeTruthy();
   });
 });

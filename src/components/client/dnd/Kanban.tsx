@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useRef, useState } from "react";
 import { useDraggable, useDroppable } from "@dnd-kit/core";
 import { CSS } from "@dnd-kit/utilities";
 import { sortTasks } from "@/lib/filter";
@@ -34,6 +34,7 @@ const PRIO_CLS: Record<Prio, string> = {
 
 function KanbanTask({ item, onEdit }: { item: FlatTask; onEdit: () => void }) {
   const { attributes, listeners, setNodeRef, transform, isDragging } = useDraggable({ id: `task:${item.task.id}` });
+  const start = useRef<{ x: number; y: number } | null>(null);
   const overdue = isOverdue(item.task.due, item.task.status);
   const dueSoon = isDueSoon(item.task.due, item.task.status);
   return (
@@ -42,20 +43,32 @@ function KanbanTask({ item, onEdit }: { item: FlatTask; onEdit: () => void }) {
       style={{ transform: CSS.Translate.toString(transform) }}
       className={`cursor-grab rounded-md border border-[var(--line)] bg-[var(--panel-2)] px-2.5 py-1.5 text-xs hover:bg-[var(--panel-3)] ${isDragging ? "opacity-90 shadow-lg ring-2 ring-[var(--fired)]/70 z-10" : ""}`}
       data-testid="kanban-task"
+      aria-label={`editar tarefa ${item.task.text}`}
+      title="clique pra editar, arraste pra mover"
+      onPointerDown={(e) => {
+        start.current = { x: e.clientX, y: e.clientY };
+      }}
+      onClick={(e) => {
+        const s = start.current;
+        start.current = null;
+        if (!s) {
+          onEdit();
+          return;
+        }
+        const moved = Math.abs(e.clientX - s.x) > 6 || Math.abs(e.clientY - s.y) > 6;
+        if (!moved) onEdit();
+      }}
+      onKeyDown={(e) => {
+        if (e.key === "Enter" || e.key === " ") {
+          e.preventDefault();
+          onEdit();
+        }
+      }}
       {...attributes}
       {...listeners}
     >
       <div className="flex items-start gap-1.5">
-        <button
-          type="button"
-          onClick={(e) => {
-            e.stopPropagation();
-            onEdit();
-          }}
-          className="min-w-0 flex-1 text-left"
-          title="editar tarefa"
-          aria-label={`editar tarefa ${item.task.text}`}
-        >
+        <span className="min-w-0 flex-1">
           <span className={item.task.status === "done" ? "line-through text-[var(--dim)]" : "text-[var(--text)]"}>
             {item.task.text}
           </span>
@@ -63,7 +76,7 @@ function KanbanTask({ item, onEdit }: { item: FlatTask; onEdit: () => void }) {
           <span className="mt-0.5 block text-[10px] text-[var(--dim)]">
             {item.ptitle} · {item.stitle}
           </span>
-        </button>
+        </span>
         <span className={`shrink-0 rounded border px-1 py-0.5 text-[9px] font-bold ${PRIO_CLS[item.task.prio]}`}>
           {PRIO_KEYS[item.task.prio]}
         </span>

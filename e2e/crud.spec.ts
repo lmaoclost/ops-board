@@ -81,16 +81,24 @@ test("exclui tarefa, seção e projeto (sem confirm nativo, undo cobre)", async 
   await expect(page.getByText("nenhum projeto na fila.")).toBeVisible();
 });
 
-test("renomeia projeto (e marca como bloqueado) e renomeia seção", async ({ page }) => {
+test("renomeia projeto e marca/desmarca stuck pelo ⋯; renomeia seção", async ({ page }) => {
   await page.goto("/");
   await createProject(page, "app");
 
   await page.getByRole("button", { name: "ações do projeto", exact: true }).click();
   await page.getByRole("menuitem", { name: "renomear projeto" }).click();
   await page.getByLabel("título").fill("prod");
-  await page.getByRole("switch").click();
   await page.getByRole("button", { name: "salvar" }).click();
   await expect(page.getByRole("heading", { name: "prod" })).toBeVisible();
+
+  await page.getByRole("button", { name: "ações do projeto", exact: true }).click();
+  await page.getByRole("menuitem", { name: "marcar como stuck / bloqueado" }).click();
+  await expect(page.getByText("stuck", { exact: true })).toBeVisible();
+
+  await page.getByRole("button", { name: "ações do projeto", exact: true }).click();
+  await page.getByRole("menuitem", { name: "desmarcar stuck / bloqueado" }).click();
+  await expect(page.getByText("stuck", { exact: true })).toHaveCount(0);
+
   await page.getByRole("button", { name: "ações da seção", exact: true }).click();
   await page.getByRole("menuitem", { name: "renomear seção" }).click();
   await page.getByLabel("título").fill("backlog");

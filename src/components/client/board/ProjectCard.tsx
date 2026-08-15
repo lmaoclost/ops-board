@@ -46,7 +46,7 @@ export function ProjectCard({ project, collectActions, onAddSection, onRename, o
   const submitProject = (v: Record<string, string | boolean>) => {
     setModal(null);
     if (!String(v.title).trim()) return;
-    onRename(project.id, String(v.title).trim(), Boolean(v.blocked));
+    onRename(project.id, String(v.title).trim(), project.blocked);
   };
 
   const submitSection = (v: Record<string, string | boolean>) => {
@@ -97,6 +97,12 @@ export function ProjectCard({ project, collectActions, onAddSection, onRename, o
               >
                 renomear projeto
               </DropdownMenuItem>
+              <DropdownMenuItem
+                className="text-xs"
+                onClick={() => onRename(project.id, project.title, !project.blocked)}
+              >
+                {project.blocked ? "desmarcar stuck / bloqueado" : "marcar como stuck / bloqueado"}
+              </DropdownMenuItem>
               <DropdownMenuItem className="text-xs" onClick={onToggleArchive}>
                 {project.archived ? "desarquivar projeto" : "arquivar projeto"}
               </DropdownMenuItem>
@@ -143,7 +149,6 @@ export function ProjectCard({ project, collectActions, onAddSection, onRename, o
           submitLabel="salvar"
           fields={[
             { key: "title", label: "título", value: project.title },
-            { key: "blocked", label: "marcar como stuck / bloqueado", type: "checkbox", value: project.blocked },
           ]}
           onSubmit={submitProject}
           onCancel={() => setModal(null)}
