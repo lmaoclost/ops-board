@@ -22,6 +22,7 @@ export default function Home() {
   const addProject = useBoard((s) => s.addProject);
   const renameProject = useBoard((s) => s.renameProject);
   const deleteProject = useBoard((s) => s.deleteProject);
+  const toggleProjectArchive = useBoard((s) => s.toggleProjectArchive);
   const addSection = useBoard((s) => s.addSection);
   const renameSection = useBoard((s) => s.renameSection);
   const deleteSection = useBoard((s) => s.deleteSection);
@@ -37,7 +38,7 @@ export default function Home() {
   const importState = useBoard((s) => s.importState);
   const reset = useBoard((s) => s.reset);
   const [confirmClearOpen, setConfirmClearOpen] = useState(false);
-  const { filters, setQuery, toggleStatus, togglePrioSort, toggleView, clear } = useFilters();
+  const { filters, setQuery, toggleStatus, togglePrioSort, toggleView, toggleArchived, clear } = useFilters();
   const { resolvedTheme, setTheme } = useTheme();
   const isDark = resolvedTheme !== "light";
   const toggleTheme = () => setTheme(isDark ? "light" : "dark");
@@ -58,7 +59,11 @@ export default function Home() {
     return () => setStorageErrorHandler(null);
   }, [showToast]);
 
-  const stats = useMemo(() => deriveStats(projetos), [projetos]);
+  const boardProjetos = useMemo(
+    () => (filters.archived ? projetos : projetos.filter((p) => !p.archived)),
+    [projetos, filters.archived],
+  );
+  const stats = useMemo(() => deriveStats(boardProjetos), [boardProjetos]);
   useEffect(() => {
     if (stats.done > prevDone.current) celebrate();
     prevDone.current = stats.done;
@@ -104,6 +109,7 @@ export default function Home() {
   );
 
   const counts = stats.byStatus;
+  const archivedCount = projetos.filter((p) => p.archived).length;
 
   return (
     <div className="min-h-screen bg-[var(--bg)] text-[var(--text)]">
@@ -135,9 +141,12 @@ export default function Home() {
         <FilterChips
           counts={counts}
           blockedCount={stats.blocked}
+          archivedCount={archivedCount}
+          archivedActive={filters.archived}
           active={filters.status}
           filtering={!!filters.query || !!filters.status}
           onToggleStatus={toggleStatus}
+          onToggleArchived={toggleArchived}
           onClear={clear}
         />
       </div>
@@ -147,13 +156,14 @@ export default function Home() {
 
       <main className="mx-auto max-w-5xl px-4 py-6">
         <Board
-          projetos={projetos}
+          projetos={boardProjetos}
           filters={filters}
           onNewProject={() => setNewProjectOpen(true)}
           projectActions={{
             onAddSection: (pid, title) => addSection(pid, title),
             onRename: (id, title, blocked) => renameProject(id, title, blocked),
             onDelete: (id) => deleteProject(id),
+            onToggleArchive: toggleProjectArchive,
           }}
           sectionActions={{
             onToggle: (pid, sid) => toggleSection(pid, sid),

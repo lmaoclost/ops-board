@@ -27,6 +27,7 @@ interface BoardStore {
   addProject: (title: string) => void;
   renameProject: (id: string, title: string, blocked: boolean) => void;
   deleteProject: (id: string) => void;
+  toggleProjectArchive: (id: string) => void;
   addSection: (pid: string, title: string) => void;
   renameSection: (pid: string, sid: string, title: string) => void;
   deleteSection: (pid: string, sid: string) => void;
@@ -78,6 +79,7 @@ export function createBoardStore(initial: Project[] = []) {
                 id: uid(),
                 title,
                 blocked: false,
+                archived: false,
                 sections: [{ id: uid(), title: "geral", tasks: [], notes: "", collapsed: false }],
               },
             ],
@@ -89,6 +91,11 @@ export function createBoardStore(initial: Project[] = []) {
           })),
 
         deleteProject: (id) => set((s) => ({ projetos: s.projetos.filter((p) => p.id !== id) })),
+
+        toggleProjectArchive: (id) =>
+          set((s) => ({
+            projetos: s.projetos.map((p) => (p.id === id ? { ...p, archived: !p.archived } : p)),
+          })),
 
         addSection: (pid, title) =>
           set((s) => ({

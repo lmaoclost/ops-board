@@ -28,6 +28,7 @@ export interface ProjectCardProps {
   onAddSection: (title: string) => void;
   onRename: (id: string, title: string, blocked: boolean) => void;
   onDelete: (id: string) => void;
+  onToggleArchive: () => void;
   prioSort?: boolean;
 }
 
@@ -36,7 +37,7 @@ type ModalState =
   | { kind: "add-section" }
   | null;
 
-export function ProjectCard({ project, collectActions, onAddSection, onRename, onDelete, prioSort }: ProjectCardProps) {
+export function ProjectCard({ project, collectActions, onAddSection, onRename, onDelete, onToggleArchive, prioSort }: ProjectCardProps) {
   const [modal, setModal] = useState<ModalState>(null);
   const actions = collectActions(project.id);
 
@@ -59,6 +60,11 @@ export function ProjectCard({ project, collectActions, onAddSection, onRename, o
         {project.blocked && (
           <Badge variant="destructive" className="rounded-[4px] px-1.5 text-[10px] font-bold uppercase tracking-[0.08em]">
             stuck
+          </Badge>
+        )}
+        {project.archived && (
+          <Badge variant="outline" className="rounded-[4px] px-1.5 text-[10px] font-bold uppercase tracking-[0.08em]">
+            arquivado
           </Badge>
         )}
         <span className="ml-auto flex items-center gap-1">
@@ -88,6 +94,9 @@ export function ProjectCard({ project, collectActions, onAddSection, onRename, o
                 onClick={() => setModal({ kind: "rename" })}
               >
                 renomear projeto
+              </DropdownMenuItem>
+              <DropdownMenuItem className="text-xs" onClick={onToggleArchive}>
+                {project.archived ? "desarquivar projeto" : "arquivar projeto"}
               </DropdownMenuItem>
               <DropdownMenuSeparator className="bg-[var(--line)]" />
               <DropdownMenuItem

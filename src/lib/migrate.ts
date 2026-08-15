@@ -1,6 +1,6 @@
 import { PRIOS, STATUSES, type Prio, type Project, type Section, type Status, type Task } from "./types";
 
-export const SCHEMA_VERSION = 2;
+export const SCHEMA_VERSION = 3;
 
 type UnknownRecord = Record<string, unknown>;
 
@@ -34,6 +34,7 @@ function normProject(p: UnknownRecord | undefined): Project {
     id: String(p?.id ?? ""),
     title: String(p?.title ?? ""),
     blocked: Boolean(p?.blocked),
+    archived: Boolean(p?.archived),
     sections: Array.isArray(p?.sections) ? p.sections.map((s) => normSection(s as UnknownRecord)) : [],
   };
 }

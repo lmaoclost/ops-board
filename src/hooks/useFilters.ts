@@ -20,9 +20,13 @@ export function useFilters(initial: Filters = defaultFilters) {
     setFilters((f) => ({ ...f, view: (f.view === "list" ? "kanban" : "list") as View }));
   }, []);
 
+  const toggleArchived = useCallback(() => {
+    setFilters((f) => ({ ...f, archived: !f.archived }));
+  }, []);
+
   const clear = useCallback(() => {
     setFilters((f) => ({ ...f, query: "", status: null }));
   }, []);
 
-  return { filters, setQuery, toggleStatus, togglePrioSort, toggleView, clear };
+  return { filters, setQuery, toggleStatus, togglePrioSort, toggleView, toggleArchived, clear };
 }

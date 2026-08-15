@@ -20,13 +20,26 @@ const CHIPS: ChipDef[] = [
 interface FilterChipsProps {
   counts: Record<Status, number>;
   blockedCount: number;
+  archivedCount: number;
+  archivedActive: boolean;
   active: StatusFilter;
   filtering: boolean;
   onToggleStatus: (status: StatusFilter) => void;
+  onToggleArchived: () => void;
   onClear: () => void;
 }
 
-export function FilterChips({ counts, blockedCount, active, filtering, onToggleStatus, onClear }: FilterChipsProps) {
+export function FilterChips({
+  counts,
+  blockedCount,
+  archivedCount,
+  archivedActive,
+  active,
+  filtering,
+  onToggleStatus,
+  onToggleArchived,
+  onClear,
+}: FilterChipsProps) {
   return (
     <div className="flex flex-wrap items-center gap-1.5" role="group" aria-label="filtros por status">
       {CHIPS.map(({ key, label, cls }) => {
@@ -48,6 +61,18 @@ export function FilterChips({ counts, blockedCount, active, filtering, onToggleS
           </Button>
         );
       })}
+      <Button
+        type="button"
+        variant={archivedActive ? "outline" : "ghost"}
+        size="xs"
+        onClick={onToggleArchived}
+        title="mostrar/ocultar projetos arquivados"
+        aria-pressed={archivedActive}
+        className={`text-violet-400 ${archivedActive ? "border-current bg-[var(--hover)]" : "opacity-60"}`}
+      >
+        arquivados
+        <span className="opacity-60">{archivedCount}</span>
+      </Button>
       {filtering && (
         <Button
           type="button"

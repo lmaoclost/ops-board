@@ -40,6 +40,12 @@ describe("migrateLegacy", () => {
     const out = migrateLegacy({ projetos: [{ id: "p1", title: "P" }] });
     expect(out!.projetos[0].sections).toEqual([]);
     expect(out!.projetos[0].blocked).toBe(false);
+    expect(out!.projetos[0].archived).toBe(false);
+  });
+
+  it("preserva archived quando presente", () => {
+    const out = migrateLegacy({ projetos: [{ id: "p1", title: "P", archived: true }] });
+    expect(out!.projetos[0].archived).toBe(true);
   });
 
   it("preserva dados existentes intactos", () => {
@@ -75,7 +81,7 @@ describe("migrateLegacy", () => {
   });
 
   it("mantém versão de schema estável e exportada", () => {
-    expect(SCHEMA_VERSION).toBe(2);
+    expect(SCHEMA_VERSION).toBe(3);
   });
 });
 

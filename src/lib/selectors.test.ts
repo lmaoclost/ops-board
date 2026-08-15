@@ -7,6 +7,7 @@ const projetos: Project[] = [
     id: "p1",
     title: "A",
     blocked: true,
+    archived: false,
     sections: [
       {
         id: "s1",

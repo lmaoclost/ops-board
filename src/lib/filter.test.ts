@@ -26,12 +26,12 @@ const section = (over: Partial<Section> = {}): Section => ({
 const project = (over: Partial<Project> = {}): Project => ({
   id: "p1",
   title: "Projeto Alfa",
-  blocked: false,
+  blocked: false, archived: false,
   sections: [section()],
   ...over,
 });
 
-const none: Filters = { query: "", status: null, prioSort: false, view: "list" };
+const none: Filters = { query: "", status: null, prioSort: false, view: "list", archived: false };
 
 describe("matchTask", () => {
   it("casa qualquer tarefa sem filtros", () => {
