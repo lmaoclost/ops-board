@@ -10,11 +10,12 @@ import { Topbar } from "@/components/client/Topbar";
 import { useFilters } from "@/hooks/useFilters";
 import { useShortcuts } from "@/hooks/useShortcuts";
 import { useTheme } from "next-themes";
-import { celebrate } from "@/lib/celebrate";
+import { celebrate, wasTransitionedToDone } from "@/lib/celebrate";
 import { exportJson, parseImport } from "@/lib/io";
 import { deriveStats } from "@/lib/selectors";
 import { visibleProjetos } from "@/lib/filter";
 import { useBoard, setStorageErrorHandler } from "@/lib/store";
+import type { Status } from "@/lib/types";
 import { Dialog, DialogClose, DialogContent, DialogTitle } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
 
@@ -47,15 +48,15 @@ export default function Home() {
   const isDark = resolvedTheme !== "light";
   const toggleTheme = () => setTheme(isDark ? "light" : "dark");
   const [newProjectOpen, setNewProjectOpen] = useState(false);
+  const [helpOpen, setHelpOpen] = useState(false);
   const [toast, setToast] = useState<string | null>(null);
   const toastTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
   const fileRef = useRef<HTMLInputElement | null>(null);
-  const prevDone = useRef(0);
 
   const showToast = useCallback((msg: string) => {
     setToast(msg);
     if (toastTimer.current) clearTimeout(toastTimer.current);
-    toastTimer.current = setTimeout(() => setToast(null), 1600);
+    toastTimer.current = setTimeout(() => setToast(null), 2500);
   }, []);
 
   useEffect(() => {
@@ -65,10 +66,38 @@ export default function Home() {
 
   const boardProjetos = useMemo(() => visibleProjetos(projetos, filters), [projetos, filters]);
   const stats = useMemo(() => deriveStats(boardProjetos), [boardProjetos]);
-  useEffect(() => {
-    if (stats.done > prevDone.current) celebrate();
-    prevDone.current = stats.done;
-  }, [stats.done]);
+
+  const celebrateIfDone = useCallback(
+    (pid: string, sid: string, tid: string, next: Status) => {
+      const t = projetos.find((p) => p.id === pid)?.sections.find((s) => s.id === sid)?.tasks.find((x) => x.id === tid);
+      if (wasTransitionedToDone(t?.status, next)) celebrate();
+    },
+    [projetos],
+  );
+
+  const handleToggleTask = useCallback(
+    (pid: string, sid: string, tid: string) => {
+      const t = projetos.find((p) => p.id === pid)?.sections.find((s) => s.id === sid)?.tasks.find((x) => x.id === tid);
+      if (t && wasTransitionedToDone(t.status, "done")) celebrate();
+      toggleTask(pid, sid, tid);
+    },
+    [projetos, toggleTask],
+  );
+
+  const handleStatusChange = useCallback(
+    (pid: string, sid: string, tid: string, status: Status) => {
+      celebrateIfDone(pid, sid, tid, status);
+      setTaskStatus(pid, sid, tid, status);
+    },
+    [celebrateIfDone, setTaskStatus],
+  );
+
+  const handleFocusAdd = useCallback(() => {
+    const input = document.querySelector<HTMLInputElement>('input[aria-label="nova tarefa"]');
+    if (!input) return;
+    input.scrollIntoView({ block: "center", behavior: "smooth" });
+    input.focus();
+  }, []);
 
   const handleToggleArchive = useCallback(
     (id: string) => {
@@ -116,14 +145,13 @@ export default function Home() {
       onNewProject: () => setNewProjectOpen(true),
       onToggleView: toggleView,
       onToggleTheme: toggleTheme,
-      onHelp: () =>
-        showToast("p projeto · n tarefa · 1-5 filtros · k kanban · t tema · ? ajuda · esc limpa"),
+      onHelp: () => setHelpOpen(true),
       onClearFilters: clear,
-      onFocusAdd: () => {},
+      onFocusAdd: handleFocusAdd,
       onFilterStatus: toggleStatus,
       onUndo: handleUndo,
     },
-    { isModalOpen: () => newProjectOpen },
+    { isModalOpen: () => newProjectOpen || helpOpen },
   );
 
   const counts = stats.byStatus;
@@ -190,9 +218,9 @@ export default function Home() {
             onDelete: (pid, sid) => deleteSection(pid, sid),
           }}
           taskActions={{
-            onToggle: (pid, sid, tid) => toggleTask(pid, sid, tid),
+            onToggle: handleToggleTask,
             onPrioCycle: (pid, sid, tid) => cycleTaskPrio(pid, sid, tid),
-            onStatusChange: (pid, sid, tid, status) => setTaskStatus(pid, sid, tid, status),
+            onStatusChange: handleStatusChange,
             onEdit: (pid, sid, tid, patch) => editTask(pid, sid, tid, patch),
             onDelete: (pid, sid, tid) => deleteTask(pid, sid, tid),
             onMoveTask: (pid, sid, tid, toPid, toSid, index) =>
@@ -307,10 +335,48 @@ export default function Home() {
         />
       )}
 
+      {helpOpen && (
+        <Dialog open onOpenChange={(o) => { if (!o) setHelpOpen(false); }}>
+          <DialogContent
+            showCloseButton={false}
+            className="!sm:max-w-[420px] gap-0 rounded-lg border border-[var(--line-soft)] bg-[var(--panel-2)] p-0 text-[var(--text)] shadow-xl"
+          >
+            <div className="flex items-center justify-between border-b border-[var(--line)] px-4 py-3">
+              <DialogTitle className="text-[13px] font-bold text-[var(--text)]">atalhos e dicas</DialogTitle>
+              <DialogClose
+                render={
+                  <Button type="button" variant="ghost" size="icon-xs" title="fechar" aria-label="fechar">
+                    ×
+                  </Button>
+                }
+              />
+            </div>
+            <div className="grid grid-cols-[auto_1fr] gap-x-4 gap-y-1.5 px-4 py-4 text-xs">
+              <span className="text-[var(--dimmer)]">p</span><span>novo projeto</span>
+              <span className="text-[var(--dimmer)]">n</span><span>focar nova tarefa</span>
+              <span className="text-[var(--dimmer)]">1–5</span><span>filtrar por status</span>
+              <span className="text-[var(--dimmer)]">k</span><span>alternar lista/kanban</span>
+              <span className="text-[var(--dimmer)]">t</span><span>alternar tema claro/escuro</span>
+              <span className="text-[var(--dimmer)]">? </span><span>esta ajuda</span>
+              <span className="text-[var(--dimmer)]">esc</span><span>limpar filtros</span>
+              <span className="text-[var(--dimmer)]">ctrl+z</span><span>desfazer</span>
+            </div>
+            <div className="border-t border-[var(--line)] px-4 py-3 text-xs leading-relaxed text-[var(--muted-text)]">
+              Lista: arraste tarefas entre seções/projetos para mover. Kanban: arraste cartões entre colunas
+              para mudar o status. Dados ficam apenas neste navegador.
+            </div>
+          </DialogContent>
+        </Dialog>
+      )}
+
       <PrivacyNotice />
 
       {toast && (
-        <div className="fixed bottom-5 left-1/2 -translate-x-1/2 z-50 bg-[var(--panel-3)] border border-[var(--line)] text-[var(--text)] text-xs px-4 py-2 rounded-md shadow-lg">
+        <div
+          role="status"
+          aria-live="polite"
+          className="fixed bottom-16 left-1/2 -translate-x-1/2 z-50 bg-[var(--panel-3)] border border-[var(--line)] text-[var(--text)] text-xs px-4 py-2 rounded-md shadow-lg"
+        >
           {toast}
         </div>
       )}

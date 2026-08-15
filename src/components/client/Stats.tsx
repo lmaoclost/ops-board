@@ -17,8 +17,8 @@ export function Stats({ stats, filters, onTogglePrioSort }: StatsProps) {
 
   const hint =
     filters.view === "kanban"
-      ? "kanban: arraste cartão pra coluna p/ mudar status"
-      : "status-dock: arraste tarefas p/ mudar status";
+      ? "kanban: arraste cartão entre colunas p/ mudar status"
+      : "lista: arraste tarefas entre seções/projetos p/ mover";
 
   return (
     <div className="text-[11px] text-[var(--muted-text)] flex flex-wrap gap-x-4 gap-y-1" role="status">
