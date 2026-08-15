@@ -12,6 +12,7 @@ import {
 import type { Project, Status, TaskPatch } from "@/lib/types";
 import { Section, type SectionTaskActions as SectionLevelTaskActions } from "./Section";
 import type { SectionLevelActions, TaskLevelActions } from "./Board";
+import type { Filters } from "@/lib/filter";
 
 export interface ProjectActions {
   onAddSection: (title: string) => void;
@@ -30,6 +31,7 @@ export interface ProjectCardProps {
   onDelete: (id: string) => void;
   onToggleArchive: () => void;
   prioSort?: boolean;
+  filters?: Filters;
 }
 
 type ModalState =
@@ -37,7 +39,7 @@ type ModalState =
   | { kind: "add-section" }
   | null;
 
-export function ProjectCard({ project, collectActions, onAddSection, onRename, onDelete, onToggleArchive, prioSort }: ProjectCardProps) {
+export function ProjectCard({ project, collectActions, onAddSection, onRename, onDelete, onToggleArchive, prioSort, filters }: ProjectCardProps) {
   const [modal, setModal] = useState<ModalState>(null);
   const actions = collectActions(project.id);
 
@@ -130,6 +132,7 @@ export function ProjectCard({ project, collectActions, onAddSection, onRename, o
             onDelete={() => actions.sectionActions.onDelete(s.id)}
             taskActions={secTaskActions}
             prioSort={prioSort}
+            filters={filters}
           />
         );
       })}
