@@ -20,6 +20,7 @@ const base = (over: Partial<BoardProps> = {}): BoardProps => ({
   projetos: [projeto],
   filters: defaultFilters,
   onNewProject: vi.fn(),
+  onClearFilters: vi.fn(),
   projectActions: {
     onAddSection: vi.fn(),
     onRename: vi.fn(),
@@ -55,6 +56,13 @@ describe("Board (lista)", () => {
   it("mostra aviso quando nada casa com o filtro", () => {
     render(<Board {...base({ filters: { ...defaultFilters, query: "inexistente" } })} />);
     expect(screen.getByText(/nada casa com o filtro/)).toBeTruthy();
+  });
+
+  it("CTA limpar filtros no empty state chama onClearFilters", async () => {
+    const p = base({ filters: { ...defaultFilters, query: "inexistente" } });
+    render(<Board {...p} />);
+    await userEvent.click(screen.getByRole("button", { name: "✕ limpar filtros" }));
+    expect(p.onClearFilters).toHaveBeenCalledTimes(1);
   });
 
   it("renderiza projetos correspondentes ao filtro", () => {

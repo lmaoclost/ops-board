@@ -205,6 +205,7 @@ export default function Home() {
           projetos={boardProjetos}
           filters={filters}
           onNewProject={() => setNewProjectOpen(true)}
+          onClearFilters={clear}
           projectActions={{
             onAddSection: (pid, title) => addSection(pid, title),
             onRename: (id, title, blocked) => renameProject(id, title, blocked),
