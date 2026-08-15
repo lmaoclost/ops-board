@@ -1,4 +1,5 @@
 import type { Metadata } from "next";
+import Link from "next/link";
 
 export const metadata: Metadata = {
   title: "Privacidade — OpsBoard",
@@ -36,7 +37,14 @@ const SECTIONS = [
 export default function PrivacidadePage() {
   return (
     <main className="mx-auto max-w-2xl px-4 py-10">
-      <h1 className="text-2xl font-bold tracking-tight text-[var(--text)]">Política de privacidade</h1>
+      <Link
+        href="/"
+        className="inline-flex items-center gap-1.5 text-sm text-[var(--muted-text)] hover:text-[var(--text)]"
+        title="voltar para o quadro"
+      >
+        ← Voltar
+      </Link>
+      <h1 className="mt-4 text-2xl font-bold tracking-tight text-[var(--text)]">Política de privacidade</h1>
       <p className="mt-2 text-sm text-[var(--muted-text)]">
         OpsBoard — controle de tarefas. Dados ficam apenas no seu navegador.
       </p>

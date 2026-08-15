@@ -35,7 +35,7 @@ export function chime(): void {
 export function celebrate(): void {
   chime();
   try {
-    confetti({ particleCount: 90, spread: 70, origin: { y: 0.6 }, zIndex: 60 });
+    confetti({ particleCount: 120, spread: 80, origin: { y: 0.6 }, zIndex: 70 });
   } catch {
     return;
   }
