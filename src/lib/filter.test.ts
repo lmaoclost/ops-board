@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { isFiltering, matchTask, projMatches, sectMatches, sortTasks, visibleProjetos, type Filters } from "./filter";
+import { isFiltering, matchTask, projMatches, sectMatches, sortTasks, visibleProjetos, visibleTasks, type Filters } from "./filter";
 import type { Project, Section, Task } from "./types";
 
 const task = (over: Partial<Task> = {}): Task => ({
@@ -96,6 +96,38 @@ describe("projMatches", () => {
   it("não casa projeto sem seções correspondentes", () => {
     const p = project({ sections: [section({ tasks: [task({ text: "a" })] })] });
     expect(projMatches(p, { ...none, status: "doing" })).toBe(false);
+  });
+
+  it("casa projeto cujo título contém a query", () => {
+    expect(projMatches(project({ title: "Projeto Alfa" }), { ...none, query: "alfa" })).toBe(true);
+    expect(projMatches(project({ title: "Projeto Beta" }), { ...none, query: "alfa" })).toBe(false);
+  });
+});
+
+describe("visibleTasks", () => {
+  const tasks = [
+    task({ id: "t1", text: "relatório", status: "todo" }),
+    task({ id: "t2", text: "reunião", status: "doing" }),
+    task({ id: "t3", text: "café", status: "todo", blocked: true }),
+  ];
+
+  it("sem filtros, retorna todas", () => {
+    expect(visibleTasks(tasks, none)).toHaveLength(3);
+  });
+
+  it("com query, retorna só as tarefas que casam", () => {
+    const out = visibleTasks(tasks, { ...none, query: "re" });
+    expect(out.map((t) => t.id)).toEqual(["t1", "t2"]);
+  });
+
+  it("com status, retorna só as tarefas do status", () => {
+    const out = visibleTasks(tasks, { ...none, status: "doing" });
+    expect(out.map((t) => t.id)).toEqual(["t2"]);
+  });
+
+  it("não muta a origem", () => {
+    visibleTasks(tasks, { ...none, query: "café" });
+    expect(tasks).toHaveLength(3);
   });
 });
 

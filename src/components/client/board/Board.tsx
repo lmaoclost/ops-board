@@ -144,6 +144,7 @@ export function Board({ projetos, filters, onNewProject, onClearFilters, project
             onDelete={(id) => projectActions.onDelete(id)}
             onToggleArchive={() => projectActions.onToggleArchive(p.id)}
             prioSort={filters.prioSort}
+            filters={filters}
           />
         ))}
       </div>

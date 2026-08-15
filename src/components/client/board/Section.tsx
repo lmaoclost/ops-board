@@ -10,7 +10,7 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import { Input } from "@/components/ui/input";
-import { sortTasks } from "@/lib/filter";
+import { sortTasks, visibleTasks, type Filters } from "@/lib/filter";
 import type { TaskPatch, Task } from "@/lib/types";
 import { SortableTaskItem } from "@/components/client/dnd/SortableTaskItem";
 import { TaskEditModal } from "@/components/client/board/TaskEditModal";
@@ -38,9 +38,10 @@ export interface SectionProps {
   onDelete: () => void;
   taskActions: SectionTaskActions;
   prioSort?: boolean;
+  filters?: Filters;
 }
 
-export function Section({ projectId, section, onToggleSection, onAddTask, onRename, onDelete, taskActions, prioSort }: SectionProps) {
+export function Section({ projectId, section, onToggleSection, onAddTask, onRename, onDelete, taskActions, prioSort, filters }: SectionProps) {
   const [draft, setDraft] = useState("");
   const [editingId, setEditingId] = useState<string | null>(null);
   const [renaming, setRenaming] = useState(false);
@@ -126,7 +127,7 @@ export function Section({ projectId, section, onToggleSection, onAddTask, onRena
             ref={setDropRef}
             className={`flex flex-col gap-0.5 rounded-md ${isOver ? "outline outline-1 outline-[var(--fired)]/50" : ""}`}
           >
-            {sortTasks(section.tasks, !!prioSort, (t) => t.prio).map((t) => (
+            {sortTasks(filters ? visibleTasks(section.tasks, filters) : section.tasks, !!prioSort, (t) => t.prio).map((t) => (
               <SortableTaskItem
                 key={t.id}
                 task={t}

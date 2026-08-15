@@ -32,9 +32,15 @@ export function sectMatches(s: Section, f: Filters): boolean {
   return !!f.query && titleNotesMatch(s, f.query);
 }
 
-/** Projeto visível: alguma seção visível. */
+/** Tarefas visíveis sob filtros: com query/status ativos, só as que casam. */
+export function visibleTasks(tasks: Task[], f: Filters): Task[] {
+  return isFiltering(f) ? tasks.filter((t) => matchTask(t, f)) : tasks;
+}
+
+/** Projeto visível: título casa a query ou alguma seção visível. */
 export function projMatches(p: Project, f: Filters): boolean {
   if (!isFiltering(f)) return true;
+  if (f.query && p.title.toLowerCase().includes(f.query.toLowerCase())) return true;
   return p.sections.some((s) => sectMatches(s, f));
 }
 
