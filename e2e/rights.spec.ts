@@ -7,6 +7,7 @@ const SEED = {
       id: "p1",
       title: "alpha",
       blocked: false,
+      archived: false,
       sections: [
         {
           id: "s1",
@@ -21,6 +22,7 @@ const SEED = {
       id: "p2",
       title: "beta",
       blocked: true,
+      archived: false,
       sections: [
         {
           id: "s2",
