@@ -10,11 +10,11 @@ export interface ChipDef {
 }
 
 const CHIPS: ChipDef[] = [
-  { key: "todo", label: "todo", cls: "text-slate-400" },
-  { key: "doing", label: "doing", cls: "text-cyan-400" },
-  { key: "waiting", label: "waiting", cls: "text-amber-400" },
-  { key: "done", label: "done", cls: "text-emerald-400" },
-  { key: "blocked", label: "bloq", cls: "text-red-400" },
+  { key: "todo", label: "todo", cls: "text-[var(--todo)]" },
+  { key: "doing", label: "doing", cls: "text-[var(--flow)]" },
+  { key: "waiting", label: "waiting", cls: "text-[var(--warn)]" },
+  { key: "done", label: "done", cls: "text-[var(--fired)]" },
+  { key: "blocked", label: "bloq", cls: "text-[var(--gave)]" },
 ];
 
 interface FilterChipsProps {
@@ -68,7 +68,7 @@ export function FilterChips({
         onClick={onToggleArchived}
         title="mostrar/ocultar projetos arquivados"
         aria-pressed={archivedActive}
-        className={`text-violet-400 ${archivedActive ? "border-current bg-[var(--hover)]" : "opacity-60"}`}
+        className={`text-[var(--violet)] ${archivedActive ? "border-current bg-[var(--hover)]" : "opacity-60"}`}
       >
         arquivados
         <span className="opacity-60">{archivedCount}</span>

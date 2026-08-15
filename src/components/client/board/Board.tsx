@@ -102,7 +102,7 @@ export function Board({ projetos, filters, onNewProject, projectActions, section
         <button
           type="button"
           onClick={onNewProject}
-          className="rounded-md bg-emerald-400 px-3 py-1.5 text-xs font-bold text-[#0a0d12]"
+          className="rounded-md bg-[var(--fired)] px-3 py-1.5 text-xs font-bold text-primary-foreground"
         >
           + criar primeiro projeto
         </button>

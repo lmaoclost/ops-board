@@ -195,7 +195,7 @@ export default function Home() {
         <button
           type="button"
           onClick={() => setConfirmClearOpen(true)}
-          className="text-[11px] text-[var(--dimmer)] underline underline-offset-2 hover:text-red-400 cursor-pointer"
+          className="text-[11px] text-[var(--dimmer)] underline underline-offset-2 hover:text-[var(--gave)] cursor-pointer"
           title="remove todos os projetos deste navegador"
         >
           apagar todos os dados
@@ -228,9 +228,8 @@ export default function Home() {
               </Button>
               <Button
                 type="button"
-                variant="default"
+                variant="destructive"
                 size="sm"
-                className="bg-red-500 hover:bg-red-600"
                 onClick={() => {
                   reset();
                   setConfirmClearOpen(false);
@@ -261,7 +260,7 @@ export default function Home() {
       <PrivacyNotice />
 
       {toast && (
-        <div className="fixed bottom-5 left-1/2 -translate-x-1/2 z-50 bg-[var(--panel-3)] border border-zinc-600 text-[var(--text)] text-xs px-4 py-2 rounded-md shadow-lg">
+        <div className="fixed bottom-5 left-1/2 -translate-x-1/2 z-50 bg-[var(--panel-3)] border border-[var(--line)] text-[var(--text)] text-xs px-4 py-2 rounded-md shadow-lg">
           {toast}
         </div>
       )}

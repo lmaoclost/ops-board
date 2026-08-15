@@ -25,16 +25,16 @@ export interface TaskRowProps {
 export const NEXT_PRIO: Record<Prio, Prio> = { 1: 2, 2: 3, 3: 1 };
 
 const LED: Record<Status, string> = {
-  todo: "bg-slate-500",
-  doing: "bg-cyan-400",
-  waiting: "bg-amber-400",
-  done: "bg-emerald-400",
+  todo: "bg-[var(--todo)]",
+  doing: "bg-[var(--flow)]",
+  waiting: "bg-[var(--warn)]",
+  done: "bg-[var(--fired)]",
 };
 
 const PRIO_CLS: Record<Prio, string> = {
-  1: "text-red-400 border-red-500/40 bg-red-500/10",
-  2: "text-amber-400 border-amber-500/40 bg-amber-500/10",
-  3: "text-[var(--muted-text)] border-zinc-600",
+  1: "text-[var(--gave)] border-[var(--gave)]/40 bg-[var(--gave)]/10",
+  2: "text-[var(--warn)] border-[var(--warn)]/40 bg-[var(--warn)]/10",
+  3: "text-[var(--muted-text)] border-[var(--line)]",
 };
 
 export function TaskRow({ task, onToggle, onPrioCycle, onStatusChange, onEdit, onDelete }: TaskRowProps) {
@@ -45,18 +45,22 @@ export function TaskRow({ task, onToggle, onPrioCycle, onStatusChange, onEdit, o
   return (
     <div
       data-testid="task-row"
-      className={`flex items-center gap-2.5 rounded-md px-2 py-1.5 transition-colors hover:bg-[var(--hover)] ${done ? "" : ""}`}
+      className={`group flex items-center gap-2.5 rounded-md px-2 py-1.5 transition-colors hover:bg-[var(--hover)] ${done ? "" : ""}`}
     >
       <button
         type="button"
         onClick={onToggle}
         title="alternar concluída"
         aria-label="alternar concluída"
-        className={`h-2 w-2 shrink-0 rounded-full ${task.blocked ? "bg-red-400" : LED[task.status]} ${done ? "bg-emerald-400" : ""} transition-transform hover:scale-125`}
-      />
-      <span className="min-w-0 flex-1 text-[12.5px] leading-snug break-words text-[var(--text)]">
+        className={`flex h-6 w-6 shrink-0 items-center justify-center rounded-full transition-colors hover:bg-[var(--hover)]`}
+      >
         <span
-          className={done ? "text-[var(--dim)] line-through decoration-zinc-700" : ""}
+          className={`h-2 w-2 rounded-full ${task.blocked ? "bg-[var(--gave)]" : LED[task.status]} ${done ? "bg-[var(--fired)]" : ""} transition-transform group-hover:scale-110`}
+        />
+      </button>
+      <span className="min-w-0 flex-1 text-[13px] leading-snug break-words text-[var(--text)]">
+        <span
+          className={done ? "text-[var(--dim)] line-through decoration-[var(--line)]" : ""}
           dangerouslySetInnerHTML={{ __html: linkify(task.text) }}
         />
         {task.note && (
@@ -67,7 +71,7 @@ export function TaskRow({ task, onToggle, onPrioCycle, onStatusChange, onEdit, o
         )}
       </span>
       {task.blocked && (
-        <Badge variant="destructive" className="rounded-[4px] px-1.5 text-[10px] font-bold uppercase tracking-[0.08em]">
+        <Badge variant="destructive" className="rounded-[4px] px-1.5 text-[11px] font-bold uppercase tracking-[0.08em]">
           bloqueada
         </Badge>
       )}
@@ -77,7 +81,7 @@ export function TaskRow({ task, onToggle, onPrioCycle, onStatusChange, onEdit, o
             type="button"
             onClick={onPrioCycle}
             aria-label="prioridade: clique pra mudar"
-            className={`shrink-0 rounded px-1.5 py-0.5 border text-[10px] font-bold ${PRIO_CLS[task.prio]}`}
+            className={`shrink-0 rounded px-1.5 py-0.5 border text-[11px] font-bold ${PRIO_CLS[task.prio]}`}
           >
             {PRIO_KEYS[task.prio]}
           </button>
@@ -88,14 +92,14 @@ export function TaskRow({ task, onToggle, onPrioCycle, onStatusChange, onEdit, o
         (overdue ? (
           <Badge
             variant="destructive"
-            className="rounded-[4px] px-1.5 text-[10px] font-bold uppercase tracking-[0.08em]"
+            className="rounded-[4px] px-1.5 text-[11px] font-bold uppercase tracking-[0.08em]"
             title={`vencimento ${task.due}`}
           >
             {fmtDate(task.due)} vencida
           </Badge>
         ) : (
           <span
-            className={`shrink-0 text-[10.5px] font-semibold ${dueSoon ? "text-amber-400" : "text-[var(--muted-text)]"}`}
+            className={`shrink-0 text-[10.5px] font-semibold ${dueSoon ? "text-[var(--warn)]" : "text-[var(--muted-text)]"}`}
             title={`vencimento ${task.due}`}
           >
             {fmtDate(task.due)}
@@ -109,7 +113,7 @@ export function TaskRow({ task, onToggle, onPrioCycle, onStatusChange, onEdit, o
           size="sm"
           aria-label="status"
           title="mudar status"
-          className="h-7 border-[var(--line)] bg-[var(--field)] px-2 text-[11px] text-[var(--muted-text)] hover:border-zinc-600 hover:text-[var(--text)]"
+          className="h-7 border-[var(--line)] bg-[var(--field)] px-2 text-[11px] text-[var(--muted-text)] hover:border-[var(--muted-text)] hover:text-[var(--text)]"
         >
           <SelectValue />
         </SelectTrigger>

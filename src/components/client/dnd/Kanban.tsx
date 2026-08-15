@@ -48,7 +48,7 @@ function DroppableCol({ status, items }: { status: Status; items: FlatTask[] }) 
   return (
     <div
       ref={setNodeRef}
-      className={`flex min-w-[200px] flex-1 flex-col rounded-lg border ${isOver ? "border-emerald-400/60" : "border-[var(--line)]"} bg-[var(--panel)]`}
+      className={`flex min-w-[200px] flex-1 flex-col rounded-lg border ${isOver ? "border-[var(--fired)]/60" : "border-[var(--line)]"} bg-[var(--panel)]`}
     >
       <header className="border-b border-[var(--line)] px-3 py-2 text-[11px] font-bold uppercase tracking-wider text-[var(--muted-text)]">
         {STATUS_LABEL[status]} <span className="text-[var(--dimmer)]">{items.length}</span>

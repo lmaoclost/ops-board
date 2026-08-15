@@ -44,6 +44,8 @@
   --gave: #f87171;
   --warn: #fbbf24;
   --flow: #22d3ee;
+  --todo: #94a3b8;
+  --violet: #a78bfa;
   --bg: #0a0d12;
   --panel: #0f141b;
   --panel-2: #151c26;
@@ -54,8 +56,8 @@
   --hover: oklch(0.16 0.005 240 / 0.5);
   --text: #c6d0dd;
   --muted-text: #8b98a9;
-  --dim: rgba(198, 208, 221, 0.38);
-  --dimmer: rgba(198, 208, 221, 0.26);
+  --dim: #7d8a9c;
+  --dimmer: #707c8c;
   --background: var(--bg);
   --foreground: var(--text);
   --card: var(--panel);
@@ -79,6 +81,12 @@
 
 html.light {
   color-scheme: light;
+  --fired: #047857;
+  --gave: #b91c1c;
+  --warn: #b45309;
+  --flow: #0e7490;
+  --todo: #475569;
+  --violet: #7c3aed;
   --bg: #f2f4f7;
   --panel: #ffffff;
   --panel-2: #ffffff;
@@ -89,8 +97,8 @@ html.light {
   --hover: rgba(15, 23, 42, 0.05);
   --text: #272c33;
   --muted-text: #5b6572;
-  --dim: rgba(39, 44, 51, 0.45);
-  --dimmer: rgba(39, 44, 51, 0.3);
+  --dim: #5b6572;
+  --dimmer: #64707f;
 }
 
 html {

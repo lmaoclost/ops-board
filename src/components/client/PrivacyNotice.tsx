@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from "react";
 import Link from "next/link";
-import { Button } from "@/components/ui/button";
+import { Button, buttonVariants } from "@/components/ui/button";
 
 const NOTICE_KEY = "opsboard.notice-v1";
 
@@ -34,9 +34,12 @@ export function PrivacyNotice() {
         tudo pelos controles do quadro. Veja a política completa na página de privacidade.
       </p>
       <div className="mt-3 flex items-center justify-end gap-2">
-        <Button type="button" variant="ghost" size="xs" render={<Link href="/privacidade" />}>
+        <Link
+          href="/privacidade"
+          className={buttonVariants({ variant: "ghost", size: "xs" }) + " text-[var(--muted-text)]"}
+        >
           política completa
-        </Button>
+        </Link>
         <Button type="button" variant="default" size="sm" onClick={dismiss}>
           entendi
         </Button>

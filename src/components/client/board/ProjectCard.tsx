@@ -55,15 +55,15 @@ export function ProjectCard({ project, collectActions, onAddSection, onRename, o
   return (
     <section className="rounded-lg border border-[var(--line)] bg-[var(--panel)]">
       <div className="flex items-center gap-2 border-b border-[var(--line)] px-3.5 py-2.5">
-        <span className="font-bold text-emerald-400">##</span>
+        <span className="font-bold text-[var(--fired)]">##</span>
         <h2 className="break-words text-[13px] font-bold tracking-wide text-[var(--text)]">{project.title}</h2>
         {project.blocked && (
-          <Badge variant="destructive" className="rounded-[4px] px-1.5 text-[10px] font-bold uppercase tracking-[0.08em]">
+          <Badge variant="destructive" className="rounded-[4px] px-1.5 text-[11px] font-bold uppercase tracking-[0.08em]">
             stuck
           </Badge>
         )}
         {project.archived && (
-          <Badge variant="outline" className="rounded-[4px] px-1.5 text-[10px] font-bold uppercase tracking-[0.08em]">
+          <Badge variant="outline" className="rounded-[4px] px-1.5 text-[11px] font-bold uppercase tracking-[0.08em]">
             arquivado
           </Badge>
         )}
