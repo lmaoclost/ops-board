@@ -38,7 +38,10 @@ export default function Home() {
   const moveTask = useBoard((s) => s.moveTask);
   const importState = useBoard((s) => s.importState);
   const reset = useBoard((s) => s.reset);
+  const undo = useBoard((s) => s.undo);
+  const canUndo = useBoard((s) => s.canUndo);
   const [confirmClearOpen, setConfirmClearOpen] = useState(false);
+  const [confirmImportOpen, setConfirmImportOpen] = useState(false);
   const { filters, setQuery, toggleStatus, togglePrioSort, toggleView, toggleArchived, clear } = useFilters();
   const { resolvedTheme, setTheme } = useTheme();
   const isDark = resolvedTheme !== "light";
@@ -102,6 +105,12 @@ export default function Home() {
     [importState],
   );
 
+  const handleUndo = useCallback(() => {
+    if (!canUndo) return;
+    undo();
+    showToast("desfeito");
+  }, [canUndo, undo, showToast]);
+
   useShortcuts(
     {
       onNewProject: () => setNewProjectOpen(true),
@@ -112,6 +121,7 @@ export default function Home() {
       onClearFilters: clear,
       onFocusAdd: () => {},
       onFilterStatus: toggleStatus,
+      onUndo: handleUndo,
     },
     { isModalOpen: () => newProjectOpen },
   );
@@ -131,7 +141,7 @@ export default function Home() {
         onToggleTheme={toggleTheme}
         onNewProject={() => setNewProjectOpen(true)}
         onExport={handleExport}
-        onImport={() => fileRef.current?.click()}
+        onImport={() => setConfirmImportOpen(true)}
       />
       <input
         ref={fileRef}
@@ -220,7 +230,7 @@ export default function Home() {
             </div>
             <div className="px-4 py-4 text-xs leading-relaxed text-[var(--muted-text)]">
               Isso remove {projetos.length} projeto(s) deste navegador. Considere exportar um backup antes.
-              Esta ação não pode ser desfeita.
+              Você pode desfazer com Ctrl+Z.
             </div>
             <div className="flex justify-end gap-2 px-4 pb-4">
               <Button type="button" variant="ghost" size="xs" onClick={() => setConfirmClearOpen(false)}>
@@ -237,6 +247,46 @@ export default function Home() {
                 }}
               >
                 apagar tudo
+              </Button>
+            </div>
+          </DialogContent>
+        </Dialog>
+      )}
+
+      {confirmImportOpen && (
+        <Dialog open onOpenChange={(o) => { if (!o) setConfirmImportOpen(false); }}>
+          <DialogContent
+            showCloseButton={false}
+            className="!sm:max-w-[380px] gap-0 rounded-lg border border-[var(--line-soft)] bg-[var(--panel-2)] p-0 text-[var(--text)] shadow-xl"
+          >
+            <div className="flex items-center justify-between border-b border-[var(--line)] px-4 py-3">
+              <DialogTitle className="text-[13px] font-bold text-[var(--text)]">importar backup</DialogTitle>
+              <DialogClose
+                render={
+                  <Button type="button" variant="ghost" size="icon-xs" title="fechar" aria-label="fechar">
+                    ×
+                  </Button>
+                }
+              />
+            </div>
+            <div className="px-4 py-4 text-xs leading-relaxed text-[var(--muted-text)]">
+              Importar substitui {projetos.length} projeto(s) atual(is). Exporte um backup antes se quiser
+              preservá-los. Você pode desfazer com Ctrl+Z.
+            </div>
+            <div className="flex justify-end gap-2 px-4 pb-4">
+              <Button type="button" variant="ghost" size="xs" onClick={() => setConfirmImportOpen(false)}>
+                cancelar
+              </Button>
+              <Button
+                type="button"
+                variant="default"
+                size="sm"
+                onClick={() => {
+                  setConfirmImportOpen(false);
+                  fileRef.current?.click();
+                }}
+              >
+                escolher arquivo
               </Button>
             </div>
           </DialogContent>

@@ -64,7 +64,7 @@ test("adiciona seção extra, edita tarefa: texto, prioridade, vencimento, nota 
   await expect(page.getByRole("button", { name: "bloq 1" })).toBeVisible();
 });
 
-test("exclui tarefa, seção e projeto (com confirmação)", async ({ page }) => {
+test("exclui tarefa, seção e projeto (sem confirm nativo, undo cobre)", async ({ page }) => {
   await page.goto("/");
   await createProject(page, "app");
   await addTask(page, "tarefa a");
@@ -76,7 +76,6 @@ test("exclui tarefa, seção e projeto (com confirmação)", async ({ page }) =>
   await page.getByRole("menuitem", { name: "excluir seção" }).click();
   await expect(page.getByText("geral", { exact: true })).toHaveCount(0);
 
-  page.once("dialog", (dialog) => void dialog.accept());
   await page.getByRole("button", { name: "ações do projeto", exact: true }).click();
   await page.getByRole("menuitem", { name: "excluir projeto" }).click();
   await expect(page.getByText("nenhum projeto na fila.")).toBeVisible();

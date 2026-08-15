@@ -24,6 +24,8 @@ const safeLocalStorage = {
 
 interface BoardStore {
   projetos: Project[];
+  canUndo: boolean;
+  undo: () => void;
   addProject: (title: string) => void;
   renameProject: (id: string, title: string, blocked: boolean) => void;
   deleteProject: (id: string) => void;
@@ -66,200 +68,247 @@ const makeTask = (text: string): Section["tasks"][number] => ({
 });
 
 export function createBoardStore(initial: Project[] = []) {
+  const undoStack: string[] = [];
+  const MAX_UNDO = 50;
   return create<BoardStore>()(
     persist(
-      (set) => ({
+      (set, get) => {
+        const commit = (fn: () => void) => {
+          const prev = JSON.stringify(get().projetos);
+          fn();
+          if (JSON.stringify(get().projetos) !== prev) {
+            undoStack.push(prev);
+            if (undoStack.length > MAX_UNDO) undoStack.shift();
+            set({ canUndo: true });
+          }
+        };
+        return {
         projetos: initial,
+        canUndo: false,
+
+        undo: () => {
+          const snap = undoStack.pop();
+          if (snap === undefined) return;
+          set({ projetos: JSON.parse(snap) as Project[] });
+          set({ canUndo: undoStack.length > 0 });
+        },
 
         addProject: (title) =>
-          set((s) => ({
-            projetos: [
-              ...s.projetos,
-              {
-                id: uid(),
-                title,
-                blocked: false,
-                archived: false,
-                sections: [{ id: uid(), title: "geral", tasks: [], notes: "", collapsed: false }],
-              },
-            ],
-          })),
+          commit(() =>
+            set((s) => ({
+              projetos: [
+                ...s.projetos,
+                {
+                  id: uid(),
+                  title,
+                  blocked: false,
+                  archived: false,
+                  sections: [{ id: uid(), title: "geral", tasks: [], notes: "", collapsed: false }],
+                },
+              ],
+            })),
+          ),
 
         renameProject: (id, title, blocked) =>
-          set((s) => ({
-            projetos: s.projetos.map((p) => (p.id === id ? { ...p, title, blocked } : p)),
-          })),
+          commit(() =>
+            set((s) => ({
+              projetos: s.projetos.map((p) => (p.id === id ? { ...p, title, blocked } : p)),
+            })),
+          ),
 
-        deleteProject: (id) => set((s) => ({ projetos: s.projetos.filter((p) => p.id !== id) })),
+        deleteProject: (id) =>
+          commit(() => set((s) => ({ projetos: s.projetos.filter((p) => p.id !== id) }))),
 
         toggleProjectArchive: (id) =>
-          set((s) => ({
-            projetos: s.projetos.map((p) => (p.id === id ? { ...p, archived: !p.archived } : p)),
-          })),
+          commit(() =>
+            set((s) => ({
+              projetos: s.projetos.map((p) => (p.id === id ? { ...p, archived: !p.archived } : p)),
+            })),
+          ),
 
         addSection: (pid, title) =>
-          set((s) => ({
-            projetos: s.projetos.map((p) =>
-              p.id === pid
-                ? { ...p, sections: [...p.sections, { id: uid(), title, tasks: [], notes: "", collapsed: false }] }
-                : p,
-            ),
-          })),
+          commit(() =>
+            set((s) => ({
+              projetos: s.projetos.map((p) =>
+                p.id === pid
+                  ? { ...p, sections: [...p.sections, { id: uid(), title, tasks: [], notes: "", collapsed: false }] }
+                  : p,
+              ),
+            })),
+          ),
 
         renameSection: (pid, sid, title) =>
-          set((s) => ({
-            projetos: s.projetos.map((p) =>
-              p.id === pid
-                ? { ...p, sections: p.sections.map((sec) => (sec.id === sid ? { ...sec, title } : sec)) }
-                : p,
-            ),
-          })),
+          commit(() =>
+            set((s) => ({
+              projetos: s.projetos.map((p) =>
+                p.id === pid
+                  ? { ...p, sections: p.sections.map((sec) => (sec.id === sid ? { ...sec, title } : sec)) }
+                  : p,
+              ),
+            })),
+          ),
 
         deleteSection: (pid, sid) =>
-          set((s) => ({
-            projetos: s.projetos.map((p) =>
-              p.id === pid ? { ...p, sections: p.sections.filter((sec) => sec.id !== sid) } : p,
-            ),
-          })),
+          commit(() =>
+            set((s) => ({
+              projetos: s.projetos.map((p) =>
+                p.id === pid ? { ...p, sections: p.sections.filter((sec) => sec.id !== sid) } : p,
+              ),
+            })),
+          ),
 
         addTask: (pid, sid, text) =>
-          set((s) => ({
-            projetos: s.projetos.map((p) =>
-              p.id === pid
-                ? {
-                    ...p,
-                    sections: p.sections.map((sec) =>
-                      sec.id === sid ? { ...sec, tasks: [...sec.tasks, makeTask(text.trim())] } : sec,
-                    ),
-                  }
-                : p,
-            ),
-          })),
+          commit(() =>
+            set((s) => ({
+              projetos: s.projetos.map((p) =>
+                p.id === pid
+                  ? {
+                      ...p,
+                      sections: p.sections.map((sec) =>
+                        sec.id === sid ? { ...sec, tasks: [...sec.tasks, makeTask(text.trim())] } : sec,
+                      ),
+                    }
+                  : p,
+              ),
+            })),
+          ),
 
         editTask: (pid, sid, tid, patch) =>
-          set((s) => ({
-            projetos: s.projetos.map((p) =>
-              p.id === pid
-                ? {
-                    ...p,
-                    sections: p.sections.map((sec) =>
-                      sec.id === sid
-                        ? {
-                            ...sec,
-                            tasks: sec.tasks.map((t) =>
-                              t.id === tid
-                                ? {
-                                    ...t,
-                                    text: patch.text ?? t.text,
-                                    note: patch.note ?? t.note,
-                                    blocked: patch.blocked ?? t.blocked,
-                                    prio: patch.prio ?? t.prio,
-                                    due: patch.due ?? t.due,
-                                  }
-                                : t,
-                            ),
-                          }
-                        : sec,
-                    ),
-                  }
-                : p,
-            ),
-          })),
+          commit(() =>
+            set((s) => ({
+              projetos: s.projetos.map((p) =>
+                p.id === pid
+                  ? {
+                      ...p,
+                      sections: p.sections.map((sec) =>
+                        sec.id === sid
+                          ? {
+                              ...sec,
+                              tasks: sec.tasks.map((t) =>
+                                t.id === tid
+                                  ? {
+                                      ...t,
+                                      text: patch.text ?? t.text,
+                                      note: patch.note ?? t.note,
+                                      blocked: patch.blocked ?? t.blocked,
+                                      prio: patch.prio ?? t.prio,
+                                      due: patch.due ?? t.due,
+                                    }
+                                  : t,
+                              ),
+                            }
+                          : sec,
+                      ),
+                    }
+                  : p,
+              ),
+            })),
+          ),
 
         deleteTask: (pid, sid, tid) =>
-          set((s) => ({
-            projetos: s.projetos.map((p) =>
-              p.id === pid
-                ? {
-                    ...p,
-                    sections: p.sections.map((sec) =>
-                      sec.id === sid ? { ...sec, tasks: sec.tasks.filter((t) => t.id !== tid) } : sec,
-                    ),
-                  }
-                : p,
-            ),
-          })),
+          commit(() =>
+            set((s) => ({
+              projetos: s.projetos.map((p) =>
+                p.id === pid
+                  ? {
+                      ...p,
+                      sections: p.sections.map((sec) =>
+                        sec.id === sid ? { ...sec, tasks: sec.tasks.filter((t) => t.id !== tid) } : sec,
+                      ),
+                    }
+                  : p,
+              ),
+            })),
+          ),
 
         setTaskStatus: (pid, sid, tid, status) =>
-          set((s) => {
-            const t = findTask(s.projetos, pid, sid, tid);
-            if (!t) return s;
-            const wasDone = t.status === "done";
-            const doneAt = status === "done" && !wasDone ? new Date().toISOString() : status !== "done" && wasDone ? null : t.doneAt;
-            return {
-              projetos: s.projetos.map((p) =>
-                p.id === pid
-                  ? {
-                      ...p,
-                      sections: p.sections.map((sec) =>
-                        sec.id === sid
-                          ? { ...sec, tasks: sec.tasks.map((x) => (x.id === tid ? { ...x, status, doneAt } : x)) }
-                          : sec,
-                      ),
-                    }
-                  : p,
-              ),
-            };
-          }),
+          commit(() =>
+            set((s) => {
+              const t = findTask(s.projetos, pid, sid, tid);
+              if (!t) return s;
+              const wasDone = t.status === "done";
+              const doneAt = status === "done" && !wasDone ? new Date().toISOString() : status !== "done" && wasDone ? null : t.doneAt;
+              return {
+                projetos: s.projetos.map((p) =>
+                  p.id === pid
+                    ? {
+                        ...p,
+                        sections: p.sections.map((sec) =>
+                          sec.id === sid
+                            ? { ...sec, tasks: sec.tasks.map((x) => (x.id === tid ? { ...x, status, doneAt } : x)) }
+                            : sec,
+                        ),
+                      }
+                    : p,
+                ),
+              };
+            }),
+          ),
 
         setTaskPrio: (pid, sid, tid, prio) =>
-          set((s) => ({
-            projetos: s.projetos.map((p) =>
-              p.id === pid
-                ? {
-                    ...p,
-                    sections: p.sections.map((sec) =>
-                      sec.id === sid
-                        ? { ...sec, tasks: sec.tasks.map((t) => (t.id === tid ? { ...t, prio } : t)) }
-                        : sec,
-                    ),
-                  }
-                : p,
-            ),
-          })),
+          commit(() =>
+            set((s) => ({
+              projetos: s.projetos.map((p) =>
+                p.id === pid
+                  ? {
+                      ...p,
+                      sections: p.sections.map((sec) =>
+                        sec.id === sid
+                          ? { ...sec, tasks: sec.tasks.map((t) => (t.id === tid ? { ...t, prio } : t)) }
+                          : sec,
+                      ),
+                    }
+                  : p,
+              ),
+            })),
+          ),
 
         cycleTaskPrio: (pid, sid, tid) =>
-          set((s) => {
-            const t = findTask(s.projetos, pid, sid, tid);
-            if (!t) return s;
-            const next = (t.prio % 3) + 1 as Prio;
-            return {
-              projetos: s.projetos.map((p) =>
-                p.id === pid
-                  ? {
-                      ...p,
-                      sections: p.sections.map((sec) =>
-                        sec.id === sid
-                          ? { ...sec, tasks: sec.tasks.map((x) => (x.id === tid ? { ...x, prio: next } : x)) }
-                          : sec,
-                      ),
-                    }
-                  : p,
-              ),
-            };
-          }),
+          commit(() =>
+            set((s) => {
+              const t = findTask(s.projetos, pid, sid, tid);
+              if (!t) return s;
+              const next = (t.prio % 3) + 1 as Prio;
+              return {
+                projetos: s.projetos.map((p) =>
+                  p.id === pid
+                    ? {
+                        ...p,
+                        sections: p.sections.map((sec) =>
+                          sec.id === sid
+                            ? { ...sec, tasks: sec.tasks.map((x) => (x.id === tid ? { ...x, prio: next } : x)) }
+                            : sec,
+                        ),
+                      }
+                    : p,
+                ),
+              };
+            }),
+          ),
 
         toggleTask: (pid, sid, tid) =>
-          set((s) => {
-            const t = findTask(s.projetos, pid, sid, tid);
-            if (!t) return s;
-            const status: Status = t.status === "done" ? "todo" : "done";
-            const doneAt = status === "done" ? new Date().toISOString() : null;
-            return {
-              projetos: s.projetos.map((p) =>
-                p.id === pid
-                  ? {
-                      ...p,
-                      sections: p.sections.map((sec) =>
-                        sec.id === sid
-                          ? { ...sec, tasks: sec.tasks.map((x) => (x.id === tid ? { ...x, status, doneAt } : x)) }
-                          : sec,
-                      ),
-                    }
-                  : p,
-              ),
-            };
-          }),
+          commit(() =>
+            set((s) => {
+              const t = findTask(s.projetos, pid, sid, tid);
+              if (!t) return s;
+              const status: Status = t.status === "done" ? "todo" : "done";
+              const doneAt = status === "done" ? new Date().toISOString() : null;
+              return {
+                projetos: s.projetos.map((p) =>
+                  p.id === pid
+                    ? {
+                        ...p,
+                        sections: p.sections.map((sec) =>
+                          sec.id === sid
+                            ? { ...sec, tasks: sec.tasks.map((x) => (x.id === tid ? { ...x, status, doneAt } : x)) }
+                            : sec,
+                        ),
+                      }
+                    : p,
+                ),
+              };
+            }),
+          ),
 
         toggleSection: (pid, sid) =>
           set((s) => ({
@@ -276,48 +325,52 @@ export function createBoardStore(initial: Project[] = []) {
           })),
 
         moveTask: (src, dest, index) =>
-          set((s) => {
-            const srcSec = findSection(s.projetos, src.pid, src.sid);
-            const destSec = findSection(s.projetos, dest.pid, dest.sid);
-            if (!srcSec || !destSec) return s;
-            const task = srcSec.tasks.find((t) => t.id === src.tid);
-            if (!task) return s;
+          commit(() =>
+            set((s) => {
+              const srcSec = findSection(s.projetos, src.pid, src.sid);
+              const destSec = findSection(s.projetos, dest.pid, dest.sid);
+              if (!srcSec || !destSec) return s;
+              const task = srcSec.tasks.find((t) => t.id === src.tid);
+              if (!task) return s;
 
-            const next = s.projetos.map((p) => {
-              const secs = p.sections.map((sec) => {
-                if (sec.id === src.sid) {
-                  return { ...sec, tasks: sec.tasks.filter((t) => t.id !== src.tid) };
-                }
-                return sec;
+              const next = s.projetos.map((p) => {
+                const secs = p.sections.map((sec) => {
+                  if (sec.id === src.sid) {
+                    return { ...sec, tasks: sec.tasks.filter((t) => t.id !== src.tid) };
+                  }
+                  return sec;
+                });
+                return { ...p, sections: secs };
               });
-              return { ...p, sections: secs };
-            });
 
-            const destSecAfter = findSection(next, dest.pid, dest.sid)!;
-            const insertAt = Math.max(0, Math.min(index, destSecAfter.tasks.length));
-            const tasks = [...destSecAfter.tasks];
-            tasks.splice(insertAt, 0, task);
+              const destSecAfter = findSection(next, dest.pid, dest.sid)!;
+              const insertAt = Math.max(0, Math.min(index, destSecAfter.tasks.length));
+              const tasks = [...destSecAfter.tasks];
+              tasks.splice(insertAt, 0, task);
 
-            return {
-              projetos: next.map((p) =>
-                p.id === dest.pid
-                  ? {
-                      ...p,
-                      sections: p.sections.map((sec) => (sec.id === dest.sid ? { ...sec, tasks } : sec)),
-                    }
-                  : p,
-              ),
-            };
-          }),
+              return {
+                projetos: next.map((p) =>
+                  p.id === dest.pid
+                    ? {
+                        ...p,
+                        sections: p.sections.map((sec) => (sec.id === dest.sid ? { ...sec, tasks } : sec)),
+                      }
+                    : p,
+                ),
+              };
+            }),
+          ),
 
-        reset: () => set({ projetos: [] }),
+        reset: () => commit(() => set({ projetos: [] })),
 
-        importState: (projetos) => set({ projetos }),
-      }),
+        importState: (projetos) => commit(() => set({ projetos })),
+      };
+      },
       {
         name: "opsboard.v1",
         version: SCHEMA_VERSION,
         storage: createJSONStorage(() => safeLocalStorage),
+        partialize: (s) => ({ projetos: s.projetos }),
         migrate: (persisted, version) => {
           if (version < SCHEMA_VERSION) {
             const legacy = migrateLegacy(persisted);

@@ -9,6 +9,7 @@ export interface ShortcutHandlers {
   onClearFilters: () => void;
   onFocusAdd: () => void;
   onFilterStatus: (status: StatusFilter) => void;
+  onUndo: () => void;
 }
 
 const STATUS_KEYS: StatusFilter[] = ["todo", "doing", "waiting", "done", "blocked"];
@@ -24,6 +25,11 @@ export function useShortcuts(h: ShortcutHandlers, opts?: { isModalOpen?: () => b
 
       const modalOpen = opts?.isModalOpen?.() ?? false;
 
+      if ((e.ctrlKey || e.metaKey) && !e.altKey && e.key.toLowerCase() === "z") {
+        e.preventDefault();
+        h.onUndo();
+        return;
+      }
       if (e.key === "Escape" && !modalOpen) {
         h.onClearFilters();
         return;

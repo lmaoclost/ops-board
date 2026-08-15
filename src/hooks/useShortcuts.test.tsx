@@ -11,6 +11,7 @@ const handlers = () => ({
   onClearFilters: vi.fn(),
   onFocusAdd: vi.fn(),
   onFilterStatus: vi.fn(),
+  onUndo: vi.fn(),
 });
 
 const press = (key: string) => {
@@ -97,6 +98,31 @@ describe("useShortcuts", () => {
     fireEvent.keyDown(window, { key: "p", metaKey: true });
     fireEvent.keyDown(window, { key: "p", altKey: true });
     expect(h.onNewProject).not.toHaveBeenCalled();
+  });
+
+  it("ctrl+z dispara undo", () => {
+    const h = handlers();
+    renderHook(() => useShortcuts(h));
+    fireEvent.keyDown(window, { key: "z", ctrlKey: true });
+    expect(h.onUndo).toHaveBeenCalledTimes(1);
+  });
+
+  it("meta+z (mac) dispara undo", () => {
+    const h = handlers();
+    renderHook(() => useShortcuts(h));
+    fireEvent.keyDown(window, { key: "z", metaKey: true });
+    expect(h.onUndo).toHaveBeenCalledTimes(1);
+  });
+
+  it("ctrl+z não dispara undo quando digitando em input", () => {
+    const h = handlers();
+    const input = document.createElement("input");
+    document.body.appendChild(input);
+    input.focus();
+    renderHook(() => useShortcuts(h));
+    fireEvent.keyDown(window, { key: "z", ctrlKey: true });
+    expect(h.onUndo).not.toHaveBeenCalled();
+    input.remove();
   });
 
   it("remove listener ao desmontar", () => {

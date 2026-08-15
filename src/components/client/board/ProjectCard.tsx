@@ -102,9 +102,7 @@ export function ProjectCard({ project, collectActions, onAddSection, onRename, o
               <DropdownMenuItem
                 variant="destructive"
                 className="text-xs"
-                onClick={() => {
-                  if (window.confirm(`excluir projeto "${project.title}"?`)) onDelete(project.id);
-                }}
+                onClick={() => onDelete(project.id)}
               >
                 excluir projeto
               </DropdownMenuItem>

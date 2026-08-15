@@ -156,6 +156,158 @@ describe("board store", () => {
     store.getState().toggleProjectArchive(pid);
     expect(store.getState().projetos[0].archived).toBe(false);
   });
+
+  it("canUndo começa false", () => {
+    expect(store.getState().canUndo).toBe(false);
+  });
+
+  it("deleteTask é desfeita restaurando a tarefa", () => {
+    store.getState().deleteTask("p1", "s1", "t1");
+    expect(store.getState().projetos[0].sections[0].tasks.map((t) => t.id)).toEqual(["t2"]);
+    expect(store.getState().canUndo).toBe(true);
+
+    store.getState().undo();
+    const t = store.getState().projetos[0].sections[0].tasks[0];
+    expect(t.id).toBe("t1");
+    expect(t.text).toBe("tarefa 1");
+    expect(store.getState().canUndo).toBe(false);
+  });
+
+  it("addProject é desfeito removendo o projeto", () => {
+    store.getState().addProject("Novo");
+    expect(store.getState().projetos).toHaveLength(2);
+    store.getState().undo();
+    expect(store.getState().projetos).toHaveLength(1);
+    expect(store.getState().projetos[0].id).toBe("p1");
+  });
+
+  it("addSection e addTask são desfeitas", () => {
+    store.getState().addSection("p1", "dev");
+    store.getState().addTask("p1", "s1", "nova");
+    store.getState().undo();
+    expect(store.getState().projetos[0].sections[0].tasks.map((t) => t.text)).toEqual(["tarefa 1", "tarefa 2"]);
+    store.getState().undo();
+    expect(store.getState().projetos[0].sections.map((s) => s.title)).toEqual(["geral"]);
+  });
+
+  it("renameProject é desfeita restaurando título e bloqueio", () => {
+    store.getState().renameProject("p1", "Renomeado", true);
+    store.getState().undo();
+    const p = store.getState().projetos[0];
+    expect(p.title).toBe("Projeto A");
+    expect(p.blocked).toBe(false);
+  });
+
+  it("editTask é desfeita restaurando campos", () => {
+    store.getState().editTask("p1", "s1", "t1", { note: "nota", prio: 1, due: "2026-02-01", blocked: true });
+    store.getState().undo();
+    const t = store.getState().projetos[0].sections[0].tasks[0];
+    expect(t.note).toBe("");
+    expect(t.prio).toBe(3);
+    expect(t.due).toBe("");
+    expect(t.blocked).toBe(false);
+  });
+
+  it("toggleTask é desfeita", () => {
+    store.getState().toggleTask("p1", "s1", "t1");
+    expect(store.getState().projetos[0].sections[0].tasks[0].status).toBe("done");
+    store.getState().undo();
+    expect(store.getState().projetos[0].sections[0].tasks[0].status).toBe("todo");
+  });
+
+  it("moveTask é desfeita restaurando a ordem", () => {
+    store.setState({
+      projetos: [
+        {
+          ...seedProjeto(),
+          sections: [
+            seedProjeto().sections[0],
+            { id: "s2", title: "outra", notes: "", collapsed: false, tasks: [] },
+          ],
+        },
+      ],
+    });
+    store.getState().moveTask({ pid: "p1", sid: "s1", tid: "t1" }, { pid: "p1", sid: "s2" }, 0);
+    expect(store.getState().projetos[0].sections[1].tasks.map((t) => t.id)).toEqual(["t1"]);
+    store.getState().undo();
+    expect(store.getState().projetos[0].sections[0].tasks.map((t) => t.id)).toEqual(["t1", "t2"]);
+    expect(store.getState().projetos[0].sections[1].tasks).toEqual([]);
+  });
+
+  it("importState é desfeita restaurando os projetos anteriores", () => {
+    const antes = store.getState().projetos;
+    store.getState().importState([{ id: "x", title: "Importado", blocked: false, archived: false, sections: [] }]);
+    store.getState().undo();
+    expect(store.getState().projetos).toEqual(antes);
+  });
+
+  it("reset é desfeita restaurando tudo", () => {
+    store.getState().reset();
+    expect(store.getState().projetos).toEqual([]);
+    store.getState().undo();
+    expect(store.getState().projetos).toHaveLength(1);
+    expect(store.getState().projetos[0].sections[0].tasks).toHaveLength(2);
+  });
+
+  it("toggleProjectArchive é desfeita", () => {
+    store.getState().toggleProjectArchive("p1");
+    expect(store.getState().projetos[0].archived).toBe(true);
+    store.getState().undo();
+    expect(store.getState().projetos[0].archived).toBe(false);
+  });
+
+  it("toggleSection não cria passo de undo (estado de visualização)", () => {
+    store.getState().toggleSection("p1", "s1");
+    expect(store.getState().canUndo).toBe(false);
+  });
+
+  it("undo linear desfaz cada passo mesmo voltando ao mesmo estado", () => {
+    store.getState().toggleTask("p1", "s1", "t1");
+    store.getState().toggleTask("p1", "s1", "t1");
+    expect(store.getState().projetos[0].sections[0].tasks[0].status).toBe("todo");
+    store.getState().undo();
+    expect(store.getState().projetos[0].sections[0].tasks[0].status).toBe("done");
+    expect(store.getState().canUndo).toBe(true);
+    store.getState().undo();
+    expect(store.getState().projetos[0].sections[0].tasks[0].status).toBe("todo");
+    expect(store.getState().canUndo).toBe(false);
+  });
+
+  it("undo vazio não quebra nem altera estado", () => {
+    store.getState().undo();
+    store.getState().undo();
+    expect(store.getState().projetos).toHaveLength(1);
+    expect(store.getState().canUndo).toBe(false);
+  });
+
+  it("undo em sequência desfaz passo a passo", () => {
+    store.getState().addProject("A");
+    store.getState().addProject("B");
+    expect(store.getState().projetos).toHaveLength(3);
+    store.getState().undo();
+    expect(store.getState().projetos).toHaveLength(2);
+    expect(store.getState().canUndo).toBe(true);
+    store.getState().undo();
+    expect(store.getState().projetos).toHaveLength(1);
+    expect(store.getState().canUndo).toBe(false);
+  });
+
+  it("stack limita a 50 passos (os mais recentes)", () => {
+    for (let i = 0; i < 60; i++) store.getState().addProject(`p${i}`);
+    expect(store.getState().projetos).toHaveLength(61);
+    for (let i = 0; i < 55; i++) store.getState().undo();
+    expect(store.getState().canUndo).toBe(false);
+    expect(store.getState().projetos).toHaveLength(11);
+  });
+
+  it("canUndo não é persistido", () => {
+    localStorage.clear();
+    const s = createBoardStore();
+    s.getState().addProject("X");
+    s.getState().undo();
+    const stored = JSON.parse(localStorage.getItem("opsboard.v1")!);
+    expect(stored.state).not.toHaveProperty("canUndo");
+  });
 });
 
 describe("persistência", () => {
