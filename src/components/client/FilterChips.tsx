@@ -80,7 +80,7 @@ export function FilterChips({
           size="xs"
           onClick={onClear}
           className="font-bold text-[var(--muted-text)]"
-          title="limpar filtros (status + busca)"
+          title="limpar filtros (status, busca, arquivados)"
         >
           ✕ limpar
         </Button>

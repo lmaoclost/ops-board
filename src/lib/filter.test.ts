@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { isFiltering, matchTask, projMatches, sectMatches, sortTasks, type Filters } from "./filter";
+import { isFiltering, matchTask, projMatches, sectMatches, sortTasks, visibleProjetos, type Filters } from "./filter";
 import type { Project, Section, Task } from "./types";
 
 const task = (over: Partial<Task> = {}): Task => ({
@@ -133,5 +133,25 @@ describe("isFiltering", () => {
     expect(isFiltering({ ...none, query: "x" })).toBe(true);
     expect(isFiltering({ ...none, status: "todo" })).toBe(true);
     expect(isFiltering({ ...none, status: "blocked" })).toBe(true);
+  });
+});
+
+describe("visibleProjetos", () => {
+  const ativo = project({ id: "a", title: "Ativo" });
+  const arquivado = project({ id: "b", title: "Arquivado", archived: true });
+  const projetos = [ativo, arquivado];
+
+  it("sem chip arquivados, mostra só projetos ativos", () => {
+    expect(visibleProjetos(projetos, none)).toEqual([ativo]);
+  });
+
+  it("com chip arquivados ativo, mostra só arquivados", () => {
+    expect(visibleProjetos(projetos, { ...none, archived: true })).toEqual([arquivado]);
+  });
+
+  it("ordem preservada e não muta a origem", () => {
+    const out = visibleProjetos([arquivado, ativo], none);
+    expect(out).toEqual([ativo]);
+    expect(projetos).toHaveLength(2);
   });
 });

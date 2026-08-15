@@ -25,7 +25,7 @@ export function useFilters(initial: Filters = defaultFilters) {
   }, []);
 
   const clear = useCallback(() => {
-    setFilters((f) => ({ ...f, query: "", status: null }));
+    setFilters((f) => ({ ...f, query: "", status: null, archived: false }));
   }, []);
 
   return { filters, setQuery, toggleStatus, togglePrioSort, toggleView, toggleArchived, clear };

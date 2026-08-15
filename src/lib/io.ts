@@ -84,7 +84,7 @@ export function parseImport(raw: string): Project[] {
     throw new Error("dados inválidos: estrutura de projeto, seção ou tarefa incorreta");
   }
 
-  const list = projetos as Project[];
+  const list = (projetos as Project[]).map((p) => ({ ...p, archived: Boolean(p.archived) }));
   const ids = new Set<string>();
   let sections = 0;
   let tasks = 0;

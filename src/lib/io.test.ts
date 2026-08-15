@@ -39,6 +39,13 @@ describe("parseImport", () => {
     expect(out[0].archived).toBe(true);
   });
 
+  it("normaliza projeto sem archived (backup v2) para false", () => {
+    const raw = JSON.parse(exportJson([projeto()]));
+    delete raw.projetos[0].archived;
+    const out = parseImport(JSON.stringify(raw));
+    expect(out[0].archived).toBe(false);
+  });
+
   it("rejeita JSON inválido", () => {
     expect(() => parseImport("não é json")).toThrow(/formato inválido/i);
   });

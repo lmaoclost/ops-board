@@ -43,3 +43,7 @@ export function sortTasks<T>(tasks: T[], prioSort: boolean, key: (t: T) => numbe
   if (!prioSort) return tasks;
   return tasks.toSorted((a, b) => key(a) - key(b));
 }
+
+/** Projetos visíveis no board: chip arquivados ligado mostra só arquivados; desligado, só ativos. */
+export const visibleProjetos = (projetos: Project[], f: Filters): Project[] =>
+  projetos.filter((p) => p.archived === f.archived);
