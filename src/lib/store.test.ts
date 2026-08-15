@@ -6,6 +6,7 @@ const seedProjeto = (): Project => ({
   id: "p1",
   title: "Projeto A",
   blocked: false,
+  archived: false,
   sections: [
     { id: "s1", title: "geral", notes: "", collapsed: false, tasks: [
       { id: "t1", text: "tarefa 1", status: "todo" as const, note: "", blocked: false, prio: 3, due: "", doneAt: null },
@@ -142,9 +143,18 @@ describe("board store", () => {
   });
 
   it("importState substitui estado", () => {
-    const novo = [{ id: "x", title: "Importado", blocked: false, sections: [] }];
+    const novo = [{ id: "x", title: "Importado", blocked: false, archived: false, sections: [] }];
     store.getState().importState(novo);
     expect(store.getState().projetos).toEqual(novo);
+  });
+
+  it("toggleProjectArchive arquiva e desarquiva", () => {
+    store.getState().addProject("A");
+    const pid = store.getState().projetos[0].id;
+    store.getState().toggleProjectArchive(pid);
+    expect(store.getState().projetos[0].archived).toBe(true);
+    store.getState().toggleProjectArchive(pid);
+    expect(store.getState().projetos[0].archived).toBe(false);
   });
 });
 
@@ -199,6 +209,18 @@ describe("persistência", () => {
     expect(t.due).toBe("5");
     expect(t.note).toBe("42");
     expect(t.doneAt).toBe("2026-01-01T00:00:00.000Z");
+  });
+
+  it("migra esquema v2 sem archived (default false aplicado)", () => {
+    localStorage.setItem(
+      "opsboard.v1",
+      JSON.stringify({
+        state: { projetos: [{ id: "p1", title: "P", blocked: false, sections: [] }] },
+        version: 2,
+      }),
+    );
+    const s = createBoardStore();
+    expect(s.getState().projetos[0].archived).toBe(false);
   });
 
   it("estado vazio volta com projetos vazios", () => {

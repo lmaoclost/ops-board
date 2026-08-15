@@ -49,6 +49,7 @@ const isProject = (p: unknown): boolean => {
     o.id.length > 0 &&
     typeof o.title === "string" &&
     typeof o.blocked === "boolean" &&
+    (o.archived === undefined || typeof o.archived === "boolean") &&
     Array.isArray(o.sections) &&
     o.sections.every(isSection)
   );

@@ -10,6 +10,7 @@ describe("useFilters", () => {
       status: null,
       prioSort: false,
       view: "list",
+      archived: false,
     });
   });
 

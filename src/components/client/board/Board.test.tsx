@@ -8,7 +8,7 @@ import type { Project } from "@/lib/types";
 const projeto: Project = {
   id: "p1",
   title: "Alfa",
-  blocked: false,
+  blocked: false, archived: false,
   sections: [
     { id: "s1", title: "geral", notes: "", collapsed: false, tasks: [
       { id: "t1", text: "tarefa alfa", status: "todo", note: "", blocked: false, prio: 3, due: "", doneAt: null },
@@ -24,6 +24,7 @@ const base = (over: Partial<BoardProps> = {}): BoardProps => ({
     onAddSection: vi.fn(),
     onRename: vi.fn(),
     onDelete: vi.fn(),
+    onToggleArchive: vi.fn(),
   },
   sectionActions: {
     onToggle: vi.fn(),

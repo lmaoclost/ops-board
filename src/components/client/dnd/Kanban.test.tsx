@@ -6,7 +6,7 @@ import type { Project } from "@/lib/types";
 const projeto = (): Project => ({
   id: "p1",
   title: "P",
-  blocked: false,
+  blocked: false, archived: false,
   sections: [
     {
       id: "s1",

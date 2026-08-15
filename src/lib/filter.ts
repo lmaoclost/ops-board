@@ -8,9 +8,10 @@ export interface Filters {
   status: StatusFilter;
   prioSort: boolean;
   view: View;
+  archived: boolean;
 }
 
-export const defaultFilters: Filters = { query: "", status: null, prioSort: false, view: "list" };
+export const defaultFilters: Filters = { query: "", status: null, prioSort: false, view: "list", archived: false };
 
 export const isFiltering = (f: Filters): boolean => !!f.query || !!f.status;
 

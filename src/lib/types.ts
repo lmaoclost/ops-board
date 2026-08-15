@@ -24,6 +24,7 @@ export interface Project {
   id: string;
   title: string;
   blocked: boolean;
+  archived: boolean;
   sections: Section[];
 }
 

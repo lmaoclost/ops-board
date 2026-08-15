@@ -2,10 +2,11 @@ import { describe, expect, it } from "vitest";
 import { exportJson, MAX_BYTES, MAX_PROJECTS, MAX_TASKS, parseImport } from "./io";
 import type { Project } from "./types";
 
-const projeto = (): Project => ({
+const projeto = (over: Partial<Project> = {}): Project => ({
   id: "p1",
   title: "P",
   blocked: false,
+  archived: false,
   sections: [
     {
       id: "s1",
@@ -17,6 +18,7 @@ const projeto = (): Project => ({
       ],
     },
   ],
+  ...over,
 });
 
 describe("exportJson", () => {
@@ -30,6 +32,11 @@ describe("exportJson", () => {
 describe("parseImport", () => {
   it("aceita JSON válido", () => {
     expect(parseImport(exportJson([projeto()]))).toHaveLength(1);
+  });
+
+  it("preserva archived no round-trip export→import", () => {
+    const out = parseImport(exportJson([projeto({ archived: true })]));
+    expect(out[0].archived).toBe(true);
   });
 
   it("rejeita JSON inválido", () => {

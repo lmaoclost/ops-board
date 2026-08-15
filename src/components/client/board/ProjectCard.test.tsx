@@ -7,7 +7,7 @@ const base = (over: Partial<ProjectCardProps> = {}): ProjectCardProps => ({
   project: {
     id: "p1",
     title: "Projeto Alfa",
-    blocked: false,
+    blocked: false, archived: false,
     sections: [
       { id: "s1", title: "geral", notes: "", collapsed: false, tasks: [
         { id: "t1", text: "fazer", status: "todo", note: "", blocked: false, prio: 3, due: "", doneAt: null },
@@ -32,6 +32,7 @@ const base = (over: Partial<ProjectCardProps> = {}): ProjectCardProps => ({
   onAddSection: vi.fn(),
   onRename: vi.fn(),
   onDelete: vi.fn(),
+  onToggleArchive: vi.fn(),
   ...over,
 });
 
@@ -91,5 +92,24 @@ describe("ProjectCard", () => {
     await userEvent.click(await screen.findByRole("menuitem", { name: "excluir projeto" }));
     expect(p.onDelete).not.toHaveBeenCalled();
     confirmSpy.mockRestore();
+  });
+
+  it("arquiva via menu de ações", async () => {
+    const p = base();
+    render(<ProjectCard {...p} />);
+    await openMenu();
+    await userEvent.click(await screen.findByRole("menuitem", { name: "arquivar projeto" }));
+    expect(p.onToggleArchive).toHaveBeenCalledTimes(1);
+  });
+
+  it("mostra selo arquivado e desarquiva via menu", async () => {
+    const p = base({
+      project: { ...base().project, archived: true },
+    });
+    render(<ProjectCard {...p} />);
+    expect(screen.getByText("arquivado")).toBeTruthy();
+    await openMenu();
+    await userEvent.click(await screen.findByRole("menuitem", { name: "desarquivar projeto" }));
+    expect(p.onToggleArchive).toHaveBeenCalledTimes(1);
   });
 });

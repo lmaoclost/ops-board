@@ -10,6 +10,7 @@ export interface BoardProjectActions {
   onAddSection: (pid: string, title: string) => void;
   onRename: (id: string, title: string, blocked: boolean) => void;
   onDelete: (id: string) => void;
+  onToggleArchive: (id: string) => void;
 }
 
 export interface BoardSectionActions {
@@ -127,6 +128,7 @@ export function Board({ projetos, filters, onNewProject, projectActions, section
             onAddSection={(title) => projectActions.onAddSection(p.id, title)}
             onRename={(id, title, blocked) => projectActions.onRename(id, title, blocked)}
             onDelete={(id) => projectActions.onDelete(id)}
+            onToggleArchive={() => projectActions.onToggleArchive(p.id)}
             prioSort={filters.prioSort}
           />
         ))}
