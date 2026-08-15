@@ -13,6 +13,7 @@ import { useTheme } from "next-themes";
 import { celebrate } from "@/lib/celebrate";
 import { exportJson, parseImport } from "@/lib/io";
 import { deriveStats } from "@/lib/selectors";
+import { visibleProjetos } from "@/lib/filter";
 import { useBoard, setStorageErrorHandler } from "@/lib/store";
 import { Dialog, DialogClose, DialogContent, DialogTitle } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
@@ -59,15 +60,22 @@ export default function Home() {
     return () => setStorageErrorHandler(null);
   }, [showToast]);
 
-  const boardProjetos = useMemo(
-    () => (filters.archived ? projetos : projetos.filter((p) => !p.archived)),
-    [projetos, filters.archived],
-  );
+  const boardProjetos = useMemo(() => visibleProjetos(projetos, filters), [projetos, filters]);
   const stats = useMemo(() => deriveStats(boardProjetos), [boardProjetos]);
   useEffect(() => {
     if (stats.done > prevDone.current) celebrate();
     prevDone.current = stats.done;
   }, [stats.done]);
+
+  const handleToggleArchive = useCallback(
+    (id: string) => {
+      const p = projetos.find((x) => x.id === id);
+      if (!p) return;
+      toggleProjectArchive(id);
+      showToast(p.archived ? "projeto desarquivado" : "projeto arquivado");
+    },
+    [projetos, toggleProjectArchive, showToast],
+  );
 
   const handleExport = useCallback(() => {
     const blob = new Blob([exportJson(projetos)], { type: "application/json" });
@@ -144,7 +152,7 @@ export default function Home() {
           archivedCount={archivedCount}
           archivedActive={filters.archived}
           active={filters.status}
-          filtering={!!filters.query || !!filters.status}
+          filtering={!!filters.query || !!filters.status || filters.archived}
           onToggleStatus={toggleStatus}
           onToggleArchived={toggleArchived}
           onClear={clear}
@@ -163,7 +171,7 @@ export default function Home() {
             onAddSection: (pid, title) => addSection(pid, title),
             onRename: (id, title, blocked) => renameProject(id, title, blocked),
             onDelete: (id) => deleteProject(id),
-            onToggleArchive: toggleProjectArchive,
+            onToggleArchive: handleToggleArchive,
           }}
           sectionActions={{
             onToggle: (pid, sid) => toggleSection(pid, sid),

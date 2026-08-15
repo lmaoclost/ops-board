@@ -57,10 +57,12 @@ describe("useFilters", () => {
       result.current.toggleStatus("todo");
       result.current.toggleView();
       result.current.togglePrioSort();
+      result.current.toggleArchived();
     });
     act(() => result.current.clear());
     expect(result.current.filters.query).toBe("");
     expect(result.current.filters.status).toBeNull();
+    expect(result.current.filters.archived).toBe(false);
     expect(result.current.filters.view).toBe("kanban");
     expect(result.current.filters.prioSort).toBe(true);
   });
