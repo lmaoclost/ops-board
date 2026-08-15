@@ -40,3 +40,7 @@ export function celebrate(): void {
     return;
   }
 }
+
+export function wasTransitionedToDone(prev: string | undefined, next: string): boolean {
+  return prev !== "done" && next === "done";
+}

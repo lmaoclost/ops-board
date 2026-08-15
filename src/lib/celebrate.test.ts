@@ -1,5 +1,5 @@
 import { describe, expect, it, vi } from "vitest";
-import { celebrate, chime } from "./celebrate";
+import { celebrate, chime, wasTransitionedToDone } from "./celebrate";
 
 class FakeCtx {
   currentTime = 0;
@@ -64,5 +64,23 @@ vi.mock("canvas-confetti", () => ({
 describe("celebrate", () => {
   it("não explode quando o confetti falha", () => {
     expect(() => celebrate()).not.toThrow();
+  });
+});
+
+describe("wasTransitionedToDone", () => {
+  it("true quando a tarefa não estava done e agora está", () => {
+    expect(wasTransitionedToDone("todo", "done")).toBe(true);
+    expect(wasTransitionedToDone("doing", "done")).toBe(true);
+    expect(wasTransitionedToDone("blocked", "done")).toBe(true);
+  });
+
+  it("false quando já estava done", () => {
+    expect(wasTransitionedToDone("done", "done")).toBe(false);
+  });
+
+  it("false quando não foi para done", () => {
+    expect(wasTransitionedToDone("done", "todo")).toBe(false);
+    expect(wasTransitionedToDone("todo", "todo")).toBe(false);
+    expect(wasTransitionedToDone("todo", "doing")).toBe(false);
   });
 });

@@ -80,7 +80,9 @@ test("atalhos: p abre projeto, 1 filtra todo, ? mostra ajuda, t alterna tema, es
   await expect(page.getByRole("button", { name: "todo 1" })).toHaveAttribute("aria-pressed", "true");
 
   await page.keyboard.press("?");
-  await expect(page.getByText("p projeto · n tarefa · 1-5 filtros · k kanban · t tema · ? ajuda · esc limpa")).toBeVisible();
+  await expect(page.getByRole("dialog", { name: "atalhos e dicas" })).toBeVisible();
+  await page.keyboard.press("Escape");
+  await expect(page.getByRole("dialog", { name: "atalhos e dicas" })).toHaveCount(0);
 
   const html = page.locator("html");
   await expect(html).toHaveClass(/light/);
