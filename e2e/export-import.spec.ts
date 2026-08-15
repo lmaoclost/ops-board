@@ -17,6 +17,15 @@ async function addTask(page: Page, text: string) {
   await page.getByLabel("nova tarefa").first().press("Enter");
 }
 
+async function importFile(page: Page, name: string, buffer: Buffer) {
+  await page.getByRole("button", { name: "↑importar" }).click();
+  await expect(page.getByRole("dialog", { name: "importar backup" })).toBeVisible();
+  const chooserPromise = page.waitForEvent("filechooser");
+  await page.getByRole("button", { name: "escolher arquivo" }).click();
+  const chooser = await chooserPromise;
+  await chooser.setFiles({ name, mimeType: "application/json", buffer });
+}
+
 const SEED = {
   projetos: [
     {
@@ -68,11 +77,7 @@ test("exporta JSON válido com o estado atual", async ({ page }) => {
 
 test("importa backup e restaura o estado", async ({ page }) => {
   await page.goto("/");
-  await page.locator('input[type="file"]').setInputFiles({
-    name: "backup.json",
-    mimeType: "application/json",
-    buffer: Buffer.from(JSON.stringify(SEED)),
-  });
+  await importFile(page, "backup.json", Buffer.from(JSON.stringify(SEED)));
 
   await expect(page.getByText("importado: 2 projeto(s)")).toBeVisible();
   await expect(page.getByRole("heading", { name: "alpha" })).toBeVisible();
@@ -82,11 +87,7 @@ test("importa backup e restaura o estado", async ({ page }) => {
 
 test("import de arquivo corrompido mostra erro e não muda nada", async ({ page }) => {
   await page.goto("/");
-  await page.locator('input[type="file"]').setInputFiles({
-    name: "quebrado.json",
-    mimeType: "application/json",
-    buffer: Buffer.from("{isso não é json"),
-  });
+  await importFile(page, "quebrado.json", Buffer.from("{isso não é json"));
 
   await expect(page.getByText("arquivo em formato inválido")).toBeVisible();
   await expect(page.getByText("nenhum projeto na fila.")).toBeVisible();
@@ -112,11 +113,7 @@ test("import de JSON válido com estrutura inválida mostra erro claro", async (
       },
     ],
   };
-  await page.locator('input[type="file"]').setInputFiles({
-    name: "injetado.json",
-    mimeType: "application/json",
-    buffer: Buffer.from(JSON.stringify(injetado)),
-  });
+  await importFile(page, "injetado.json", Buffer.from(JSON.stringify(injetado)));
 
   await expect(page.getByText("dados inválidos: estrutura de projeto, seção ou tarefa incorreta")).toBeVisible();
   await expect(page.getByText("nenhum projeto na fila.")).toBeVisible();
@@ -125,11 +122,7 @@ test("import de JSON válido com estrutura inválida mostra erro claro", async (
 test("import de arquivo gigante é rejeitado sem quebrar o estado", async ({ page }) => {
   await page.goto("/");
   const gigante = JSON.stringify({ projetos: [] }).padEnd(2 * 1024 * 1024 + 1, " ");
-  await page.locator('input[type="file"]').setInputFiles({
-    name: "gigante.json",
-    mimeType: "application/json",
-    buffer: Buffer.from(gigante),
-  });
+  await importFile(page, "gigante.json", Buffer.from(gigante));
 
   await expect(page.getByText("arquivo muito grande (máx. 2 MB)")).toBeVisible();
   await expect(page.getByText("nenhum projeto na fila.")).toBeVisible();

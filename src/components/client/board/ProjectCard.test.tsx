@@ -73,24 +73,14 @@ describe("ProjectCard", () => {
     expect(p.onRename).toHaveBeenCalledWith("p1", "Renomeado", false);
   });
 
-  it("exclui após confirmação", async () => {
+  it("exclui diretamente sem confirm nativo (undo cobre)", async () => {
     const confirmSpy = vi.spyOn(window, "confirm").mockReturnValue(true);
     const p = base();
     render(<ProjectCard {...p} />);
     await openMenu();
     await userEvent.click(await screen.findByRole("menuitem", { name: "excluir projeto" }));
-    expect(confirmSpy).toHaveBeenCalled();
+    expect(confirmSpy).not.toHaveBeenCalled();
     expect(p.onDelete).toHaveBeenCalledWith("p1");
-    confirmSpy.mockRestore();
-  });
-
-  it("não exclui sem confirmação", async () => {
-    const confirmSpy = vi.spyOn(window, "confirm").mockReturnValue(false);
-    const p = base();
-    render(<ProjectCard {...p} />);
-    await openMenu();
-    await userEvent.click(await screen.findByRole("menuitem", { name: "excluir projeto" }));
-    expect(p.onDelete).not.toHaveBeenCalled();
     confirmSpy.mockRestore();
   });
 
