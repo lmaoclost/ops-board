@@ -23,7 +23,7 @@ test("filtra por status no nível do projeto e limpa com esc", async ({ page }) 
   await page.getByRole("button", { name: "criar" }).click();
   await addTask(page, "tarefa pendente");
 
-  await page.getByRole("button", { name: "done 1" }).click();
+  await page.getByRole("button", { name: "concluída 1" }).click();
   await expect(page.getByRole("heading", { name: "completado" })).toBeVisible();
   await expect(page.getByRole("heading", { name: "em aberto" })).toHaveCount(0);
 
@@ -77,7 +77,7 @@ test("atalhos: p abre projeto, 1 filtra todo, ? mostra ajuda, t alterna tema, es
   await expect(page.getByRole("heading", { name: "outro" })).toBeVisible();
 
   await page.keyboard.press("1");
-  await expect(page.getByRole("button", { name: "todo 1" })).toHaveAttribute("aria-pressed", "true");
+  await expect(page.getByRole("button", { name: "a fazer 1" })).toHaveAttribute("aria-pressed", "true");
 
   await page.keyboard.press("?");
   await expect(page.getByRole("dialog", { name: "atalhos e dicas" })).toBeVisible();
@@ -92,7 +92,7 @@ test("atalhos: p abre projeto, 1 filtra todo, ? mostra ajuda, t alterna tema, es
   await expect(html).toHaveClass(/light/);
 
   await page.keyboard.press("Escape");
-  await expect(page.getByRole("button", { name: "todo 1" })).toHaveAttribute("aria-pressed", "false");
+  await expect(page.getByRole("button", { name: "a fazer 1" })).toHaveAttribute("aria-pressed", "false");
 });
 
 test("ordena por prioridade (P1 no topo) com ↕ prio", async ({ page }) => {

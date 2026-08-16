@@ -61,7 +61,7 @@ test("adiciona seção extra, edita tarefa: texto, prioridade, vencimento, nota 
   await expect(page.getByText("detalhe da nota", { exact: false })).toBeVisible();
   await expect(page.getByText("P1", { exact: true })).toBeVisible();
   await expect(page.getByText("bloqueada", { exact: true })).toBeVisible();
-  await expect(page.getByRole("button", { name: "bloq 1" })).toBeVisible();
+  await expect(page.getByRole("button", { name: "bloqueadas 1" })).toBeVisible();
 });
 
 test("exclui tarefa, seção e projeto (sem confirm nativo, undo cobre)", async ({ page }) => {

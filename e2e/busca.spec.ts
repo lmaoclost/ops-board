@@ -58,6 +58,6 @@ test("filtro por status também é granular (só tarefas do status)", async ({ p
   await addTask(page, "na fila");
   await addTask(page, "outra na fila");
 
-  await page.getByRole("button", { name: "doing 0" }).click();
+  await page.getByRole("button", { name: "em andamento 0" }).click();
   await expect(page.getByText(/nada casa com o filtro/)).toBeVisible();
 });

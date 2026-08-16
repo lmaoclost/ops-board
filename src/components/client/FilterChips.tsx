@@ -7,16 +7,15 @@ import { } from "@/lib/types";
 
 export interface ChipDef {
   key: StatusFilter;
-  label: string;
   cls: string;
 }
 
 const CHIPS: ChipDef[] = [
-  { key: "todo", label: "todo", cls: "text-[var(--todo)]" },
-  { key: "doing", label: "doing", cls: "text-[var(--flow)]" },
-  { key: "waiting", label: "waiting", cls: "text-[var(--warn)]" },
-  { key: "done", label: "done", cls: "text-[var(--fired)]" },
-  { key: "blocked", label: "bloq", cls: "text-[var(--gave)]" },
+  { key: "todo", cls: "text-[var(--todo)]" },
+  { key: "doing", cls: "text-[var(--flow)]" },
+  { key: "waiting", cls: "text-[var(--warn)]" },
+  { key: "done", cls: "text-[var(--fired)]" },
+  { key: "blocked", cls: "text-[var(--gave)]" },
 ];
 
 interface FilterChipsProps {
@@ -49,7 +48,7 @@ export function FilterChips({
   const { t, status } = useT();
   return (
     <div className="flex flex-wrap items-center gap-1.5" role="group" aria-label={t("filtros por status")}>
-      {CHIPS.map(({ key, label, cls }) => {
+      {CHIPS.map(({ key, cls }) => {
         const count = key === "blocked" ? blockedCount : counts[key as Status];
         const isActive = active === key;
         return (
@@ -59,11 +58,11 @@ export function FilterChips({
             variant={isActive ? "outline" : "ghost"}
             size="xs"
             onClick={() => onToggleStatus(key)}
-            title={`${t("filtro")}: ${key === "blocked" ? t("bloqueadas") : status(key as Status)}`}
+            title={`${t("filtro")}: ${status(key as Status)}`}
             aria-pressed={isActive}
             className={`${cls} ${isActive ? "border-current bg-[var(--hover)]" : "opacity-60"}`}
           >
-            {label}
+            {status(key as Status)}
             <span className="opacity-60">{count}</span>
           </Button>
         );
