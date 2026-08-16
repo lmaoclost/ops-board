@@ -4,7 +4,12 @@ export type Prio = 1 | 2 | 3;
 export interface SubTask {
   id: string;
   text: string;
-  done: boolean;
+  note: string;
+  prio: Prio;
+  due: string;
+  status: Status;
+  blocked: boolean;
+  subs: SubTask[];
 }
 
 export interface Task {

@@ -88,10 +88,10 @@ function KanbanTask({ item, onEdit }: { item: FlatTask; onEdit: () => void }) {
         {item.task.subs.length > 0 && (
           <span
             className="shrink-0 rounded border border-[var(--line-soft)] px-1 py-0.5 text-[9px] text-[var(--dim)]"
-            title={`${item.task.subs.filter((s) => s.done).length}/${item.task.subs.length} sub-tarefas concluídas`}
-            aria-label={`sub-tarefas ${item.task.subs.filter((s) => s.done).length}/${item.task.subs.length}`}
+            title={`${item.task.subs.filter((s) => s.status === "done").length}/${item.task.subs.length} sub-tarefas concluídas`}
+            aria-label={`sub-tarefas ${item.task.subs.filter((s) => s.status === "done").length}/${item.task.subs.length}`}
           >
-            {item.task.subs.filter((s) => s.done).length}/{item.task.subs.length}
+            {item.task.subs.filter((s) => s.status === "done").length}/{item.task.subs.length}
           </span>
         )}
       </div>

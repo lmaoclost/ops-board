@@ -2,7 +2,7 @@ import { create } from "zustand";
 import { createJSONStorage, persist } from "zustand/middleware";
 import { migrateLegacy, normalizeState, SCHEMA_VERSION } from "./migrate";
 import type { Locale } from "./i18n";
-import type { Prio, Project, Section, Status, TaskPatch } from "./types";
+import type { Prio, Project, Section, Status, SubTask, TaskPatch } from "./types";
 import { uid } from "./uid";
 
 let storageErrorHandler: (() => void) | null = null;
@@ -72,6 +72,14 @@ const makeTask = (text: string): Section["tasks"][number] => ({
   doneAt: null,
   subs: [],
 });
+
+export function reconcileSubs(subs: SubTask[]): SubTask[] {
+  return subs.map((s) => {
+    const own = reconcileSubs(s.subs);
+    const status: Status = own.length > 0 ? (own.every((x) => x.status === "done") ? "done" : "todo") : s.status;
+    return { ...s, subs: own, status };
+  });
+}
 
 export function createBoardStore(initial: Project[] = []) {
   const undoStack: string[] = [];
@@ -214,10 +222,10 @@ export function createBoardStore(initial: Project[] = []) {
                               tasks: sec.tasks.map((t) =>
                                 t.id === tid
                                   ? (() => {
-                                      const subs = patch.subs ?? t.subs;
+                                      const subs = patch.subs !== undefined ? reconcileSubs(patch.subs) : t.subs;
                                       const status: Status =
                                         patch.subs !== undefined && subs.length > 0
-                                          ? subs.every((s) => s.done)
+                                          ? subs.every((s) => s.status === "done")
                                             ? "done"
                                             : "todo"
                                           : t.status;
