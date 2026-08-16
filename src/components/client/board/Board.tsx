@@ -29,6 +29,7 @@ export interface BoardTaskActions {
   onStatusChange: (pid: string, sid: string, tid: string, status: Status) => void;
   onEdit: (pid: string, sid: string, tid: string, patch: TaskPatch) => void;
   onDelete: (pid: string, sid: string, tid: string) => void;
+  onUpdate: (pid: string, sid: string, tid: string, patch: TaskPatch) => void;
   onMoveTask: (pid: string, sid: string, tid: string, toPid: string, toSid: string, index: number) => void;
 }
 
@@ -45,6 +46,7 @@ export interface TaskLevelActions {
   onStatusChange: (sid: string, tid: string, status: Status) => void;
   onEdit: (sid: string, tid: string, patch: TaskPatch) => void;
   onDelete: (sid: string, tid: string) => void;
+  onUpdate: (sid: string, tid: string, patch: TaskPatch) => void;
 }
 
 export interface BoardProps {
@@ -78,6 +80,7 @@ export function Board({ projetos, filters, onNewProject, onClearFilters, project
         taskActions.onStatusChange(pid, sid, tid, status),
       onEdit: (sid: string, tid: string, patch: TaskPatch) => taskActions.onEdit(pid, sid, tid, patch),
       onDelete: (sid: string, tid: string) => taskActions.onDelete(pid, sid, tid),
+      onUpdate: (sid: string, tid: string, patch: TaskPatch) => taskActions.onUpdate(pid, sid, tid, patch),
     },
   });
 

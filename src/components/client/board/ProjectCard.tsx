@@ -161,6 +161,7 @@ onRename(project.id, String(v.title).trim(), project.blocked, String(v.due ?? ""
           onStatusChange: (tid, status) => actions.taskActions.onStatusChange(s.id, tid, status),
           onEdit: (tid, patch) => actions.taskActions.onEdit(s.id, tid, patch),
           onDelete: (tid) => actions.taskActions.onDelete(s.id, tid),
+          onUpdate: (tid, patch) => actions.taskActions.onUpdate(s.id, tid, patch),
         };
         return (
           <Section

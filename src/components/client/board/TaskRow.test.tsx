@@ -20,6 +20,7 @@ const base = (over: Partial<TaskRowProps["task"]> = {}): TaskRowProps => ({
   onStatusChange: vi.fn(),
   onEdit: vi.fn(),
   onDelete: vi.fn(),
+  onUpdate: vi.fn(),
 });
 
 describe("TaskRow", () => {
@@ -28,13 +29,14 @@ describe("TaskRow", () => {
     expect(screen.getByTestId("task-row")).toBeInTheDocument();
   });
 
-  it("mostra sub-tarefas inline, concluídas riscadas", () => {
+  it("mostra sub-tarefas aninhadas, concluídas riscadas", () => {
     render(<TaskRow {...base({ subs: [
       { id: "a", text: "fazer x", done: true },
       { id: "b", text: "fazer y", done: false },
     ] })} />);
-    expect(screen.getByText(/▪ fazer x/)).toBeTruthy();
-    expect(screen.getByText(/▪ fazer y/)).toBeTruthy();
+    const doneSub = screen.getByText("fazer x");
+    expect(doneSub.className).toContain("line-through");
+    expect(screen.getByText("fazer y")).toBeTruthy();
   });
 
   it("renderiza texto com link e nota", () => {
@@ -89,5 +91,25 @@ describe("TaskRow", () => {
   it("concluída mostra texto riscado", () => {
     render(<TaskRow {...base({ status: "done" })} />);
     expect(screen.getByText(/Enviar relatório/).className).toContain("line-through");
+  });
+
+  it("adiciona sub-tarefa inline via + e Enter", async () => {
+    const p = base();
+    render(<TaskRow {...p} />);
+    await userEvent.click(screen.getByRole("button", { name: "nova sub-tarefa" }));
+    await userEvent.type(screen.getByRole("textbox", { name: "nova sub-tarefa" }), "fazer z{Enter}");
+    expect(p.onUpdate).toHaveBeenCalledTimes(1);
+    expect(p.onUpdate).toHaveBeenCalledWith({
+      subs: [{ id: expect.any(String), text: "fazer z", done: false }],
+    });
+  });
+
+  it("alterna done e remove sub-tarefa via onUpdate", async () => {
+    const p = base({ subs: [{ id: "a", text: "fazer x", done: false }] });
+    render(<TaskRow {...p} />);
+    await userEvent.click(screen.getByRole("checkbox", { name: "sub-tarefa fazer x" }));
+    expect(p.onUpdate).toHaveBeenLastCalledWith({ subs: [{ id: "a", text: "fazer x", done: true }] });
+    await userEvent.click(screen.getByLabelText("remover sub-tarefa fazer x"));
+    expect(p.onUpdate).toHaveBeenLastCalledWith({ subs: [] });
   });
 });
