@@ -1,8 +1,7 @@
 import { render, screen } from "@testing-library/react";
-import userEvent from "@testing-library/user-event";
-import { describe, expect, it, vi } from "vitest";
+import { describe, expect, it } from "vitest";
 import { Stats } from "../../components/client/Stats";
-import { defaultFilters, type Filters } from "../../lib/filter";
+
 import { todayISO } from "../../lib/date";
 import { deriveStats, type BoardStats } from "../../lib/selectors";
 import type { Project } from "../../lib/types";
@@ -39,8 +38,7 @@ describe("Stats", () => {
             task({ id: "t3", status: "done", doneAt: todayISO() + "T09:00:00.000Z" }),
           ]),
         ])}
-        filters={defaultFilters}
-        onTogglePrioSort={() => {}}
+        view="list"
       />,
     );
     expect(screen.getByText("3")).toBeTruthy();
@@ -53,25 +51,14 @@ describe("Stats", () => {
     render(
       <Stats
         stats={statsOf([projeto([task()])])}
-        filters={defaultFilters}
-        onTogglePrioSort={() => {}}
+        view="list"
       />,
     );
     expect(screen.getByText("(0%)")).toBeTruthy();
   });
 
-  it("toggle de prioridade invoca callback", async () => {
-    const onTogglePrioSort = vi.fn();
-    render(
-      <Stats stats={statsOf([projeto([])])} filters={defaultFilters} onTogglePrioSort={onTogglePrioSort} />,
-    );
-    await userEvent.click(screen.getByRole("button", { name: "↕ prio" }));
-    expect(onTogglePrioSort).toHaveBeenCalledTimes(1);
-  });
-
   it("destaca dica de kanban quando em kanban", () => {
-    const f: Filters = { ...defaultFilters, view: "kanban" };
-    render(<Stats stats={statsOf([])} filters={f} onTogglePrioSort={() => {}} />);
+    render(<Stats stats={statsOf([])} view="kanban" />);
     expect(screen.getByText(/kanban: arraste/i)).toBeTruthy();
   });
 
@@ -85,8 +72,7 @@ describe("Stats", () => {
             task({ id: "t3", status: "done", doneAt: todayISO() + "T09:00:00.000Z" }),
           ]),
         ])}
-        filters={defaultFilters}
-        onTogglePrioSort={() => {}}
+        view="list"
       />,
     );
     expect(screen.getByTestId("stat-total")).toHaveTextContent("3");
