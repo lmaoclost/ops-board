@@ -1,4 +1,4 @@
-import { DndContext, PointerSensor, TouchSensor, pointerWithin, useSensor, useSensors, type DragEndEvent } from "@dnd-kit/core";
+import { DndContext, PointerSensor, TouchSensor, rectIntersection, useSensor, useSensors, type DragEndEvent } from "@dnd-kit/core";
 import { useMemo } from "react";
 import { useT } from "@/hooks/useT";
 import { isFiltering, prioSort, projMatches, type Filters } from "@/lib/filter";
@@ -161,7 +161,7 @@ export function Board({ projetos, filters, onNewProject, onClearFilters, project
   }
 
   return (
-    <DndContext sensors={sensors} collisionDetection={pointerWithin} onDragEnd={handleDragEnd}>
+    <DndContext sensors={sensors} collisionDetection={rectIntersection} onDragEnd={handleDragEnd}>
       {content}
     </DndContext>
   );

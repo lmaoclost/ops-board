@@ -1,6 +1,7 @@
 import { useState } from "react";
 import { useT } from "@/hooks/useT";
 import { useDroppable } from "@dnd-kit/core";
+import { SortableContext, verticalListSortingStrategy } from "@dnd-kit/sortable";
 import { Modal } from "@/components/client/Modal";
 import { Button } from "@/components/ui/button";
 import {
@@ -130,18 +131,23 @@ export function Section({ projectId, section, onToggleSection, onAddTask, onRena
             ref={setDropRef}
             className={`flex flex-col gap-0.5 rounded-md ${isOver ? "outline outline-1 outline-[var(--fired)]/50" : ""}`}
           >
-            {sortTasks(filters ? visibleTasks(section.tasks, filters) : section.tasks, !!prioSort, (t) => t.prio).map((t) => (
-              <SortableTaskItem
-                key={t.id}
-                task={t}
-                onToggle={() => taskActions.onToggle(t.id)}
-                onPrioCycle={() => taskActions.onPrioCycle(t.id)}
-                onStatusChange={(status) => taskActions.onStatusChange(t.id, status)}
-                onEdit={() => setEditingId(t.id)}
-                onDelete={() => taskActions.onDelete(t.id)}
-                onUpdate={(patch) => taskActions.onUpdate(t.id, patch)}
-              />
-            ))}
+            <SortableContext
+              items={sortTasks(filters ? visibleTasks(section.tasks, filters) : section.tasks, !!prioSort, (t) => t.prio).map((t) => `task:${t.id}`)}
+              strategy={verticalListSortingStrategy}
+            >
+              {sortTasks(filters ? visibleTasks(section.tasks, filters) : section.tasks, !!prioSort, (t) => t.prio).map((t) => (
+                <SortableTaskItem
+                  key={t.id}
+                  task={t}
+                  onToggle={() => taskActions.onToggle(t.id)}
+                  onPrioCycle={() => taskActions.onPrioCycle(t.id)}
+                  onStatusChange={(status) => taskActions.onStatusChange(t.id, status)}
+                  onEdit={() => setEditingId(t.id)}
+                  onDelete={() => taskActions.onDelete(t.id)}
+                  onUpdate={(patch) => taskActions.onUpdate(t.id, patch)}
+                />
+              ))}
+            </SortableContext>
             <div
               ref={setEndRef}
               className={`h-2 rounded ${isEndOver ? "bg-[var(--fired)]/30" : ""}`}
