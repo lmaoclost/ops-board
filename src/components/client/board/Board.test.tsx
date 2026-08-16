@@ -8,7 +8,7 @@ import type { Project } from "@/lib/types";
 const projeto: Project = {
   id: "p1",
   title: "Alfa",
-  blocked: false, archived: false,
+  blocked: false, archived: false, prio: 3, due: "", collapsed: false,
   sections: [
     { id: "s1", title: "geral", notes: "", collapsed: false, tasks: [
       { id: "t1", text: "tarefa alfa", status: "todo", note: "", blocked: false, prio: 3, due: "", doneAt: null },
@@ -26,6 +26,8 @@ const base = (over: Partial<BoardProps> = {}): BoardProps => ({
     onRename: vi.fn(),
     onDelete: vi.fn(),
     onToggleArchive: vi.fn(),
+    onCyclePrio: vi.fn(),
+    onToggleCollapse: vi.fn(),
   },
   sectionActions: {
     onToggle: vi.fn(),
@@ -74,5 +76,13 @@ describe("Board (lista)", () => {
   it("esconde projeto que não casa o filtro", () => {
     render(<Board {...base({ filters: { ...defaultFilters, status: "doing" } })} />);
     expect(screen.queryByText("Alfa")).toBeNull();
+  });
+
+  it("prioSort ordena projetos P1 antes de P3", () => {
+    const p3: Project = { ...projeto, id: "p3", title: "Baixo", prio: 3 };
+    const p1: Project = { ...projeto, id: "p1", title: "Alto", prio: 1 };
+    render(<Board {...base({ projetos: [p3, p1], filters: { ...defaultFilters, prioSort: true } })} />);
+    const headings = screen.getAllByRole("heading").map((h) => h.textContent);
+    expect(headings.indexOf("Alto")).toBeLessThan(headings.indexOf("Baixo"));
   });
 });

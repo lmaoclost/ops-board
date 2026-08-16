@@ -39,11 +39,15 @@ function normSection(s: UnknownRecord | undefined): Section {
 }
 
 function normProject(p: UnknownRecord | undefined): Project {
+  const prio = PRIOS.includes(p?.prio as Prio) ? (p!.prio as Prio) : 3;
   return {
     id: String(p?.id ?? ""),
     title: String(p?.title ?? ""),
     blocked: Boolean(p?.blocked),
     archived: Boolean(p?.archived),
+    prio,
+    due: String(p?.due ?? ""),
+    collapsed: Boolean(p?.collapsed),
     sections: Array.isArray(p?.sections) ? p.sections.map((s) => normSection(s as UnknownRecord)) : [],
   };
 }

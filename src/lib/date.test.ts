@@ -9,8 +9,8 @@ describe("todayISO", () => {
 });
 
 describe("fmtDate", () => {
-  it("converte ISO em DD/MM", () => {
-    expect(fmtDate("2026-08-13")).toBe("13/08");
+  it("converte ISO em DD/MM/YYYY", () => {
+    expect(fmtDate("2026-08-13")).toBe("13/08/2026");
   });
   it("retorna vazio sem data", () => {
     expect(fmtDate("")).toBe("");

@@ -5,7 +5,7 @@ export function todayISO(): string {
 
 export function fmtDate(iso: string): string {
   const [y, m, d] = (iso || "").split("-");
-  return y ? `${d}/${m}` : "";
+  return y ? `${d}/${m}/${y}` : "";
 }
 
 export function isOverdue(due: string, status: string): boolean {
