@@ -2,7 +2,7 @@ import { create } from "zustand";
 import { createJSONStorage, persist } from "zustand/middleware";
 import { migrateLegacy, normalizeState, SCHEMA_VERSION } from "./migrate";
 import type { Locale } from "./i18n";
-import type { Prio, Project, Section, Status, SubTask, TaskPatch } from "./types";
+import type { AddTaskInput, Prio, Project, Status, SubTask, TaskPatch } from "./types";
 import { uid } from "./uid";
 
 let storageErrorHandler: (() => void) | null = null;
@@ -39,6 +39,7 @@ interface BoardStore {
   renameSection: (pid: string, sid: string, title: string) => void;
   deleteSection: (pid: string, sid: string) => void;
   addTask: (pid: string, sid: string, text: string) => void;
+  addTaskFull: (pid: string, sid: string, input: AddTaskInput) => void;
   editTask: (pid: string, sid: string, tid: string, patch: TaskPatch) => void;
   deleteTask: (pid: string, sid: string, tid: string) => void;
   setTaskStatus: (pid: string, sid: string, tid: string, status: Status) => void;
@@ -60,18 +61,6 @@ const findSection = (projetos: Project[], pid: string, sid: string) =>
   findProject(projetos, pid)?.sections.find((s) => s.id === sid);
 const findTask = (projetos: Project[], pid: string, sid: string, tid: string) =>
   findSection(projetos, pid, sid)?.tasks.find((t) => t.id === tid);
-
-const makeTask = (text: string): Section["tasks"][number] => ({
-  id: uid(),
-  text,
-  status: "todo",
-  note: "",
-  blocked: false,
-  prio: 3,
-  due: "",
-  doneAt: null,
-  subs: [],
-});
 
 export function reconcileSubs(subs: SubTask[]): SubTask[] {
   return subs.map((s) => {
@@ -192,7 +181,9 @@ export function createBoardStore(initial: Project[] = []) {
             })),
           ),
 
-        addTask: (pid, sid, text) =>
+        addTask: (pid, sid, text) => get().addTaskFull(pid, sid, { text, status: "todo" }),
+
+        addTaskFull: (pid, sid, input) =>
           commit(() =>
             set((s) => ({
               projetos: s.projetos.map((p) =>
@@ -200,7 +191,25 @@ export function createBoardStore(initial: Project[] = []) {
                   ? {
                       ...p,
                       sections: p.sections.map((sec) =>
-                        sec.id === sid ? { ...sec, tasks: [...sec.tasks, makeTask(text.trim())] } : sec,
+                        sec.id === sid
+                          ? {
+                              ...sec,
+                              tasks: [
+                                ...sec.tasks,
+                                {
+                                  id: uid(),
+                                  text: input.text.trim(),
+                                  status: input.status,
+                                  note: input.note ?? "",
+                                  blocked: input.blocked ?? false,
+                                  prio: input.prio ?? 3,
+                                  due: input.due ?? "",
+                                  doneAt: input.status === "done" ? new Date().toISOString() : null,
+                                  subs: input.subs ? reconcileSubs(input.subs) : [],
+                                },
+                              ],
+                            }
+                          : sec,
                       ),
                     }
                   : p,
