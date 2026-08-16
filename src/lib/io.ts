@@ -1,3 +1,4 @@
+import { normProject } from "@/lib/migrate";
 import type { Project, Status } from "@/lib/types";
 
 export const MAX_BYTES = 2 * 1024 * 1024;
@@ -84,7 +85,7 @@ export function parseImport(raw: string): Project[] {
     throw new Error("dados inválidos: estrutura de projeto, seção ou tarefa incorreta");
   }
 
-  const list = (projetos as Project[]).map((p) => ({ ...p, archived: Boolean(p.archived) }));
+  const list = (projetos as Project[]).map((p) => normProject(p as unknown as Record<string, unknown>));
   const ids = new Set<string>();
   let sections = 0;
   let tasks = 0;

@@ -14,10 +14,10 @@ const projeto = (over: Partial<Project> = {}): Project => ({
       notes: "",
       collapsed: false,
       tasks: [
-        { id: "t1", text: "correr pra base", status: "todo", note: "", blocked: false, prio: 3, due: "", doneAt: null },
-        { id: "t2", text: "uprs", status: "doing", note: "", blocked: false, prio: 3, due: "", doneAt: null },
-        { id: "t3", text: "ctz", status: "done", note: "novo", blocked: false, prio: 3, due: "", doneAt: "2026-01-01T10:00:00.000Z" },
-        { id: "t4", text: "oe", status: "waiting", note: "", blocked: false, prio: 3, due: "", doneAt: null },
+        { id: "t1", text: "correr pra base", status: "todo", note: "", blocked: false, prio: 3, due: "", doneAt: null, subs: [] },
+        { id: "t2", text: "uprs", status: "doing", note: "", blocked: false, prio: 3, due: "", doneAt: null, subs: [] },
+        { id: "t3", text: "ctz", status: "done", note: "novo", blocked: false, prio: 3, due: "", doneAt: "2026-01-01T10:00:00.000Z", subs: [] },
+        { id: "t4", text: "oe", status: "waiting", note: "", blocked: false, prio: 3, due: "", doneAt: null, subs: [] },
       ],
     },
   ],
@@ -90,7 +90,7 @@ it("clique no card abre o modal de edição e submit chama onEditTask", () => {
     renderKanban({ onEditTask });
     fireEvent.click(screen.getByRole("button", { name: /editar tarefa correr pra base/ }));
     expect(screen.getByText("editar tarefa")).toBeTruthy();
-    fireEvent.change(screen.getByLabelText("tarefa"), { target: { value: "correr pro topo" } });
+    fireEvent.change(screen.getByLabelText("tarefa", { exact: true }), { target: { value: "correr pro topo" } });
     fireEvent.click(screen.getByText("salvar"));
     expect(onEditTask).toHaveBeenCalledWith("p1", "s1", "t1", expect.objectContaining({ text: "correr pro topo" }));
   });
@@ -110,5 +110,30 @@ it("clique no card abre o modal de edição e submit chama onEditTask", () => {
     fireEvent.pointerDown(card, { clientX: 10, clientY: 10 });
     fireEvent.click(card, { clientX: 12, clientY: 11 });
     expect(screen.getByText("editar tarefa")).toBeTruthy();
+  });
+
+  it("mostra contador de sub-tarefas concluídas no card", () => {
+    renderKanban({
+      projetos: [projeto({ sections: [{ ...projeto().sections[0], tasks: [
+        { ...projeto().sections[0].tasks[0], subs: [
+          { id: "s1", text: "a", done: true },
+          { id: "s2", text: "b", done: false },
+        ] },
+      ] }] })],
+    });
+    expect(screen.getByLabelText("sub-tarefas 1/2")).toBeTruthy();
+  });
+
+  it("adiciona e alterna sub-tarefa no modal e salva com subs", () => {
+    const onEditTask = vi.fn();
+    renderKanban({ onEditTask });
+    fireEvent.click(screen.getByRole("button", { name: /editar tarefa correr pra base/ }));
+    fireEvent.change(screen.getByLabelText("nova sub-tarefa"), { target: { value: "aquecer" } });
+    fireEvent.keyDown(screen.getByLabelText("nova sub-tarefa"), { key: "Enter" });
+    fireEvent.click(screen.getByLabelText("sub-tarefa aquecer"));
+    fireEvent.click(screen.getByText("salvar"));
+    expect(onEditTask).toHaveBeenCalledWith("p1", "s1", "t1", expect.objectContaining({
+      subs: [expect.objectContaining({ text: "aquecer", done: true })],
+    }));
   });
 });

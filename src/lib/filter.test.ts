@@ -10,7 +10,7 @@ const task = (over: Partial<Task> = {}): Task => ({
   blocked: false,
   prio: 3,
   due: "",
-  doneAt: null,
+  doneAt: null, subs: [],
   ...over,
 });
 

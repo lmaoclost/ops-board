@@ -67,6 +67,7 @@ const makeTask = (text: string): Section["tasks"][number] => ({
   prio: 3,
   due: "",
   doneAt: null,
+  subs: [],
 });
 
 export function createBoardStore(initial: Project[] = []) {
@@ -214,6 +215,7 @@ export function createBoardStore(initial: Project[] = []) {
                                       blocked: patch.blocked ?? t.blocked,
                                       prio: patch.prio ?? t.prio,
                                       due: patch.due ?? t.due,
+                                      subs: patch.subs ?? t.subs,
                                     }
                                   : t,
                               ),

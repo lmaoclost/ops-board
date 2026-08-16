@@ -128,7 +128,7 @@ test("import de arquivo gigante é rejeitado sem quebrar o estado", async ({ pag
   await expect(page.getByText("nenhum projeto na fila.")).toBeVisible();
 });
 
-test("migra localStorage v1 → v4 no carregamento", async ({ page }) => {
+test("migra localStorage v1 → v5 no carregamento", async ({ page }) => {
   const v1 = {
     state: {
       projetos: [
@@ -159,6 +159,6 @@ test("migra localStorage v1 → v4 no carregamento", async ({ page }) => {
   await expect(page.getByText("tarefa antiga", { exact: false })).toBeVisible();
 
   const stored = await page.evaluate(() => JSON.parse(localStorage.getItem("opsboard.v1") ?? "{}"));
-  expect(stored.version).toBe(4);
+  expect(stored.version).toBe(5);
   expect(stored.state.projetos[0].sections[0].tasks[0]).toMatchObject({ text: "tarefa antiga", prio: 3, doneAt: null });
 });
