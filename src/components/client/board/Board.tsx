@@ -136,6 +136,7 @@ export function Board({ projetos, filters, onNewProject, onClearFilters, project
         projetos={filtered}
         prioSort={filters.prioSort}
         onEditTask={(pid, sid, tid, patch) => taskActions.onEdit(pid, sid, tid, patch)}
+        onAddTask={(pid, sid, text) => sectionActions.onAddTask(pid, sid, text)}
       />
     );
   } else {
