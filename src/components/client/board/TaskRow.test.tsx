@@ -88,6 +88,18 @@ describe("TaskRow", () => {
     expect(p.onDelete).toHaveBeenCalledTimes(1);
   });
 
+  it("botão alterna bloqueio via onUpdate", async () => {
+    const p = base();
+    render(<TaskRow {...p} />);
+    await userEvent.click(screen.getByLabelText("bloquear tarefa"));
+    expect(p.onUpdate).toHaveBeenCalledWith({ blocked: true });
+
+    const q = base({ blocked: true });
+    render(<TaskRow {...q} />);
+    await userEvent.click(screen.getByLabelText("desbloquear tarefa"));
+    expect(q.onUpdate).toHaveBeenCalledWith({ blocked: false });
+  });
+
   it("concluída mostra texto riscado", () => {
     render(<TaskRow {...base({ status: "done" })} />);
     expect(screen.getByText(/Enviar relatório/).className).toContain("line-through");
