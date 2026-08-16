@@ -1,4 +1,5 @@
 import { useId, useState } from "react";
+import { useT } from "@/hooks/useT";
 import {
   Dialog,
   DialogClose,
@@ -32,7 +33,8 @@ interface ModalProps {
   onCancel: () => void;
 }
 
-export function Modal({ title, fields, submitLabel = "salvar", onSubmit, onCancel }: ModalProps) {
+export function Modal({ title, fields, submitLabel, onSubmit, onCancel }: ModalProps) {
+  const { t } = useT();
   const titleId = useId();
   const [checks, setChecks] = useState<Record<string, boolean>>(() =>
     Object.fromEntries(fields.filter((f) => f.type === "checkbox").map((f) => [f.key, Boolean(f.value)])),
@@ -49,7 +51,7 @@ export function Modal({ title, fields, submitLabel = "salvar", onSubmit, onCance
           <DialogTitle className="text-[13px] font-bold text-[var(--text)]">{title}</DialogTitle>
           <DialogClose
             render={
-              <Button type="button" variant="ghost" size="icon-xs" title="fechar" aria-label="fechar">
+              <Button type="button" variant="ghost" size="icon-xs" title={t("fechar")} aria-label={t("fechar")}>
                 ×
               </Button>
             }
@@ -131,7 +133,7 @@ export function Modal({ title, fields, submitLabel = "salvar", onSubmit, onCance
           </div>
           <div className="flex justify-end gap-2 px-4 pb-3.5">
             <Button type="button" variant="ghost" size="sm" onClick={onCancel}>
-              cancelar
+              {t("cancelar")}
             </Button>
             <Button type="submit" variant="default" size="sm">
               {submitLabel}

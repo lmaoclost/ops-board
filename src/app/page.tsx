@@ -7,6 +7,7 @@ import { Modal } from "@/components/client/Modal";
 import { PrivacyNotice } from "@/components/client/PrivacyNotice";
 import { Stats } from "@/components/client/Stats";
 import { Topbar } from "@/components/client/Topbar";
+import { useT } from "@/hooks/useT";
 import { useFilters } from "@/hooks/useFilters";
 import { useShortcuts } from "@/hooks/useShortcuts";
 import { useTheme } from "next-themes";
@@ -25,6 +26,9 @@ export default function Home() {
   const renameProject = useBoard((s) => s.renameProject);
   const deleteProject = useBoard((s) => s.deleteProject);
   const toggleProjectArchive = useBoard((s) => s.toggleProjectArchive);
+  const locale = useBoard((s) => s.locale);
+  const setLocale = useBoard((s) => s.setLocale);
+  const { t } = useT();
   const setProjectPrio = useBoard((s) => s.setProjectPrio);
   const toggleProjectCollapsed = useBoard((s) => s.toggleProjectCollapsed);
   const addSection = useBoard((s) => s.addSection);
@@ -62,9 +66,9 @@ export default function Home() {
   }, []);
 
   useEffect(() => {
-    setStorageErrorHandler(() => showToast("armazenamento cheio: alterações podem não ser salvas"));
+    setStorageErrorHandler(() => showToast(t("armazenamento cheio: alterações podem não ser salvas")));
     return () => setStorageErrorHandler(null);
-  }, [showToast]);
+  }, [showToast, t]);
 
   const boardProjetos = useMemo(() => visibleProjetos(projetos, filters), [projetos, filters]);
   const stats = useMemo(() => deriveStats(boardProjetos), [boardProjetos]);
@@ -106,9 +110,9 @@ export default function Home() {
       const p = projetos.find((x) => x.id === id);
       if (!p) return;
       toggleProjectArchive(id);
-      showToast(p.archived ? "projeto desarquivado" : "projeto arquivado");
+      showToast(p.archived ? t("projeto desarquivado") : t("projeto arquivado"));
     },
-    [projetos, toggleProjectArchive, showToast],
+    [projetos, toggleProjectArchive, showToast, t],
   );
 
   const handleExport = useCallback(() => {
@@ -119,8 +123,8 @@ export default function Home() {
     a.download = `opsboard-${new Date().toISOString().slice(0, 10)}.json`;
     a.click();
     URL.revokeObjectURL(url);
-    showToast("backup exportado");
-  }, [projetos]);
+    showToast(t("backup exportado"));
+  }, [projetos, showToast, t]);
 
   const handleImportFile = useCallback(
     async (file: File) => {
@@ -128,19 +132,19 @@ export default function Home() {
         const text = await file.text();
         const parsed = parseImport(text);
         importState(parsed);
-        showToast(`importado: ${parsed.length} projeto(s)`);
+        showToast(t("importado: N projeto(s)").replace("N", String(parsed.length)));
       } catch (e) {
-        showToast(e instanceof Error ? e.message : "import falhou");
+        showToast(e instanceof Error ? e.message : t("import falhou"));
       }
     },
-    [importState],
+    [importState, showToast, t],
   );
 
   const handleUndo = useCallback(() => {
     if (!canUndo) return;
     undo();
-    showToast("desfeito");
-  }, [canUndo, undo, showToast]);
+    showToast(t("desfeito"));
+  }, [canUndo, undo, showToast, t]);
 
   useShortcuts(
     {
@@ -172,6 +176,8 @@ export default function Home() {
         onNewProject={() => setNewProjectOpen(true)}
         onExport={handleExport}
         onImport={() => setConfirmImportOpen(true)}
+        locale={locale}
+        onToggleLocale={() => setLocale(locale === "pt" ? "en" : "pt")}
       />
       <input
         ref={fileRef}
@@ -243,9 +249,9 @@ export default function Home() {
           type="button"
           onClick={() => setConfirmClearOpen(true)}
           className="text-[11px] text-[var(--dimmer)] underline underline-offset-2 hover:text-[var(--gave)] cursor-pointer"
-          title="remove todos os projetos deste navegador"
+          title={t("apagar todos os dados deste navegador")}
         >
-          apagar todos os dados
+          {t("apagar todos os dados")}
         </button>
       </footer>
 
@@ -256,22 +262,21 @@ export default function Home() {
             className="!sm:max-w-[380px] gap-0 rounded-lg border border-[var(--line-soft)] bg-[var(--panel-2)] p-0 text-[var(--text)] shadow-xl"
           >
             <div className="flex items-center justify-between border-b border-[var(--line)] px-4 py-3">
-              <DialogTitle className="text-[13px] font-bold text-[var(--text)]">apagar todos os dados</DialogTitle>
+              <DialogTitle className="text-[13px] font-bold text-[var(--text)]">{t("apagar todos os dados")}</DialogTitle>
               <DialogClose
                 render={
-                  <Button type="button" variant="ghost" size="icon-xs" title="fechar" aria-label="fechar">
+                  <Button type="button" variant="ghost" size="icon-xs" title={t("fechar")} aria-label={t("fechar")}>
                     ×
                   </Button>
                 }
               />
             </div>
             <div className="px-4 py-4 text-xs leading-relaxed text-[var(--muted-text)]">
-              Isso remove {projetos.length} projeto(s) deste navegador. Considere exportar um backup antes.
-              Você pode desfazer com Ctrl+Z.
+              {t("apagar_txt").replace("{n}", String(projetos.length))}
             </div>
             <div className="flex justify-end gap-2 px-4 pb-4">
               <Button type="button" variant="ghost" size="xs" onClick={() => setConfirmClearOpen(false)}>
-                cancelar
+                {t("cancelar")}
               </Button>
               <Button
                 type="button"
@@ -280,10 +285,10 @@ export default function Home() {
                 onClick={() => {
                   reset();
                   setConfirmClearOpen(false);
-                  showToast("todos os dados apagados");
+                  showToast(t("todos os dados apagados"));
                 }}
               >
-                apagar tudo
+                {t("apagar tudo")}
               </Button>
             </div>
           </DialogContent>
@@ -297,22 +302,21 @@ export default function Home() {
             className="!sm:max-w-[380px] gap-0 rounded-lg border border-[var(--line-soft)] bg-[var(--panel-2)] p-0 text-[var(--text)] shadow-xl"
           >
             <div className="flex items-center justify-between border-b border-[var(--line)] px-4 py-3">
-              <DialogTitle className="text-[13px] font-bold text-[var(--text)]">importar backup</DialogTitle>
+              <DialogTitle className="text-[13px] font-bold text-[var(--text)]">{t("importar backup")}</DialogTitle>
               <DialogClose
                 render={
-                  <Button type="button" variant="ghost" size="icon-xs" title="fechar" aria-label="fechar">
+                  <Button type="button" variant="ghost" size="icon-xs" title={t("fechar")} aria-label={t("fechar")}>
                     ×
                   </Button>
                 }
               />
             </div>
             <div className="px-4 py-4 text-xs leading-relaxed text-[var(--muted-text)]">
-              Importar substitui {projetos.length} projeto(s) atual(is). Exporte um backup antes se quiser
-              preservá-los. Você pode desfazer com Ctrl+Z.
+              {t("importar_txt").replace("{n}", String(projetos.length))}
             </div>
             <div className="flex justify-end gap-2 px-4 pb-4">
               <Button type="button" variant="ghost" size="xs" onClick={() => setConfirmImportOpen(false)}>
-                cancelar
+                {t("cancelar")}
               </Button>
               <Button
                 type="button"
@@ -323,7 +327,7 @@ export default function Home() {
                   fileRef.current?.click();
                 }}
               >
-                escolher arquivo
+                {t("escolher arquivo")}
               </Button>
             </div>
           </DialogContent>
@@ -332,9 +336,9 @@ export default function Home() {
 
       {newProjectOpen && (
         <Modal
-          title="novo projeto"
-          submitLabel="criar"
-          fields={[{ key: "title", label: "título" }]}
+          title={t("novo projeto")}
+          submitLabel={t("criar")}
+          fields={[{ key: "title", label: t("título") }]}
           onSubmit={(v) => {
             setNewProjectOpen(false);
             const title = String(v.title).trim();
@@ -351,28 +355,27 @@ export default function Home() {
             className="!sm:max-w-[420px] gap-0 rounded-lg border border-[var(--line-soft)] bg-[var(--panel-2)] p-0 text-[var(--text)] shadow-xl"
           >
             <div className="flex items-center justify-between border-b border-[var(--line)] px-4 py-3">
-              <DialogTitle className="text-[13px] font-bold text-[var(--text)]">atalhos e dicas</DialogTitle>
+              <DialogTitle className="text-[13px] font-bold text-[var(--text)]">{t("atalhos e dicas")}</DialogTitle>
               <DialogClose
                 render={
-                  <Button type="button" variant="ghost" size="icon-xs" title="fechar" aria-label="fechar">
+                  <Button type="button" variant="ghost" size="icon-xs" title={t("fechar")} aria-label={t("fechar")}>
                     ×
                   </Button>
                 }
               />
             </div>
             <div className="grid grid-cols-[auto_1fr] gap-x-4 gap-y-1.5 px-4 py-4 text-xs">
-              <span className="text-[var(--dimmer)]">p</span><span>novo projeto</span>
-              <span className="text-[var(--dimmer)]">n</span><span>focar nova tarefa</span>
-              <span className="text-[var(--dimmer)]">1–5</span><span>filtrar por status</span>
-              <span className="text-[var(--dimmer)]">k</span><span>alternar lista/kanban</span>
-              <span className="text-[var(--dimmer)]">t</span><span>alternar tema claro/escuro</span>
-              <span className="text-[var(--dimmer)]">? </span><span>esta ajuda</span>
-              <span className="text-[var(--dimmer)]">esc</span><span>limpar filtros</span>
-              <span className="text-[var(--dimmer)]">ctrl+z</span><span>desfazer</span>
+              <span className="text-[var(--dimmer)]">p</span><span>{t("novo projeto")}</span>
+              <span className="text-[var(--dimmer)]">n</span><span>{t("focar nova tarefa")}</span>
+              <span className="text-[var(--dimmer)]">1–5</span><span>{t("filtrar por status")}</span>
+              <span className="text-[var(--dimmer)]">k</span><span>{t("alternar lista/kanban (k)")}</span>
+              <span className="text-[var(--dimmer)]">t</span><span>{t("alternar tema claro/escuro")}</span>
+              <span className="text-[var(--dimmer)]">? </span><span>{t("esta ajuda")}</span>
+              <span className="text-[var(--dimmer)]">esc</span><span>{t("limpar filtros")}</span>
+              <span className="text-[var(--dimmer)]">ctrl+z</span><span>{t("desfazer (Ctrl+Z)")}</span>
             </div>
             <div className="border-t border-[var(--line)] px-4 py-3 text-xs leading-relaxed text-[var(--muted-text)]">
-              Lista: arraste tarefas entre seções/projetos para mover. Kanban: arraste cartões entre colunas
-              para mudar o status. Dados ficam apenas neste navegador.
+              {t("ajuda_txt")}
             </div>
           </DialogContent>
         </Dialog>

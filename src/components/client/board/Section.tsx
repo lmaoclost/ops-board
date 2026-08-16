@@ -1,4 +1,5 @@
 import { useState } from "react";
+import { useT } from "@/hooks/useT";
 import { useDroppable } from "@dnd-kit/core";
 import { Modal } from "@/components/client/Modal";
 import { Button } from "@/components/ui/button";
@@ -42,6 +43,7 @@ export interface SectionProps {
 }
 
 export function Section({ projectId, section, onToggleSection, onAddTask, onRename, onDelete, taskActions, prioSort, filters }: SectionProps) {
+  const { t } = useT();
   const [draft, setDraft] = useState("");
   const [editingId, setEditingId] = useState<string | null>(null);
   const [renaming, setRenaming] = useState(false);
@@ -66,7 +68,7 @@ export function Section({ projectId, section, onToggleSection, onAddTask, onRena
           onClick={onToggleSection}
           aria-expanded={open}
           className="flex min-w-0 flex-1 items-center gap-2 text-left"
-          title="expandir/recolher"
+          title={t("expande/recolhe seção")}
         >
           <span className={`text-[11px] text-[var(--dimmer)] transition-transform ${open ? "rotate-90" : ""}`}>▶</span>
           <h3 className="text-[12px] font-semibold uppercase tracking-wider text-[var(--muted-text)]">{section.title}</h3>
@@ -83,8 +85,8 @@ export function Section({ projectId, section, onToggleSection, onAddTask, onRena
                   type="button"
                   variant="ghost"
                   size="icon-xs"
-                  title="ações da seção"
-                  aria-label="ações da seção"
+                  title={t("ações da seção")}
+                  aria-label={t("ações da seção")}
                 >
                   ⋯
                 </Button>
@@ -98,7 +100,7 @@ export function Section({ projectId, section, onToggleSection, onAddTask, onRena
                   setRenaming(true);
                 }}
               >
-                renomear seção
+                {t("renomear seção")}
               </DropdownMenuItem>
               <DropdownMenuSeparator className="bg-[var(--line)]" />
               <DropdownMenuItem
@@ -109,7 +111,7 @@ export function Section({ projectId, section, onToggleSection, onAddTask, onRena
                   onDelete();
                 }}
               >
-                excluir seção
+                {t("excluir seção")}
               </DropdownMenuItem>
             </DropdownMenuContent>
           </DropdownMenu>
@@ -159,10 +161,10 @@ export function Section({ projectId, section, onToggleSection, onAddTask, onRena
                 }
               }}
               className="min-w-0 flex-1 bg-[var(--field)] border-[var(--line)]"
-              placeholder="nova tarefa…"
+              placeholder={`${t("nova tarefa")}…`}
               autoComplete="off"
               spellCheck={false}
-              aria-label="nova tarefa"
+              aria-label={t("nova tarefa")}
             />
           </div>
         </div>
@@ -170,9 +172,9 @@ export function Section({ projectId, section, onToggleSection, onAddTask, onRena
 
       {renaming && (
         <Modal
-          title="renomear seção"
-          submitLabel="salvar"
-          fields={[{ key: "title", label: "título", value: section.title }]}
+          title={t("renomear seção")}
+          submitLabel={t("salvar")}
+          fields={[{ key: "title", label: t("título"), value: section.title }]}
           onSubmit={submitRename}
           onCancel={() => setRenaming(false)}
         />

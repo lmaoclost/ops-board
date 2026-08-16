@@ -2,8 +2,9 @@ import { useRef, useState } from "react";
 import { useDraggable, useDroppable } from "@dnd-kit/core";
 import { CSS } from "@dnd-kit/utilities";
 import { sortTasks } from "@/lib/filter";
+import { useT } from "@/hooks/useT";
 import { isDueSoon, isOverdue, fmtDate } from "@/lib/date";
-import { PRIO_CLS, PRIO_KEYS, STATUS_LABEL, STATUS_ORDER, type Prio, type Project, type Status } from "@/lib/types";
+import { PRIO_CLS, PRIO_KEYS, STATUS_ORDER, type Prio, type Project, type Status } from "@/lib/types";
 import { TaskEditModal } from "@/components/client/board/TaskEditModal";
 
 interface FlatTask {
@@ -27,6 +28,7 @@ function flatTasks(projetos: Project[]): FlatTask[] {
 }
 
 function KanbanTask({ item, onEdit }: { item: FlatTask; onEdit: () => void }) {
+  const { t } = useT();
   const { attributes, listeners, setNodeRef, transform, isDragging } = useDraggable({ id: `task:${item.task.id}` });
   const start = useRef<{ x: number; y: number } | null>(null);
   const overdue = isOverdue(item.task.due, item.task.status);
@@ -37,8 +39,8 @@ function KanbanTask({ item, onEdit }: { item: FlatTask; onEdit: () => void }) {
       style={{ transform: CSS.Translate.toString(transform) }}
       className={`cursor-grab rounded-md border border-[var(--line)] bg-[var(--panel-2)] px-2.5 py-1.5 text-xs hover:bg-[var(--panel-3)] ${isDragging ? "opacity-90 shadow-lg ring-2 ring-[var(--fired)]/70 z-10" : ""}`}
       data-testid="kanban-task"
-      aria-label={`editar tarefa ${item.task.text}`}
-      title="clique pra editar, arraste pra mover"
+      aria-label={t("editar tarefa X").replace("X", item.task.text)}
+      title={t("clique pra editar, arraste pra mover")}
       onPointerDown={(e) => {
         start.current = { x: e.clientX, y: e.clientY };
       }}
@@ -77,7 +79,7 @@ function KanbanTask({ item, onEdit }: { item: FlatTask; onEdit: () => void }) {
       </div>
       <div className="mt-1 flex items-center gap-1.5">
         {item.task.blocked && (
-          <span className="text-[10px] font-bold uppercase tracking-[0.08em] text-[var(--gave)]" title="bloqueada">
+          <span className="text-[10px] font-bold uppercase tracking-[0.08em] text-[var(--gave)]" title={t("bloqueada")}>
             ⛔ bloqueada
           </span>
         )}
@@ -100,6 +102,7 @@ function KanbanTask({ item, onEdit }: { item: FlatTask; onEdit: () => void }) {
 }
 
 function DroppableCol({ status, items, onEdit }: { status: Status; items: FlatTask[]; onEdit: (item: FlatTask) => void }) {
+  const { status: statusLabel } = useT();
   const { setNodeRef, isOver } = useDroppable({ id: `k:${status}` });
   return (
     <div
@@ -107,7 +110,7 @@ function DroppableCol({ status, items, onEdit }: { status: Status; items: FlatTa
       className={`flex min-w-[200px] flex-1 flex-col rounded-lg border ${isOver ? "border-[var(--fired)]/60" : "border-[var(--line)]"} bg-[var(--panel)]`}
     >
       <header className="border-b border-[var(--line)] px-3 py-2 text-[11px] font-bold uppercase tracking-wider text-[var(--muted-text)]">
-        {STATUS_LABEL[status]} <span className="text-[var(--dimmer)]">{items.length}</span>
+        {statusLabel(status)} <span className="text-[var(--dimmer)]">{items.length}</span>
       </header>
       <div className="flex min-h-[48px] flex-col gap-1 p-2">
         {items.map((item) => (
@@ -119,13 +122,14 @@ function DroppableCol({ status, items, onEdit }: { status: Status; items: FlatTa
 }
 
 export function Kanban({ projetos, prioSort, onEditTask }: KanbanProps) {
+  const { t } = useT();
   const [editing, setEditing] = useState<FlatTask | null>(null);
 
   if (!projetos.length) {
     return (
       <div className="fade-in rounded-lg border border-dashed border-[var(--line-soft)] p-10 text-center text-[var(--dim)]">
         <span className="block text-2xl">≡</span>
-        <p>nenhuma tarefa para o kanban.</p>
+        <p>{t("nenhuma tarefa para o kanban")}.</p>
       </div>
     );
   }

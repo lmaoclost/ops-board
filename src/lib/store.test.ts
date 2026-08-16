@@ -414,6 +414,19 @@ describe("persistência", () => {
     expect(s.getState().projetos).toEqual([]);
   });
 });
+describe("locale", () => {
+  it("default pt", () => {
+    const store = createBoardStore();
+    expect(store.getState().locale).toBe("pt");
+  });
+
+  it("setLocale alterna", () => {
+    const store = createBoardStore();
+    store.getState().setLocale("en");
+    expect(store.getState().locale).toBe("en");
+  });
+});
+
 describe("storage error handler (quota)", () => {
   it("notifica quando setItem falha (quota excedida)", () => {
     const store = createBoardStore();

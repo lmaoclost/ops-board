@@ -1,4 +1,5 @@
 import { Badge } from "@/components/ui/badge";
+import { useT } from "@/hooks/useT";
 import { Button } from "@/components/ui/button";
 import {
   Select,
@@ -11,7 +12,7 @@ import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip
 import { isDueSoon, isOverdue } from "@/lib/date";
 import { linkify } from "@/lib/escape";
 import { fmtDate } from "@/lib/date";
-import { PRIO_KEYS, STATUS_LABEL, STATUS_ORDER, type Prio, type Status, type Task } from "@/lib/types";
+import { PRIO_KEYS, STATUS_ORDER, type Prio, type Status, type Task } from "@/lib/types";
 
 export interface TaskRowProps {
   task: Task;
@@ -38,6 +39,7 @@ const PRIO_CLS: Record<Prio, string> = {
 };
 
 export function TaskRow({ task, onToggle, onPrioCycle, onStatusChange, onEdit, onDelete }: TaskRowProps) {
+  const { t, status } = useT();
   const overdue = isOverdue(task.due, task.status);
   const dueSoon = isDueSoon(task.due, task.status);
   const done = task.status === "done";
@@ -50,8 +52,8 @@ export function TaskRow({ task, onToggle, onPrioCycle, onStatusChange, onEdit, o
       <button
         type="button"
         onClick={onToggle}
-        title="alternar concluída"
-        aria-label="alternar concluída"
+        title={t("alternar concluída")}
+        aria-label={t("alternar concluída")}
         className={`flex h-6 w-6 shrink-0 items-center justify-center rounded-full transition-colors hover:bg-[var(--hover)]`}
       >
         <span
@@ -80,7 +82,7 @@ export function TaskRow({ task, onToggle, onPrioCycle, onStatusChange, onEdit, o
           <button
             type="button"
             onClick={onPrioCycle}
-            aria-label="prioridade: clique pra mudar"
+            aria-label={t("prioridade: clique pra mudar")}
             className={`shrink-0 rounded px-1.5 py-0.5 border text-[11px] font-bold ${PRIO_CLS[task.prio]}`}
           >
             {PRIO_KEYS[task.prio]}
@@ -111,8 +113,8 @@ export function TaskRow({ task, onToggle, onPrioCycle, onStatusChange, onEdit, o
       >
         <SelectTrigger
           size="sm"
-          aria-label="status"
-          title="mudar status"
+          aria-label={t("mudar status")}
+          title={t("mudar status")}
           className="h-7 border-[var(--line)] bg-[var(--field)] px-2 text-[11px] text-[var(--muted-text)] hover:border-[var(--muted-text)] hover:text-[var(--text)]"
         >
           <SelectValue />
@@ -120,12 +122,12 @@ export function TaskRow({ task, onToggle, onPrioCycle, onStatusChange, onEdit, o
         <SelectContent>
           {STATUS_ORDER.map((k) => (
             <SelectItem key={k} value={k} className="py-1 text-xs">
-              {STATUS_LABEL[k]}
+              {status(k)}
             </SelectItem>
           ))}
         </SelectContent>
       </Select>
-      <Button type="button" variant="ghost" size="icon-xs" onClick={onEdit} title="editar" aria-label="editar">
+      <Button type="button" variant="ghost" size="icon-xs" onClick={onEdit} title={t("editar")} aria-label={t("editar")}>
         ✎
       </Button>
       <Button

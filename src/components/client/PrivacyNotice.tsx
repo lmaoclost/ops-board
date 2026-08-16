@@ -1,12 +1,14 @@
 "use client";
 
 import { useEffect, useState } from "react";
+import { useT } from "@/hooks/useT";
 import Link from "next/link";
 import { Button, buttonVariants } from "@/components/ui/button";
 
 const NOTICE_KEY = "opsboard.notice-v1";
 
 export function PrivacyNotice() {
+  const { t } = useT();
   const [open, setOpen] = useState(false);
 
   useEffect(() => {
@@ -24,24 +26,22 @@ export function PrivacyNotice() {
   return (
     <div
       role="dialog"
-      aria-label="aviso de privacidade"
+      aria-label={t("aviso de privacidade")}
       className="fixed bottom-5 left-1/2 z-50 w-[min(92vw,26rem)] -translate-x-1/2 rounded-lg border border-[var(--line)] bg-[var(--panel)] p-4 shadow-xl"
     >
-      <h2 className="text-sm font-bold tracking-wide text-[var(--text)]">Seus dados, só no seu navegador</h2>
+      <h2 className="text-sm font-bold tracking-wide text-[var(--text)]">{t("priv_titulo")}</h2>
       <p className="mt-1.5 text-xs leading-relaxed text-[var(--muted-text)]">
-        O OpsBoard processa os seus dados localmente e os guarda apenas no armazenamento do seu navegador
-        (localStorage). Nada é enviado a servidores. Você pode exportar um backup a qualquer momento e apagar
-        tudo pelos controles do quadro. Veja a política completa na página de privacidade.
+        {t("priv_txt")}
       </p>
       <div className="mt-3 flex items-center justify-end gap-2">
         <Link
           href="/privacidade"
           className={buttonVariants({ variant: "ghost", size: "xs" }) + " text-[var(--muted-text)]"}
         >
-          política completa
+          {t("priv_link")}
         </Link>
         <Button type="button" variant="default" size="sm" onClick={dismiss}>
-          entendi
+          {t("priv_ok")}
         </Button>
       </div>
     </div>

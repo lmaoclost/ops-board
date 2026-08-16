@@ -1,5 +1,6 @@
 import { DndContext, PointerSensor, TouchSensor, pointerWithin, useSensor, useSensors, type DragEndEvent } from "@dnd-kit/core";
 import { useMemo } from "react";
+import { useT } from "@/hooks/useT";
 import { isFiltering, prioSort, projMatches, type Filters } from "@/lib/filter";
 import { resolveDrop } from "@/lib/dnd";
 import type { Project, Status, TaskPatch } from "@/lib/types";
@@ -57,6 +58,7 @@ export interface BoardProps {
 }
 
 export function Board({ projetos, filters, onNewProject, onClearFilters, projectActions, sectionActions, taskActions }: BoardProps) {
+  const { t } = useT();
   const sensors = useSensors(
     useSensor(PointerSensor, { activationConstraint: { distance: 6 } }),
     useSensor(TouchSensor, { activationConstraint: { distance: 6 } }),
@@ -101,13 +103,13 @@ export function Board({ projetos, filters, onNewProject, onClearFilters, project
     content = (
       <div className="fade-in rounded-lg border border-dashed border-[var(--line-soft)] p-10 text-center text-[var(--dim)]">
         <span className="block text-2xl">_</span>
-        <p className="mb-3">nenhum projeto na fila.</p>
+        <p className="mb-3">{t("nenhum projeto na fila.")}</p>
         <button
           type="button"
           onClick={onNewProject}
           className="rounded-md bg-[var(--fired)] px-3 py-1.5 text-xs font-bold text-primary-foreground"
         >
-          + criar primeiro projeto
+          {t("criar primeiro projeto")}
         </button>
       </div>
     );
@@ -115,13 +117,13 @@ export function Board({ projetos, filters, onNewProject, onClearFilters, project
     content = (
       <div className="fade-in rounded-lg border border-dashed border-[var(--line-soft)] p-10 text-center text-[var(--dim)]">
         <span className="block text-2xl">∅</span>
-        <p className="mb-3">nada casa com o filtro.</p>
+        <p className="mb-3">{t("nada casa com o filtro.")}</p>
         <button
           type="button"
           onClick={onClearFilters}
           className="rounded-md bg-[var(--fired)] px-3 py-1.5 text-xs font-bold text-primary-foreground"
         >
-          ✕ limpar filtros
+          {t("✕ limpar filtros")}
         </button>
       </div>
     );
