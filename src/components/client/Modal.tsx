@@ -1,4 +1,4 @@
-import { useId, useState } from "react";
+import { useId, useState, type ReactNode } from "react";
 import { useT } from "@/hooks/useT";
 import {
   Dialog,
@@ -31,9 +31,10 @@ interface ModalProps {
   submitLabel?: string;
   onSubmit: (values: Record<string, string | boolean>) => void;
   onCancel: () => void;
+  children?: ReactNode;
 }
 
-export function Modal({ title, fields, submitLabel, onSubmit, onCancel }: ModalProps) {
+export function Modal({ title, fields, submitLabel = "salvar", onSubmit, onCancel, children }: ModalProps) {
   const { t } = useT();
   const titleId = useId();
   const [checks, setChecks] = useState<Record<string, boolean>>(() =>
@@ -130,6 +131,7 @@ export function Modal({ title, fields, submitLabel, onSubmit, onCancel }: ModalP
                 )}
               </div>
             ))}
+            {children}
           </div>
           <div className="flex justify-end gap-2 px-4 pb-3.5">
             <Button type="button" variant="ghost" size="sm" onClick={onCancel}>

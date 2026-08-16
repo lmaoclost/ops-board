@@ -1,6 +1,12 @@
 export type Status = "todo" | "doing" | "waiting" | "done";
 export type Prio = 1 | 2 | 3;
 
+export interface SubTask {
+  id: string;
+  text: string;
+  done: boolean;
+}
+
 export interface Task {
   id: string;
   text: string;
@@ -10,6 +16,7 @@ export interface Task {
   prio: Prio;
   due: string;
   doneAt: string | null;
+  subs: SubTask[];
 }
 
 export interface Section {
@@ -37,6 +44,7 @@ export interface TaskPatch {
   blocked?: boolean;
   prio?: Prio;
   due?: string;
+  subs?: SubTask[];
 }
 
 export const STATUS_ORDER: Status[] = ["todo", "doing", "waiting", "done"];

@@ -22,7 +22,7 @@ const task = (over: Partial<Project["sections"][number]["tasks"][number]> = {}):
   blocked: false,
   prio: 3,
   due: "",
-  doneAt: null,
+  doneAt: null, subs: [],
   ...over,
 });
 

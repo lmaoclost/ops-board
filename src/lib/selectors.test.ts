@@ -18,9 +18,9 @@ const projetos: Project[] = [
         notes: "",
         collapsed: false,
         tasks: [
-          { id: "t1", text: "a", status: "todo", note: "", blocked: true, prio: 1, due: "", doneAt: null },
-          { id: "t2", text: "b", status: "doing", note: "", blocked: false, prio: 2, due: "", doneAt: null },
-          { id: "t3", text: "c", status: "done", note: "", blocked: false, prio: 3, due: "", doneAt: null },
+          { id: "t1", text: "a", status: "todo", note: "", blocked: true, prio: 1, due: "", doneAt: null, subs: [] },
+          { id: "t2", text: "b", status: "doing", note: "", blocked: false, prio: 2, due: "", doneAt: null, subs: [] },
+          { id: "t3", text: "c", status: "done", note: "", blocked: false, prio: 3, due: "", doneAt: null, subs: [] },
           {
             id: "t4",
             text: "d",
@@ -29,7 +29,7 @@ const projetos: Project[] = [
             blocked: false,
             prio: 3,
             due: "",
-            doneAt: new Date().toISOString(),
+            doneAt: new Date().toISOString(), subs: [],
           },
         ],
       },

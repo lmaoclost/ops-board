@@ -12,7 +12,7 @@ const base = (over: Partial<TaskRowProps["task"]> = {}): TaskRowProps => ({
     blocked: false,
     prio: 1,
     due: "",
-    doneAt: null,
+    doneAt: null, subs: [],
     ...over,
   },
   onToggle: vi.fn(),
@@ -26,6 +26,15 @@ describe("TaskRow", () => {
   it("renderiza linha com data-testid estável", () => {
     render(<TaskRow {...base()} />);
     expect(screen.getByTestId("task-row")).toBeInTheDocument();
+  });
+
+  it("mostra sub-tarefas inline, concluídas riscadas", () => {
+    render(<TaskRow {...base({ subs: [
+      { id: "a", text: "fazer x", done: true },
+      { id: "b", text: "fazer y", done: false },
+    ] })} />);
+    expect(screen.getByText(/▪ fazer x/)).toBeTruthy();
+    expect(screen.getByText(/▪ fazer y/)).toBeTruthy();
   });
 
   it("renderiza texto com link e nota", () => {

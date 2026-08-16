@@ -11,7 +11,7 @@ const projeto: Project = {
   blocked: false, archived: false, prio: 3, due: "", collapsed: false,
   sections: [
     { id: "s1", title: "geral", notes: "", collapsed: false, tasks: [
-      { id: "t1", text: "tarefa alfa", status: "todo", note: "", blocked: false, prio: 3, due: "", doneAt: null },
+      { id: "t1", text: "tarefa alfa", status: "todo", note: "", blocked: false, prio: 3, due: "", doneAt: null, subs: [] },
     ] },
   ],
 };

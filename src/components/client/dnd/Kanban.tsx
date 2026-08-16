@@ -76,6 +76,15 @@ function KanbanTask({ item, onEdit }: { item: FlatTask; onEdit: () => void }) {
         <span className={`shrink-0 rounded border px-1 py-0.5 text-[9px] font-bold ${PRIO_CLS[item.task.prio]}`}>
           {PRIO_KEYS[item.task.prio]}
         </span>
+        {item.task.subs.length > 0 && (
+          <span
+            className="shrink-0 rounded border border-[var(--line-soft)] px-1 py-0.5 text-[9px] text-[var(--dim)]"
+            title={`${item.task.subs.filter((s) => s.done).length}/${item.task.subs.length} sub-tarefas concluídas`}
+            aria-label={`sub-tarefas ${item.task.subs.filter((s) => s.done).length}/${item.task.subs.length}`}
+          >
+            {item.task.subs.filter((s) => s.done).length}/{item.task.subs.length}
+          </span>
+        )}
       </div>
       <div className="mt-1 flex items-center gap-1.5">
         {item.task.blocked && (

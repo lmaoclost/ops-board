@@ -14,7 +14,7 @@ const projeto = (over: Partial<Project> = {}): Project => ({
       notes: "",
       collapsed: false,
       tasks: [
-        { id: "t1", text: "x", status: "todo", note: "", blocked: false, prio: 3, due: "", doneAt: null },
+        { id: "t1", text: "x", status: "todo", note: "", blocked: false, prio: 3, due: "", doneAt: null, subs: [] },
       ],
     },
   ],

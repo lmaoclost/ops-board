@@ -71,6 +71,18 @@ export function TaskRow({ task, onToggle, onPrioCycle, onStatusChange, onEdit, o
             dangerouslySetInnerHTML={{ __html: ` — ${linkify(task.note)}` }}
           />
         )}
+        {task.subs.length > 0 && (
+          <span className="mt-0.5 block">
+            {task.subs.map((s) => (
+              <span
+                key={s.id}
+                className={`mr-2 text-[11px] ${s.done ? "line-through text-[var(--dim)]" : "text-[var(--muted-text)]"}`}
+              >
+                ▪ {s.text}
+              </span>
+            ))}
+          </span>
+        )}
       </span>
       {task.blocked && (
         <Badge variant="destructive" className="rounded-[4px] px-1.5 text-[11px] font-bold uppercase tracking-[0.08em]">

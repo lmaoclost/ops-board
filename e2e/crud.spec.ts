@@ -50,7 +50,7 @@ test("adiciona seção extra, edita tarefa: texto, prioridade, vencimento, nota 
 
   await page.getByTestId("task-row").getByRole("button", { name: "editar" }).click();
   const dialog = page.getByRole("dialog", { name: "editar tarefa" });
-  await dialog.getByLabel("tarefa").fill("tarefa nova");
+  await dialog.getByLabel("tarefa", { exact: true }).fill("tarefa nova");
   await dialog.getByLabel("prioridade").selectOption({ label: "P1 — urgente" });
   await dialog.getByLabel("vencimento").fill("2026-08-14");
   await dialog.getByLabel("nota").fill("detalhe da nota");
