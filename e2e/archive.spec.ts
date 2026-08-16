@@ -77,11 +77,11 @@ test("filtro de status combina com arquivados", async ({ page }) => {
   await page.getByRole("menuitem", { name: "arquivar projeto" }).click();
   await page.getByRole("button", { name: /arquivados/ }).click();
 
-  await page.getByRole("button", { name: "done" }).click();
+  await page.getByRole("button", { name: "concluída" }).click();
   await expect(page.getByText("terminada")).toBeVisible();
   await expect(page.getByText("P Todo")).toHaveCount(0);
 
-  await page.getByRole("button", { name: /^todo/ }).click();
+  await page.getByRole("button", { name: /^a fazer/ }).click();
   await expect(page.getByText("pendente", { exact: true })).toBeVisible();
   await expect(page.getByText("P Done")).toHaveCount(0);
 });
