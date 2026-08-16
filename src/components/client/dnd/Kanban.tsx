@@ -3,7 +3,7 @@ import { useDraggable, useDroppable } from "@dnd-kit/core";
 import { CSS } from "@dnd-kit/utilities";
 import { sortTasks } from "@/lib/filter";
 import { isDueSoon, isOverdue, fmtDate } from "@/lib/date";
-import { PRIO_KEYS, STATUS_LABEL, STATUS_ORDER, type Prio, type Project, type Status } from "@/lib/types";
+import { PRIO_CLS, PRIO_KEYS, STATUS_LABEL, STATUS_ORDER, type Prio, type Project, type Status } from "@/lib/types";
 import { TaskEditModal } from "@/components/client/board/TaskEditModal";
 
 interface FlatTask {
@@ -25,12 +25,6 @@ function flatTasks(projetos: Project[]): FlatTask[] {
     p.sections.flatMap((s) => s.tasks.map((task) => ({ task, pid: p.id, ptitle: p.title, sid: s.id, stitle: s.title }))),
   );
 }
-
-const PRIO_CLS: Record<Prio, string> = {
-  1: "text-[var(--gave)] border-[var(--gave)]/40 bg-[var(--gave)]/10",
-  2: "text-[var(--warn)] border-[var(--warn)]/40 bg-[var(--warn)]/10",
-  3: "text-[var(--muted-text)] border-[var(--line)]",
-};
 
 function KanbanTask({ item, onEdit }: { item: FlatTask; onEdit: () => void }) {
   const { attributes, listeners, setNodeRef, transform, isDragging } = useDraggable({ id: `task:${item.task.id}` });

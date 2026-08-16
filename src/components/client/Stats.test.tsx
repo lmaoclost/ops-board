@@ -10,7 +10,7 @@ import type { Project } from "../../lib/types";
 const projeto = (tasks: Project["sections"][number]["tasks"]): Project => ({
   id: "p1",
   title: "A",
-  blocked: false, archived: false,
+  blocked: false, archived: false, prio: 3, due: "", collapsed: false,
   sections: [{ id: "s1", title: "geral", tasks, notes: "", collapsed: false }],
 });
 

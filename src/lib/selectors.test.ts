@@ -8,6 +8,9 @@ const projetos: Project[] = [
     title: "A",
     blocked: true,
     archived: false,
+    prio: 3,
+    due: "",
+    collapsed: false,
     sections: [
       {
         id: "s1",

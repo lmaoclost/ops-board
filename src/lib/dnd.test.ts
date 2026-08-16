@@ -5,7 +5,7 @@ import type { Project } from "./types";
 const projeto = (over: Partial<Project> = {}): Project => ({
   id: "p1",
   title: "P",
-  blocked: false, archived: false,
+  blocked: false, archived: false, prio: 3, due: "", collapsed: false,
   sections: [
     {
       id: "s1",

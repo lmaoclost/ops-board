@@ -26,7 +26,7 @@ const section = (over: Partial<Section> = {}): Section => ({
 const project = (over: Partial<Project> = {}): Project => ({
   id: "p1",
   title: "Projeto Alfa",
-  blocked: false, archived: false,
+  blocked: false, archived: false, prio: 3, due: "", collapsed: false,
   sections: [section()],
   ...over,
 });

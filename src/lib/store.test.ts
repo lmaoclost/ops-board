@@ -6,7 +6,7 @@ const seedProjeto = (): Project => ({
   id: "p1",
   title: "Projeto A",
   blocked: false,
-  archived: false,
+  archived: false, prio: 3, due: "", collapsed: false,
   sections: [
     { id: "s1", title: "geral", notes: "", collapsed: false, tasks: [
       { id: "t1", text: "tarefa 1", status: "todo" as const, note: "", blocked: false, prio: 3, due: "", doneAt: null },
@@ -39,9 +39,31 @@ describe("board store", () => {
     expect(p.blocked).toBe(true);
   });
 
+  it("renameProject sem due preserva o vencimento atual", () => {
+    store.getState().setProjectPrio("p1", 1);
+    store.getState().renameProject("p1", "X", false);
+    expect(store.getState().projetos[0].due).toBe("");
+    store.getState().renameProject("p1", "Y", false, "2026-09-01");
+    expect(store.getState().projetos[0].due).toBe("2026-09-01");
+    store.getState().renameProject("p1", "Z", false);
+    expect(store.getState().projetos[0].due).toBe("2026-09-01");
+  });
+
   it("exclui projeto", () => {
     store.getState().deleteProject("p1");
     expect(store.getState().projetos).toHaveLength(0);
+  });
+
+  it("define prioridade do projeto", () => {
+    store.getState().setProjectPrio("p1", 1);
+    expect(store.getState().projetos[0].prio).toBe(1);
+  });
+
+  it("alterna colapso do projeto", () => {
+    store.getState().toggleProjectCollapsed("p1");
+    expect(store.getState().projetos[0].collapsed).toBe(true);
+    store.getState().toggleProjectCollapsed("p1");
+    expect(store.getState().projetos[0].collapsed).toBe(false);
   });
 
   it("adiciona, renomeia e exclui seção", () => {
@@ -143,7 +165,7 @@ describe("board store", () => {
   });
 
   it("importState substitui estado", () => {
-    const novo = [{ id: "x", title: "Importado", blocked: false, archived: false, sections: [] }];
+    const novo: Project[] = [{ id: "x", title: "Importado", blocked: false, archived: false, prio: 3, due: "", collapsed: false, sections: [] }];
     store.getState().importState(novo);
     expect(store.getState().projetos).toEqual(novo);
   });
@@ -236,7 +258,7 @@ describe("board store", () => {
 
   it("importState é desfeita restaurando os projetos anteriores", () => {
     const antes = store.getState().projetos;
-    store.getState().importState([{ id: "x", title: "Importado", blocked: false, archived: false, sections: [] }]);
+    store.getState().importState([{ id: "x", title: "Importado", blocked: false, archived: false, prio: 3 as const, due: "", collapsed: false, sections: [] }]);
     store.getState().undo();
     expect(store.getState().projetos).toEqual(antes);
   });

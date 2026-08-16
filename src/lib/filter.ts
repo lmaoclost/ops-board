@@ -1,4 +1,4 @@
-import type { Project, Section, Status, Task } from "./types";
+import type { Prio, Project, Section, Status, Task } from "./types";
 
 export type View = "list" | "kanban";
 export type StatusFilter = Status | "blocked" | null;
@@ -49,6 +49,9 @@ export function sortTasks<T>(tasks: T[], prioSort: boolean, key: (t: T) => numbe
   if (!prioSort) return tasks;
   return tasks.toSorted((a, b) => key(a) - key(b));
 }
+
+/** Compara prioridades (P1 no topo). */
+export const prioSort = (a: Prio, b: Prio) => a - b;
 
 /** Projetos visíveis no board: chip arquivados ligado mostra só arquivados; desligado, só ativos. */
 export const visibleProjetos = (projetos: Project[], f: Filters): Project[] =>
