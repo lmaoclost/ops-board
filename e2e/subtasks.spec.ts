@@ -89,3 +89,24 @@ test("adiciona sub-tarefa inline na lista, alterna e remove", async ({ page }) =
   await page.getByRole("button", { name: "kanban" }).click();
   await expect(page.getByLabel("sub-tarefas 1/1")).toBeVisible();
 });
+
+test("pai vira done quando todas as sub-tarefas são concluídas", async ({ page }) => {
+  await page.goto("/");
+  await createProject(page, "app");
+  await page.getByLabel("nova tarefa").first().fill("setup");
+  await page.getByLabel("nova tarefa").first().press("Enter");
+
+  const addSub = page.getByTestId("task-row").getByRole("button", { name: "nova sub-tarefa" });
+  await addSub.click();
+  await page.getByRole("textbox", { name: "nova sub-tarefa" }).fill("instalar deps");
+  await page.getByRole("textbox", { name: "nova sub-tarefa" }).press("Enter");
+  await addSub.click();
+  await page.getByRole("textbox", { name: "nova sub-tarefa" }).fill("configurar env");
+  await page.getByRole("textbox", { name: "nova sub-tarefa" }).press("Enter");
+
+  await page.getByRole("checkbox", { name: "sub-tarefa instalar deps" }).click();
+  await page.getByRole("checkbox", { name: "sub-tarefa configurar env" }).click();
+
+  await page.getByRole("button", { name: "kanban" }).click();
+  await expect(page.getByText("concluída 1")).toBeVisible();
+});
