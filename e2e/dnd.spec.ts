@@ -51,6 +51,26 @@ test("reordena tarefa dentro da seção por arrasto", async ({ page }) => {
   await expect(rows.nth(1)).toContainText("primeira");
 });
 
+test("reordena tarefa para baixo de outra na mesma seção por arrasto", async ({ page }) => {
+  await page.goto("/");
+  await createProject(page, "app");
+  await addTask(page, "primeira");
+  await addTask(page, "segunda");
+  await addTask(page, "terceira");
+
+  const rows = page.getByTestId("task-row");
+  await expect(rows).toHaveCount(3);
+  await expect(rows.nth(0)).toContainText("primeira");
+  await expect(rows.nth(1)).toContainText("segunda");
+  await expect(rows.nth(2)).toContainText("terceira");
+
+  await drag(page, rows.nth(0), rows.nth(1));
+
+  await expect(rows.nth(0)).toContainText("segunda");
+  await expect(rows.nth(1)).toContainText("primeira");
+  await expect(rows.nth(2)).toContainText("terceira");
+});
+
 test("move tarefa entre seções por arrasto", async ({ page }) => {
   await page.goto("/");
   await createProject(page, "app");
