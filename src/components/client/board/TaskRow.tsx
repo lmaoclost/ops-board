@@ -1,4 +1,5 @@
 import { useState } from "react";
+import { CircleSlashIcon } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { useT } from "@/hooks/useT";
 import { Button } from "@/components/ui/button";
@@ -168,6 +169,17 @@ export function TaskRow({ task, onToggle, onPrioCycle, onStatusChange, onEdit, o
             ))}
           </SelectContent>
         </Select>
+        <Button
+          type="button"
+          variant="ghost"
+          size="icon-xs"
+          onClick={() => onUpdate({ blocked: !task.blocked })}
+          title={t(task.blocked ? "desbloquear tarefa" : "bloquear tarefa")}
+          aria-label={t(task.blocked ? "desbloquear tarefa" : "bloquear tarefa")}
+          className={`transition-opacity ${task.blocked ? "text-[var(--gave)] opacity-100 hover:text-[var(--gave)]" : "text-[var(--dimmer)] opacity-0 group-hover:opacity-100 focus-visible:opacity-100 hover:text-[var(--gave)]"}`}
+        >
+          <CircleSlashIcon />
+        </Button>
         <Button type="button" variant="ghost" size="icon-xs" onClick={onEdit} title={t("editar")} aria-label={t("editar")}>
           ✎
         </Button>
