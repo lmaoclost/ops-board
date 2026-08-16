@@ -81,6 +81,19 @@ test("exclui tarefa, seção e projeto (sem confirm nativo, undo cobre)", async 
   await expect(page.getByText("nenhum projeto na fila.")).toBeVisible();
 });
 
+test("bloqueia e desbloqueia tarefa pelo botão da linha", async ({ page }) => {
+  await page.goto("/");
+  await createProject(page, "app");
+  await addTask(page, "tarefa travada");
+
+  await page.getByTestId("task-row").getByLabel("bloquear tarefa").click();
+  await expect(page.getByText("bloqueada", { exact: true })).toBeVisible();
+  await expect(page.getByTestId("task-row").getByLabel("desbloquear tarefa")).toBeVisible();
+
+  await page.getByTestId("task-row").getByLabel("desbloquear tarefa").click();
+  await expect(page.getByText("bloqueada", { exact: true })).toHaveCount(0);
+});
+
 test("renomeia projeto e marca/desmarca stuck pelo ⋯; renomeia seção", async ({ page }) => {
   await page.goto("/");
   await createProject(page, "app");
