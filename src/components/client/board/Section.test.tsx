@@ -25,6 +25,7 @@ const base = (over: Partial<SectionProps> = {}): SectionProps => ({
     onStatusChange: vi.fn(),
     onEdit: vi.fn(),
     onDelete: vi.fn(),
+    onUpdate: vi.fn(),
   },
   ...over,
 });

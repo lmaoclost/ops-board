@@ -22,6 +22,7 @@ export interface SectionTaskActions {
   onStatusChange: (tid: string, status: Task["status"]) => void;
   onEdit: (tid: string, patch: TaskPatch) => void;
   onDelete: (tid: string) => void;
+  onUpdate: (tid: string, patch: TaskPatch) => void;
 }
 
 export interface SectionProps {
@@ -138,6 +139,7 @@ export function Section({ projectId, section, onToggleSection, onAddTask, onRena
                 onStatusChange={(status) => taskActions.onStatusChange(t.id, status)}
                 onEdit={() => setEditingId(t.id)}
                 onDelete={() => taskActions.onDelete(t.id)}
+                onUpdate={(patch) => taskActions.onUpdate(t.id, patch)}
               />
             ))}
             <div

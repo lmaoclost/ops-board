@@ -1,6 +1,6 @@
 import { useSortable } from "@dnd-kit/sortable";
 import { CSS } from "@dnd-kit/utilities";
-import type { Task } from "@/lib/types";
+import type { Task, TaskPatch } from "@/lib/types";
 import { TaskRow } from "@/components/client/board/TaskRow";
 
 interface SortableTaskItemProps {
@@ -10,9 +10,10 @@ interface SortableTaskItemProps {
   onStatusChange: (status: Task["status"]) => void;
   onEdit: () => void;
   onDelete: () => void;
+  onUpdate: (patch: TaskPatch) => void;
 }
 
-export function SortableTaskItem({ task, onToggle, onPrioCycle, onStatusChange, onEdit, onDelete }: SortableTaskItemProps) {
+export function SortableTaskItem({ task, onToggle, onPrioCycle, onStatusChange, onEdit, onDelete, onUpdate }: SortableTaskItemProps) {
   const { attributes, listeners, setNodeRef, transform, transition, isDragging } = useSortable({
     id: `task:${task.id}`,
     disabled: false,
@@ -33,6 +34,7 @@ export function SortableTaskItem({ task, onToggle, onPrioCycle, onStatusChange, 
         onStatusChange={onStatusChange}
         onEdit={onEdit}
         onDelete={onDelete}
+        onUpdate={onUpdate}
       />
     </div>
   );

@@ -236,6 +236,7 @@ export default function Home() {
             onStatusChange: handleStatusChange,
             onEdit: (pid, sid, tid, patch) => editTask(pid, sid, tid, patch),
             onDelete: (pid, sid, tid) => deleteTask(pid, sid, tid),
+            onUpdate: (pid, sid, tid, patch) => editTask(pid, sid, tid, patch),
             onMoveTask: (pid, sid, tid, toPid, toSid, index) =>
               moveTask({ pid, sid, tid }, { pid: toPid, sid: toSid }, index),
           }}
