@@ -1,7 +1,8 @@
 import { Button } from "@/components/ui/button";
 import type { StatusFilter } from "@/lib/filter";
 import type { Status } from "@/lib/types";
-import { STATUS_LABEL } from "@/lib/types";
+import { useT } from "@/hooks/useT";
+import { } from "@/lib/types";
 
 export interface ChipDef {
   key: StatusFilter;
@@ -40,8 +41,9 @@ export function FilterChips({
   onToggleArchived,
   onClear,
 }: FilterChipsProps) {
+  const { t, status } = useT();
   return (
-    <div className="flex flex-wrap items-center gap-1.5" role="group" aria-label="filtros por status">
+    <div className="flex flex-wrap items-center gap-1.5" role="group" aria-label={t("filtros por status")}>
       {CHIPS.map(({ key, label, cls }) => {
         const count = key === "blocked" ? blockedCount : counts[key as Status];
         const isActive = active === key;
@@ -52,7 +54,7 @@ export function FilterChips({
             variant={isActive ? "outline" : "ghost"}
             size="xs"
             onClick={() => onToggleStatus(key)}
-            title={`filtra: ${key === "blocked" ? "bloqueadas" : STATUS_LABEL[key as Status]}`}
+            title={`${t("filtro")}: ${key === "blocked" ? t("bloqueadas") : status(key as Status)}`}
             aria-pressed={isActive}
             className={`${cls} ${isActive ? "border-current bg-[var(--hover)]" : "opacity-60"}`}
           >
@@ -66,7 +68,7 @@ export function FilterChips({
         variant={archivedActive ? "outline" : "ghost"}
         size="xs"
         onClick={onToggleArchived}
-        title="mostrar/ocultar projetos arquivados"
+        title={t("mostrar/ocultar projetos arquivados")}
         aria-pressed={archivedActive}
         className={`text-[var(--violet)] ${archivedActive ? "border-current bg-[var(--hover)]" : "opacity-60"}`}
       >

@@ -1,6 +1,8 @@
 import { useEffect, useRef, useState } from "react";
 import Link from "next/link";
 import { useMounted } from "@/hooks/useMounted";
+import { useT } from "@/hooks/useT";
+import type { Locale } from "@/lib/i18n";
 import { Button, buttonVariants } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip";
@@ -17,6 +19,8 @@ interface TopbarProps {
   onNewProject: () => void;
   onExport: () => void;
   onImport: () => void;
+  locale: Locale;
+  onToggleLocale: () => void;
 }
 
 const DEBOUNCE_MS = 200;
@@ -32,7 +36,10 @@ export function Topbar({
   onNewProject,
   onExport,
   onImport,
+  locale,
+  onToggleLocale,
 }: TopbarProps) {
+  const { t } = useT();
   const [draft, setDraft] = useState(query);
   const timer = useRef<ReturnType<typeof setTimeout> | null>(null);
   const mounted = useMounted();
@@ -73,17 +80,27 @@ export function Topbar({
                 </Button>
               }
             />
-            <TooltipContent side="bottom">alternar tema claro/escuro (t)</TooltipContent>
+            <TooltipContent side="bottom">{t("alternar tema (t)")}</TooltipContent>
           </Tooltip>
+            <Button
+              type="button"
+              variant="ghost"
+              size="xs"
+              onClick={onToggleLocale}
+              className="text-[var(--muted-text)] hover:text-[var(--text)]"
+              title={locale === "pt" ? "English" : "Português"}
+            >
+              {locale === "pt" ? "EN" : "PT"}
+            </Button>
             <Button
               type="button"
               variant="ghost"
               size="xs"
               onClick={onToggleView}
               className="text-[var(--muted-text)] hover:text-[var(--text)]"
-              title="alternar lista/kanban (k)"
+              title={t("alternar lista/kanban (k)")}
             >
-              {view === "list" ? "kanban" : "lista"}
+              {view === "list" ? t("kanban") : t("lista")}
             </Button>
             <Button
               type="button"
@@ -91,7 +108,7 @@ export function Topbar({
               size="xs"
               onClick={onExport}
               className="text-[var(--muted-text)] hover:text-[var(--text)]"
-              title="exportar JSON (backup)"
+              title={t("exportar JSON (backup)")}
             >
               ↓exportar
             </Button>
@@ -101,16 +118,16 @@ export function Topbar({
               size="xs"
               onClick={onImport}
               className="text-[var(--muted-text)] hover:text-[var(--text)]"
-              title="importar JSON"
+              title={t("importar JSON")}
             >
               ↑importar
             </Button>
             <Link
               href="/privacidade"
               className={buttonVariants({ variant: "ghost", size: "xs" }) + " text-[var(--muted-text)] hover:text-[var(--text)]"}
-              title="política de privacidade"
+              title={t("política de privacidade")}
             >
-              privacidade
+              {t("privacidade")}
             </Link>
             <Button type="button" variant="default" size="sm" onClick={onNewProject}>
               <span className="mr-1">+</span>projeto
@@ -128,18 +145,18 @@ export function Topbar({
               onChange={(e) => setDraft(e.target.value)}
               className="w-full flex-1 min-w-0 bg-[var(--field)] border-[var(--line)] pr-7 text-xs"
               type="search"
-              placeholder="grep tarefas..."
+              placeholder={t("buscar tarefas") + "..."}
               autoComplete="off"
               spellCheck={false}
-              aria-label="buscar tarefas"
+              aria-label={t("buscar tarefas")}
             />
             {query && (
               <button
                 type="button"
                 onClick={onClearQuery}
                 className="absolute right-2 top-1/2 -translate-y-1/2 text-[var(--dim)] hover:text-[var(--text)] cursor-pointer select-none"
-                title="limpar busca"
-                aria-label="limpar busca"
+                title={t("limpar busca")}
+                aria-label={t("limpar busca")}
               >
                 x
               </button>

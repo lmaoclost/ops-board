@@ -72,7 +72,7 @@ describe("TaskRow", () => {
   it("troca status via select", async () => {
     const p = base();
     render(<TaskRow {...p} />);
-    await userEvent.click(screen.getByLabelText("status"));
+    await userEvent.click(screen.getByLabelText("mudar status"));
     await userEvent.click(await screen.findByRole("option", { name: "em andamento" }));
     expect(p.onStatusChange).toHaveBeenCalledWith("doing");
   });

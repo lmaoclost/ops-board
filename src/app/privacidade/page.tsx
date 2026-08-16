@@ -1,11 +1,7 @@
-import type { Metadata } from "next";
-import Link from "next/link";
+"use client";
 
-export const metadata: Metadata = {
-  title: "Privacidade — OpsBoard",
-  description:
-    "Política de privacidade do OpsBoard: onde os dados ficam, base legal, direitos do titular e como apagar tudo.",
-};
+import Link from "next/link";
+import { useT } from "@/hooks/useT";
 
 const SECTIONS = [
   {
@@ -35,18 +31,19 @@ const SECTIONS = [
 ];
 
 export default function PrivacidadePage() {
+  const { t } = useT();
   return (
     <main className="mx-auto max-w-2xl px-4 py-10">
       <Link
         href="/"
         className="inline-flex items-center gap-1.5 text-sm text-[var(--muted-text)] hover:text-[var(--text)]"
-        title="voltar para o quadro"
+        title={t("voltar para o quadro")}
       >
-        ← Voltar
+        {t("voltar")}
       </Link>
-      <h1 className="mt-4 text-2xl font-bold tracking-tight text-[var(--text)]">Política de privacidade</h1>
+      <h1 className="mt-4 text-2xl font-bold tracking-tight text-[var(--text)]">{t("política de privacidade")}</h1>
       <p className="mt-2 text-sm text-[var(--muted-text)]">
-        OpsBoard — controle de tarefas. Dados ficam apenas no seu navegador.
+        {t("priv_sub")}
       </p>
       <div className="mt-8 space-y-6">
         {SECTIONS.map((s) => (
@@ -57,7 +54,7 @@ export default function PrivacidadePage() {
         ))}
       </div>
       <p className="mt-10 text-xs text-[var(--dimmer)]">
-        Atualizado em agosto de 2026.
+        {t("priv_upd")}
       </p>
     </main>
   );

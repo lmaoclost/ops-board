@@ -1,6 +1,7 @@
 import { create } from "zustand";
 import { createJSONStorage, persist } from "zustand/middleware";
 import { migrateLegacy, normalizeState, SCHEMA_VERSION } from "./migrate";
+import type { Locale } from "./i18n";
 import type { Prio, Project, Section, Status, TaskPatch } from "./types";
 import { uid } from "./uid";
 
@@ -24,6 +25,8 @@ const safeLocalStorage = {
 
 interface BoardStore {
   projetos: Project[];
+  locale: Locale;
+  setLocale: (locale: Locale) => void;
   canUndo: boolean;
   undo: () => void;
   addProject: (title: string) => void;
@@ -87,6 +90,8 @@ export function createBoardStore(initial: Project[] = []) {
         };
         return {
         projetos: initial,
+        locale: "pt",
+        setLocale: (locale) => set({ locale }),
         canUndo: false,
 
         undo: () => {
@@ -393,16 +398,16 @@ export function createBoardStore(initial: Project[] = []) {
         name: "opsboard.v1",
         version: SCHEMA_VERSION,
         storage: createJSONStorage(() => safeLocalStorage),
-        partialize: (s) => ({ projetos: s.projetos }),
+        partialize: (s) => ({ projetos: s.projetos, locale: s.locale }),
         migrate: (persisted, version) => {
           if (version < SCHEMA_VERSION) {
             const legacy = migrateLegacy(persisted);
-            if (legacy) return legacy;
+            if (legacy) return { ...legacy, locale: "pt" };
           }
           if (persisted && Array.isArray((persisted as { projetos?: unknown }).projetos)) {
-            return normalizeState(persisted);
+            return { ...normalizeState(persisted), locale: "pt" };
           }
-          return { projetos: [] };
+          return { projetos: [], locale: "pt" };
         },
       },
     ),

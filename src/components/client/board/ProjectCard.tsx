@@ -1,4 +1,6 @@
 import { useState } from "react";
+import { useT } from "@/hooks/useT";
+import type { TKey } from "@/lib/i18n";
 import { Modal } from "@/components/client/Modal";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -43,6 +45,7 @@ type ModalState =
   | null;
 
 export function ProjectCard({ project, collectActions, onAddSection, onRename, onDelete, onToggleArchive, onCyclePrio, onToggleCollapse, prioSort, filters }: ProjectCardProps) {
+  const { t } = useT();
   const [modal, setModal] = useState<ModalState>(null);
   const actions = collectActions(project.id);
   const overdue = isOverdue(project.due, "todo");
@@ -68,15 +71,15 @@ onRename(project.id, String(v.title).trim(), project.blocked, String(v.due ?? ""
           type="button"
           onClick={onCyclePrio}
           className={`shrink-0 rounded border px-1.5 py-0.5 text-[10px] font-bold ${PRIO_CLS[project.prio]}`}
-          title="prioridade do projeto (clique pra mudar)"
-          aria-label={`prioridade do projeto ${PRIO_KEYS[project.prio]}`}
+          title={t("prioridade do projeto (clique pra mudar)")}
+          aria-label={t(`prioridade do projeto ${PRIO_KEYS[project.prio]}` as TKey)}
         >
           {PRIO_KEYS[project.prio]}
         </button>
         {project.due && (
           <span
             className={`shrink-0 rounded border px-1.5 py-0.5 text-[10px] font-bold ${overdue ? "border-[var(--fired)] text-[var(--fired)]" : dueSoon ? "border-[var(--warn)] text-[var(--warn)]" : "border-[var(--line)] text-[var(--dim)]"}`}
-            title={`vencimento ${fmtDate(project.due)}`}
+            title={`${t("vencimento N").replace("N", fmtDate(project.due))}`}
           >
             {fmtDate(project.due)}
           </span>
@@ -85,19 +88,19 @@ onRename(project.id, String(v.title).trim(), project.blocked, String(v.due ?? ""
           type="button"
           onClick={onToggleCollapse}
           className="shrink-0 rounded border border-[var(--line)] px-1.5 py-0.5 text-[10px] font-bold text-[var(--dim)] hover:bg-[var(--panel-3)]"
-          title={project.collapsed ? "expandir projeto" : "minimizar projeto"}
-          aria-label={project.collapsed ? "expandir projeto" : "minimizar projeto"}
+          title={project.collapsed ? t("expandir projeto") : t("minimizar projeto")}
+          aria-label={project.collapsed ? t("expandir projeto") : t("minimizar projeto")}
         >
           {project.collapsed ? "▶" : "▼"}
         </button>
         {project.blocked && (
           <Badge variant="destructive" className="rounded-[4px] px-1.5 text-[11px] font-bold uppercase tracking-[0.08em]">
-            stuck
+            {t("stuck")}
           </Badge>
         )}
         {project.archived && (
           <Badge variant="outline" className="rounded-[4px] px-1.5 text-[11px] font-bold uppercase tracking-[0.08em]">
-            arquivado
+            {t("arquivado")}
           </Badge>
         )}
         <span className="ml-auto flex items-center gap-1">
@@ -108,8 +111,8 @@ onRename(project.id, String(v.title).trim(), project.blocked, String(v.due ?? ""
                   type="button"
                   variant="ghost"
                   size="icon-xs"
-                  title="ações do projeto"
-                  aria-label="ações do projeto"
+                  title={t("ações do projeto")}
+                  aria-label={t("ações do projeto")}
                 >
                   ⋯
                 </Button>
@@ -120,22 +123,22 @@ onRename(project.id, String(v.title).trim(), project.blocked, String(v.due ?? ""
                 className="text-xs"
                 onClick={() => setModal({ kind: "add-section" })}
               >
-                adicionar seção
+                {t("adicionar seção")}
               </DropdownMenuItem>
               <DropdownMenuItem
                 className="text-xs"
                 onClick={() => setModal({ kind: "rename" })}
               >
-                renomear projeto
+                {t("renomear projeto")}
               </DropdownMenuItem>
               <DropdownMenuItem
                 className="text-xs"
                 onClick={() => onRename(project.id, project.title, !project.blocked)}
               >
-                {project.blocked ? "desmarcar stuck / bloqueado" : "marcar como stuck / bloqueado"}
+                {project.blocked ? t("desmarcar stuck / bloqueado") : t("marcar como stuck / bloqueado")}
               </DropdownMenuItem>
               <DropdownMenuItem className="text-xs" onClick={onToggleArchive}>
-                {project.archived ? "desarquivar projeto" : "arquivar projeto"}
+                {project.archived ? t("desarquivar projeto") : t("arquivar projeto")}
               </DropdownMenuItem>
               <DropdownMenuSeparator className="bg-[var(--line)]" />
               <DropdownMenuItem
@@ -143,7 +146,7 @@ onRename(project.id, String(v.title).trim(), project.blocked, String(v.due ?? ""
                 className="text-xs"
                 onClick={() => onDelete(project.id)}
               >
-                excluir projeto
+                {t("excluir projeto")}
               </DropdownMenuItem>
             </DropdownMenuContent>
           </DropdownMenu>
@@ -177,11 +180,11 @@ onRename(project.id, String(v.title).trim(), project.blocked, String(v.due ?? ""
 
       {modal?.kind === "rename" && (
         <Modal
-          title="editar projeto"
-          submitLabel="salvar"
+          title={t("editar projeto")}
+          submitLabel={t("salvar")}
           fields={[
-            { key: "title", label: "título", value: project.title },
-            { key: "due", label: "vencimento", type: "date", value: project.due },
+            { key: "title", label: t("título"), value: project.title },
+            { key: "due", label: t("vencimento"), type: "date", value: project.due },
           ]}
           onSubmit={submitProject}
           onCancel={() => setModal(null)}
@@ -189,9 +192,9 @@ onRename(project.id, String(v.title).trim(), project.blocked, String(v.due ?? ""
       )}
       {modal?.kind === "add-section" && (
         <Modal
-          title="nova seção"
-          submitLabel="criar"
-          fields={[{ key: "title", label: "título", value: "" }]}
+          title={t("nova seção")}
+          submitLabel={t("criar")}
+          fields={[{ key: "title", label: t("título"), value: "" }]}
           onSubmit={submitSection}
           onCancel={() => setModal(null)}
         />

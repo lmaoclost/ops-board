@@ -1,6 +1,7 @@
 import { useState } from "react";
 import { Modal } from "@/components/client/Modal";
 import { Label } from "@/components/ui/label";
+import { useT } from "@/hooks/useT";
 import { uid } from "@/lib/uid";
 import type { SubTask, Task, TaskPatch } from "@/lib/types";
 
@@ -11,6 +12,7 @@ export interface TaskEditModalProps {
 }
 
 export function TaskEditModal({ task, onSubmit, onCancel }: TaskEditModalProps) {
+  const { t } = useT();
   const [subs, setSubs] = useState<SubTask[]>(task.subs);
   const [newSub, setNewSub] = useState("");
 
@@ -25,7 +27,6 @@ export function TaskEditModal({ task, onSubmit, onCancel }: TaskEditModalProps) 
     setSubs((prev) => prev.map((s) => (s.id === id ? { ...s, done: !s.done } : s)));
 
   const removeSub = (id: string) => setSubs((prev) => prev.filter((s) => s.id !== id));
-
   const submit = (v: Record<string, string | boolean>) => {
     onSubmit({
       text: String(v.text).trim(),
@@ -39,24 +40,24 @@ export function TaskEditModal({ task, onSubmit, onCancel }: TaskEditModalProps) 
 
   return (
     <Modal
-      title="editar tarefa"
-      submitLabel="salvar"
+      title={t("editar tarefa")}
+      submitLabel={t("salvar")}
       fields={[
-        { key: "text", label: "tarefa", value: task.text },
+        { key: "text", label: t("tarefa"), value: task.text },
         {
           key: "prio",
-          label: "prioridade",
+          label: t("prioridade"),
           type: "select",
           value: task.prio,
           options: [
-            { value: 1, label: "P1 — urgente" },
-            { value: 2, label: "P2 — em breve" },
-            { value: 3, label: "P3 — normal" },
+            { value: 1, label: t("P1 — urgente") },
+            { value: 2, label: t("P2 — em breve") },
+            { value: 3, label: t("P3 — normal") },
           ],
         },
-        { key: "due", label: "vencimento", type: "date", value: task.due },
-        { key: "note", label: "nota", type: "textarea", value: task.note, placeholder: "detalhe opcional…" },
-        { key: "blocked", label: "marcar como bloqueada / stuck", type: "checkbox", value: task.blocked },
+        { key: "due", label: t("vencimento"), type: "date", value: task.due },
+        { key: "note", label: t("nota"), type: "textarea", value: task.note, placeholder: t("detalhe opcional…") },
+        { key: "blocked", label: t("marcar como bloqueada / stuck"), type: "checkbox", value: task.blocked },
       ]}
       onSubmit={submit}
       onCancel={onCancel}

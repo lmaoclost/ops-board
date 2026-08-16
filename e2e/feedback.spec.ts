@@ -30,7 +30,7 @@ test("? abre o modal de ajuda com tabela de atalhos e esc fecha", async ({ page 
   await page.keyboard.press("?");
   const dialog = page.getByRole("dialog", { name: "atalhos e dicas" });
   await expect(dialog).toBeVisible();
-  await expect(dialog.getByText("desfazer", { exact: true })).toBeVisible();
+  await expect(dialog.getByText("desfazer (Ctrl+Z)", { exact: true })).toBeVisible();
   await expect(dialog.getByText("focar nova tarefa", { exact: true })).toBeVisible();
   await expect(dialog.getByText("kanban: arraste cartões entre colunas", { exact: false })).toBeVisible();
 
