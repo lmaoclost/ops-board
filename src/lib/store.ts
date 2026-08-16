@@ -213,15 +213,25 @@ export function createBoardStore(initial: Project[] = []) {
                               ...sec,
                               tasks: sec.tasks.map((t) =>
                                 t.id === tid
-                                  ? {
-                                      ...t,
-                                      text: patch.text ?? t.text,
-                                      note: patch.note ?? t.note,
-                                      blocked: patch.blocked ?? t.blocked,
-                                      prio: patch.prio ?? t.prio,
-                                      due: patch.due ?? t.due,
-                                      subs: patch.subs ?? t.subs,
-                                    }
+                                  ? (() => {
+                                      const subs = patch.subs ?? t.subs;
+                                      const status: Status =
+                                        patch.subs !== undefined && subs.length > 0
+                                          ? subs.every((s) => s.done)
+                                            ? "done"
+                                            : "todo"
+                                          : t.status;
+                                      return {
+                                        ...t,
+                                        text: patch.text ?? t.text,
+                                        note: patch.note ?? t.note,
+                                        blocked: patch.blocked ?? t.blocked,
+                                        prio: patch.prio ?? t.prio,
+                                        due: patch.due ?? t.due,
+                                        subs,
+                                        status,
+                                      };
+                                    })()
                                   : t,
                               ),
                             }

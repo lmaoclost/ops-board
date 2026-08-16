@@ -91,6 +91,25 @@ describe("board store", () => {
     expect(t.blocked).toBe(true);
   });
 
+  it("subs: todas done tornam a tarefa pai done; parcial mantém todo", () => {
+    const subA = { id: "a", text: "sub a", done: false };
+    const subB = { id: "b", text: "sub b", done: false };
+    store.getState().editTask("p1", "s1", "t1", { subs: [subA, subB] });
+    store.getState().editTask("p1", "s1", "t1", { subs: [{ ...subA, done: true }, subB] });
+    expect(store.getState().projetos[0].sections[0].tasks[0].status).toBe("todo");
+    store.getState().editTask("p1", "s1", "t1", { subs: [{ ...subA, done: true }, { ...subB, done: true }] });
+    expect(store.getState().projetos[0].sections[0].tasks[0].status).toBe("done");
+  });
+
+  it("subs: desmarcar uma sub em tarefa done volta o pai para todo", () => {
+    const subA = { id: "a", text: "sub a", done: true };
+    const subB = { id: "b", text: "sub b", done: true };
+    store.getState().editTask("p1", "s1", "t1", { subs: [subA, subB] });
+    expect(store.getState().projetos[0].sections[0].tasks[0].status).toBe("done");
+    store.getState().editTask("p1", "s1", "t1", { subs: [{ ...subA, done: false }, subB] });
+    expect(store.getState().projetos[0].sections[0].tasks[0].status).toBe("todo");
+  });
+
   it("exclui tarefa", () => {
     store.getState().deleteTask("p1", "s1", "t1");
     expect(store.getState().projetos[0].sections[0].tasks.map((t) => t.id)).toEqual(["t2"]);
