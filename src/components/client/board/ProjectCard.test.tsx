@@ -27,6 +27,7 @@ const base = (over: Partial<ProjectCardProps> = {}): ProjectCardProps => ({
       onStatusChange: vi.fn(),
       onEdit: vi.fn(),
       onDelete: vi.fn(),
+      onUpdate: vi.fn(),
     },
   }),
   onAddSection: vi.fn(),
