@@ -149,11 +149,11 @@ function ColumnAddRow({
           aria-label={t("projeto")}
           className="h-7 max-w-32 shrink-0 border-[var(--line)] bg-[var(--field)] px-2 text-[11px] text-[var(--muted-text)] hover:border-[var(--muted-text)] hover:text-[var(--text)]"
         >
-          <SelectValue />
+          <SelectValue>{projetos.find((p) => p.id === pid)?.title ?? ""}</SelectValue>
         </SelectTrigger>
         <SelectContent>
           {projetos.map((p) => (
-            <SelectItem key={p.id} value={p.id} className="py-1 text-xs">
+            <SelectItem key={p.id} value={p.id} label={p.title} className="py-1 text-xs">
               {p.title}
             </SelectItem>
           ))}

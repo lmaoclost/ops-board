@@ -159,11 +159,11 @@ export function TaskRow({ task, onToggle, onPrioCycle, onStatusChange, onEdit, o
             title={t("mudar status")}
             className="h-7 border-[var(--line)] bg-[var(--field)] px-2 text-[11px] text-[var(--muted-text)] hover:border-[var(--muted-text)] hover:text-[var(--text)]"
           >
-            <SelectValue />
+            <SelectValue>{status(task.status)}</SelectValue>
           </SelectTrigger>
           <SelectContent>
             {STATUS_ORDER.map((k) => (
-              <SelectItem key={k} value={k} className="py-1 text-xs">
+              <SelectItem key={k} value={k} label={status(k)} className="py-1 text-xs">
                 {status(k)}
               </SelectItem>
             ))}
