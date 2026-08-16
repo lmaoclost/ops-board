@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useRef, useState, type RefObject } from "react";
 import Link from "next/link";
 import { useMounted } from "@/hooks/useMounted";
 import { useT } from "@/hooks/useT";
@@ -24,6 +24,7 @@ interface TopbarProps {
   locale: Locale;
   onToggleLocale: () => void;
   stats: BoardStats;
+  searchRef?: RefObject<HTMLInputElement | null>;
 }
 
 const DEBOUNCE_MS = 200;
@@ -42,6 +43,7 @@ export function Topbar({
   locale,
   onToggleLocale,
   stats,
+  searchRef,
 }: TopbarProps) {
   const { t } = useT();
   const [draft, setDraft] = useState(query);
@@ -154,6 +156,7 @@ export function Topbar({
               &gt;
             </span>
             <Input
+              ref={searchRef}
               value={draft}
               onChange={(e) => setDraft(e.target.value)}
               className="w-full flex-1 min-w-0 bg-[var(--field)] border-[var(--line)] pr-7 text-xs"

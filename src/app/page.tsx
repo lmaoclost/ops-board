@@ -57,6 +57,7 @@ export default function Home() {
   const [toast, setToast] = useState<string | null>(null);
   const toastTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
   const fileRef = useRef<HTMLInputElement | null>(null);
+  const searchRef = useRef<HTMLInputElement | null>(null);
 
   const showToast = useCallback((msg: string) => {
     setToast(msg);
@@ -102,6 +103,11 @@ export default function Home() {
     if (!input) return;
     input.scrollIntoView({ block: "center", behavior: "smooth" });
     input.focus();
+  }, []);
+
+  const handleFocusSearch = useCallback(() => {
+    searchRef.current?.focus();
+    searchRef.current?.select();
   }, []);
 
   const handleToggleArchive = useCallback(
@@ -153,6 +159,7 @@ export default function Home() {
       onHelp: () => setHelpOpen(true),
       onClearFilters: clear,
       onFocusAdd: handleFocusAdd,
+      onFocusSearch: handleFocusSearch,
       onFilterStatus: toggleStatus,
       onUndo: handleUndo,
     },
@@ -178,6 +185,7 @@ export default function Home() {
         locale={locale}
         onToggleLocale={() => setLocale(locale === "pt" ? "en" : "pt")}
         stats={stats}
+        searchRef={searchRef}
       />
       <input
         ref={fileRef}
@@ -366,6 +374,7 @@ export default function Home() {
             <div className="grid grid-cols-[auto_1fr] gap-x-4 gap-y-1.5 px-4 py-4 text-xs">
               <span className="text-[var(--dimmer)]">p</span><span>{t("novo projeto")}</span>
               <span className="text-[var(--dimmer)]">n</span><span>{t("focar nova tarefa")}</span>
+              <span className="text-[var(--dimmer)]">/</span><span>{t("buscar tarefas")}</span>
               <span className="text-[var(--dimmer)]">1–5</span><span>{t("filtrar por status")}</span>
               <span className="text-[var(--dimmer)]">k</span><span>{t("alternar lista/kanban (k)")}</span>
               <span className="text-[var(--dimmer)]">t</span><span>{t("alternar tema claro/escuro")}</span>

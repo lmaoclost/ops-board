@@ -10,6 +10,7 @@ const handlers = () => ({
   onHelp: vi.fn(),
   onClearFilters: vi.fn(),
   onFocusAdd: vi.fn(),
+  onFocusSearch: vi.fn(),
   onFilterStatus: vi.fn(),
   onUndo: vi.fn(),
 });
@@ -54,6 +55,24 @@ describe("useShortcuts", () => {
     renderHook(() => useShortcuts(h));
     act(() => press("n"));
     expect(h.onFocusAdd).toHaveBeenCalledTimes(1);
+  });
+
+  it("/ foca busca", () => {
+    const h = handlers();
+    renderHook(() => useShortcuts(h));
+    act(() => press("/"));
+    expect(h.onFocusSearch).toHaveBeenCalledTimes(1);
+  });
+
+  it("ignora / quando digitando em input", () => {
+    const h = handlers();
+    const input = document.createElement("input");
+    document.body.appendChild(input);
+    input.focus();
+    renderHook(() => useShortcuts(h));
+    act(() => press("/"));
+    expect(h.onFocusSearch).not.toHaveBeenCalled();
+    input.remove();
   });
 
   it("1-5 passam o status correspondente", () => {
