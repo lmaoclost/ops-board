@@ -8,6 +8,7 @@ export interface ShortcutHandlers {
   onHelp: () => void;
   onClearFilters: () => void;
   onFocusAdd: () => void;
+  onFocusSearch: () => void;
   onFilterStatus: (status: StatusFilter) => void;
   onUndo: () => void;
 }
@@ -57,6 +58,10 @@ export function useShortcuts(h: ShortcutHandlers, opts?: { isModalOpen?: () => b
         case "n":
           e.preventDefault();
           h.onFocusAdd();
+          break;
+        case "/":
+          e.preventDefault();
+          h.onFocusSearch();
           break;
         default:
           if (/^[1-5]$/.test(k)) {

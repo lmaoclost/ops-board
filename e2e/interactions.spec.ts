@@ -95,6 +95,19 @@ test("atalhos: p abre projeto, 1 filtra todo, ? mostra ajuda, t alterna tema, es
   await expect(page.getByRole("button", { name: "a fazer 1" })).toHaveAttribute("aria-pressed", "false");
 });
 
+test("atalho / foca a busca e a linha aparece na ajuda", async ({ page }) => {
+  await page.goto("/");
+  await page.locator("body").click({ position: { x: 4, y: 4 } });
+  await page.keyboard.press("/");
+  await expect(page.getByLabel("buscar tarefas")).toBeFocused();
+
+  await page.locator("body").click({ position: { x: 4, y: 4 } });
+  await page.keyboard.press("?");
+  const dialog = page.getByRole("dialog", { name: "atalhos e dicas" });
+  await expect(dialog).toBeVisible();
+  await expect(dialog.getByText("buscar tarefas")).toBeVisible();
+});
+
 test("ordena por prioridade (P1 no topo) com ↕ prio", async ({ page }) => {
   await page.goto("/");
   await createProject(page, "app");
