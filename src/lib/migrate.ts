@@ -1,8 +1,16 @@
-import { PRIOS, STATUSES, type Prio, type Project, type Section, type Status, type Task } from "./types";
+import { PRIOS, STATUSES, type Prio, type Project, type Section, type Status, type SubTask, type Task } from "./types";
 
-export const SCHEMA_VERSION = 4;
+export const SCHEMA_VERSION = 5;
 
 type UnknownRecord = Record<string, unknown>;
+
+function normSub(s: UnknownRecord | undefined): SubTask {
+  return {
+    id: String(s?.id ?? ""),
+    text: String(s?.text ?? ""),
+    done: Boolean(s?.done),
+  };
+}
 
 function normTask(t: UnknownRecord | undefined): Task {
   const status = STATUSES.includes(t?.status as Status) ? (t!.status as Status) : "todo";
@@ -16,6 +24,7 @@ function normTask(t: UnknownRecord | undefined): Task {
     prio,
     due: String(t?.due ?? ""),
     doneAt: t?.doneAt ? String(t.doneAt) : null,
+    subs: Array.isArray(t?.subs) ? t.subs.map((s) => normSub(s as UnknownRecord)) : [],
   };
 }
 
@@ -29,7 +38,7 @@ function normSection(s: UnknownRecord | undefined): Section {
   };
 }
 
-function normProject(p: UnknownRecord | undefined): Project {
+export function normProject(p: UnknownRecord | undefined): Project {
   const prio = PRIOS.includes(p?.prio as Prio) ? (p!.prio as Prio) : 3;
   return {
     id: String(p?.id ?? ""),

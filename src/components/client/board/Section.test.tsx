@@ -11,8 +11,8 @@ const base = (over: Partial<SectionProps> = {}): SectionProps => ({
     notes: "nota longa",
     collapsed: false,
     tasks: [
-      { id: "t1", text: "feita", status: "done", note: "", blocked: false, prio: 3, due: "", doneAt: "2026-01-01T00:00:00.000Z" },
-      { id: "t2", text: "pendente", status: "todo", note: "", blocked: false, prio: 3, due: "", doneAt: null },
+      { id: "t1", text: "feita", status: "done", note: "", blocked: false, prio: 3, due: "", doneAt: "2026-01-01T00:00:00.000Z", subs: [] },
+      { id: "t2", text: "pendente", status: "todo", note: "", blocked: false, prio: 3, due: "", doneAt: null, subs: [] },
     ],
   },
   onToggleSection: vi.fn(),

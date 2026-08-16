@@ -59,7 +59,7 @@ test("kanban rico: clique no card abre edição e salva mudança", async ({ page
   await page.getByRole("button", { name: "kanban" }).click();
   await page.getByRole("button", { name: "editar tarefa na fila", exact: true }).click();
   const dialog = page.getByRole("dialog", { name: "editar tarefa" });
-  await dialog.getByLabel("tarefa").fill("na fila revisada");
+  await dialog.getByLabel("tarefa", { exact: true }).fill("na fila revisada");
   await page.getByRole("button", { name: "salvar" }).click();
 
   await expect(page.getByText("na fila revisada", { exact: true })).toBeVisible();

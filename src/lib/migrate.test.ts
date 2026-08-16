@@ -26,6 +26,32 @@ describe("migrateLegacy", () => {
     expect(t.doneAt).toBeNull();
     expect(t.note).toBe("");
     expect(t.blocked).toBe(false);
+    expect(t.subs).toEqual([]);
+  });
+
+  it("normaliza sub-tarefas (text/done) e preserva as válidas", () => {
+    const out = migrateLegacy({
+      projetos: [
+        {
+          id: "p1",
+          title: "P",
+          sections: [
+            {
+              id: "s1",
+              title: "S",
+              tasks: [
+                { id: "t1", text: "x", status: "todo", subs: [{ id: "a", text: "sub", done: true }, { id: "b", text: "outra", done: 0 }] },
+              ],
+            },
+          ],
+        },
+      ],
+    });
+    const t = out!.projetos[0].sections[0].tasks[0];
+    expect(t.subs).toEqual([
+      { id: "a", text: "sub", done: true },
+      { id: "b", text: "outra", done: false },
+    ]);
   });
 
   it("normaliza seções sem tasks/notes/collapsed", () => {
@@ -76,7 +102,7 @@ describe("migrateLegacy", () => {
               title: "geral",
               notes: "nota",
               collapsed: true,
-              tasks: [{ id: "t1", text: "feito", status: "done", prio: 1, due: "2026-01-01", doneAt: "2026-01-01T10:00:00.000Z" }],
+              tasks: [{ id: "t1", text: "feito", status: "done", prio: 1, due: "2026-01-01", doneAt: "2026-01-01T10:00:00.000Z", subs: [] }],
             },
           ],
         },
@@ -96,7 +122,7 @@ describe("migrateLegacy", () => {
   });
 
   it("mantém versão de schema estável e exportada", () => {
-    expect(SCHEMA_VERSION).toBe(4);
+    expect(SCHEMA_VERSION).toBe(5);
   });
 });
 

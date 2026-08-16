@@ -13,9 +13,9 @@ const projeto = (over: Partial<Project> = {}): Project => ({
       notes: "",
       collapsed: false,
       tasks: [
-        { id: "t1", text: "a", status: "todo", note: "", blocked: false, prio: 3, due: "", doneAt: null },
-        { id: "t2", text: "b", status: "todo", note: "", blocked: false, prio: 3, due: "", doneAt: null },
-        { id: "t3", text: "c", status: "doing", note: "", blocked: false, prio: 3, due: "", doneAt: null },
+        { id: "t1", text: "a", status: "todo", note: "", blocked: false, prio: 3, due: "", doneAt: null, subs: [] },
+        { id: "t2", text: "b", status: "todo", note: "", blocked: false, prio: 3, due: "", doneAt: null, subs: [] },
+        { id: "t3", text: "c", status: "doing", note: "", blocked: false, prio: 3, due: "", doneAt: null, subs: [] },
       ],
     },
     { id: "s2", title: "dev", notes: "", collapsed: false, tasks: [] },
@@ -98,7 +98,7 @@ it("retorna none quando o alvo task não existe", () => {
       sections: [
         projeto().sections[0],
         { id: "s2", title: "dev", notes: "", collapsed: false, tasks: [
-          { id: "t4", text: "d", status: "todo", note: "", blocked: false, prio: 3, due: "", doneAt: null },
+          { id: "t4", text: "d", status: "todo", note: "", blocked: false, prio: 3, due: "", doneAt: null, subs: [] },
         ] },
       ],
     });
