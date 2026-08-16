@@ -27,9 +27,11 @@ interface BoardStore {
   canUndo: boolean;
   undo: () => void;
   addProject: (title: string) => void;
-  renameProject: (id: string, title: string, blocked: boolean) => void;
+  renameProject: (id: string, title: string, blocked: boolean, due?: string) => void;
   deleteProject: (id: string) => void;
   toggleProjectArchive: (id: string) => void;
+  setProjectPrio: (id: string, prio: Prio) => void;
+  toggleProjectCollapsed: (id: string) => void;
   addSection: (pid: string, title: string) => void;
   renameSection: (pid: string, sid: string, title: string) => void;
   deleteSection: (pid: string, sid: string) => void;
@@ -103,16 +105,21 @@ export function createBoardStore(initial: Project[] = []) {
                   title,
                   blocked: false,
                   archived: false,
+                  prio: 3,
+                  due: "",
+                  collapsed: false,
                   sections: [{ id: uid(), title: "geral", tasks: [], notes: "", collapsed: false }],
                 },
               ],
             })),
           ),
 
-        renameProject: (id, title, blocked) =>
+        renameProject: (id, title, blocked, due) =>
           commit(() =>
             set((s) => ({
-              projetos: s.projetos.map((p) => (p.id === id ? { ...p, title, blocked } : p)),
+              projetos: s.projetos.map((p) =>
+                p.id === id ? { ...p, title, blocked, ...(due !== undefined ? { due } : {}) } : p,
+              ),
             })),
           ),
 
@@ -123,6 +130,20 @@ export function createBoardStore(initial: Project[] = []) {
           commit(() =>
             set((s) => ({
               projetos: s.projetos.map((p) => (p.id === id ? { ...p, archived: !p.archived } : p)),
+            })),
+          ),
+
+        setProjectPrio: (id, prio) =>
+          commit(() =>
+            set((s) => ({
+              projetos: s.projetos.map((p) => (p.id === id ? { ...p, prio } : p)),
+            })),
+          ),
+
+        toggleProjectCollapsed: (id) =>
+          commit(() =>
+            set((s) => ({
+              projetos: s.projetos.map((p) => (p.id === id ? { ...p, collapsed: !p.collapsed } : p)),
             })),
           ),
 

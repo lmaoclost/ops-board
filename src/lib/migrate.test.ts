@@ -41,6 +41,21 @@ describe("migrateLegacy", () => {
     expect(out!.projetos[0].sections).toEqual([]);
     expect(out!.projetos[0].blocked).toBe(false);
     expect(out!.projetos[0].archived).toBe(false);
+    expect(out!.projetos[0].prio).toBe(3);
+    expect(out!.projetos[0].due).toBe("");
+    expect(out!.projetos[0].collapsed).toBe(false);
+  });
+
+  it("preserva prio/due/collapsed do projeto quando presentes", () => {
+    const out = migrateLegacy({ projetos: [{ id: "p1", title: "P", prio: 1, due: "2026-09-01", collapsed: true }] });
+    expect(out!.projetos[0].prio).toBe(1);
+    expect(out!.projetos[0].due).toBe("2026-09-01");
+    expect(out!.projetos[0].collapsed).toBe(true);
+  });
+
+  it("força prio de projeto inválida para 3", () => {
+    const out = migrateLegacy({ projetos: [{ id: "p1", title: "P", prio: 9 }] });
+    expect(out!.projetos[0].prio).toBe(3);
   });
 
   it("preserva archived quando presente", () => {
@@ -81,7 +96,7 @@ describe("migrateLegacy", () => {
   });
 
   it("mantém versão de schema estável e exportada", () => {
-    expect(SCHEMA_VERSION).toBe(3);
+    expect(SCHEMA_VERSION).toBe(4);
   });
 });
 

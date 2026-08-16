@@ -15,7 +15,7 @@ import { exportJson, parseImport } from "@/lib/io";
 import { deriveStats } from "@/lib/selectors";
 import { visibleProjetos } from "@/lib/filter";
 import { useBoard, setStorageErrorHandler } from "@/lib/store";
-import type { Status } from "@/lib/types";
+import type { Prio, Status } from "@/lib/types";
 import { Dialog, DialogClose, DialogContent, DialogTitle } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
 
@@ -25,6 +25,8 @@ export default function Home() {
   const renameProject = useBoard((s) => s.renameProject);
   const deleteProject = useBoard((s) => s.deleteProject);
   const toggleProjectArchive = useBoard((s) => s.toggleProjectArchive);
+  const setProjectPrio = useBoard((s) => s.setProjectPrio);
+  const toggleProjectCollapsed = useBoard((s) => s.toggleProjectCollapsed);
   const addSection = useBoard((s) => s.addSection);
   const renameSection = useBoard((s) => s.renameSection);
   const deleteSection = useBoard((s) => s.deleteSection);
@@ -208,9 +210,15 @@ export default function Home() {
           onClearFilters={clear}
           projectActions={{
             onAddSection: (pid, title) => addSection(pid, title),
-            onRename: (id, title, blocked) => renameProject(id, title, blocked),
+            onRename: (id, title, blocked, due) => renameProject(id, title, blocked, due),
             onDelete: (id) => deleteProject(id),
             onToggleArchive: handleToggleArchive,
+            onCyclePrio: (id) => {
+              const p = projetos.find((x) => x.id === id);
+              if (!p) return;
+              setProjectPrio(id, (p.prio === 3 ? 1 : p.prio + 1) as Prio);
+            },
+            onToggleCollapse: (id) => toggleProjectCollapsed(id),
           }}
           sectionActions={{
             onToggle: (pid, sid) => toggleSection(pid, sid),

@@ -9,14 +9,15 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
-import type { Project, Status, TaskPatch } from "@/lib/types";
+import { isDueSoon, isOverdue, fmtDate } from "@/lib/date";
+import { PRIO_CLS, PRIO_KEYS, type Project, type Status, type TaskPatch } from "@/lib/types";
 import { Section, type SectionTaskActions as SectionLevelTaskActions } from "./Section";
 import type { SectionLevelActions, TaskLevelActions } from "./Board";
 import type { Filters } from "@/lib/filter";
 
 export interface ProjectActions {
   onAddSection: (title: string) => void;
-  onRename: (id: string, title: string, blocked: boolean) => void;
+  onRename: (id: string, title: string, blocked: boolean, due?: string) => void;
   onDelete: (id: string) => void;
 }
 
@@ -27,9 +28,11 @@ export interface ProjectCardProps {
     taskActions: TaskLevelActions;
   };
   onAddSection: (title: string) => void;
-  onRename: (id: string, title: string, blocked: boolean) => void;
+  onRename: (id: string, title: string, blocked: boolean, due?: string) => void;
   onDelete: (id: string) => void;
   onToggleArchive: () => void;
+  onCyclePrio: () => void;
+  onToggleCollapse: () => void;
   prioSort?: boolean;
   filters?: Filters;
 }
@@ -39,14 +42,16 @@ type ModalState =
   | { kind: "add-section" }
   | null;
 
-export function ProjectCard({ project, collectActions, onAddSection, onRename, onDelete, onToggleArchive, prioSort, filters }: ProjectCardProps) {
+export function ProjectCard({ project, collectActions, onAddSection, onRename, onDelete, onToggleArchive, onCyclePrio, onToggleCollapse, prioSort, filters }: ProjectCardProps) {
   const [modal, setModal] = useState<ModalState>(null);
   const actions = collectActions(project.id);
+  const overdue = isOverdue(project.due, "todo");
+  const dueSoon = isDueSoon(project.due, "todo");
 
   const submitProject = (v: Record<string, string | boolean>) => {
     setModal(null);
     if (!String(v.title).trim()) return;
-    onRename(project.id, String(v.title).trim(), project.blocked);
+onRename(project.id, String(v.title).trim(), project.blocked, String(v.due ?? ""));
   };
 
   const submitSection = (v: Record<string, string | boolean>) => {
@@ -59,6 +64,32 @@ export function ProjectCard({ project, collectActions, onAddSection, onRename, o
       <div className="flex items-center gap-2 border-b border-[var(--line)] px-3.5 py-2.5">
         <span className="font-bold text-[var(--fired)]">##</span>
         <h2 className="break-words text-[13px] font-bold tracking-wide text-[var(--text)]">{project.title}</h2>
+        <button
+          type="button"
+          onClick={onCyclePrio}
+          className={`shrink-0 rounded border px-1.5 py-0.5 text-[10px] font-bold ${PRIO_CLS[project.prio]}`}
+          title="prioridade do projeto (clique pra mudar)"
+          aria-label={`prioridade do projeto ${PRIO_KEYS[project.prio]}`}
+        >
+          {PRIO_KEYS[project.prio]}
+        </button>
+        {project.due && (
+          <span
+            className={`shrink-0 rounded border px-1.5 py-0.5 text-[10px] font-bold ${overdue ? "border-[var(--fired)] text-[var(--fired)]" : dueSoon ? "border-[var(--warn)] text-[var(--warn)]" : "border-[var(--line)] text-[var(--dim)]"}`}
+            title={`vencimento ${fmtDate(project.due)}`}
+          >
+            {fmtDate(project.due)}
+          </span>
+        )}
+        <button
+          type="button"
+          onClick={onToggleCollapse}
+          className="shrink-0 rounded border border-[var(--line)] px-1.5 py-0.5 text-[10px] font-bold text-[var(--dim)] hover:bg-[var(--panel-3)]"
+          title={project.collapsed ? "expandir projeto" : "minimizar projeto"}
+          aria-label={project.collapsed ? "expandir projeto" : "minimizar projeto"}
+        >
+          {project.collapsed ? "▶" : "▼"}
+        </button>
         {project.blocked && (
           <Badge variant="destructive" className="rounded-[4px] px-1.5 text-[11px] font-bold uppercase tracking-[0.08em]">
             stuck
@@ -119,7 +150,8 @@ export function ProjectCard({ project, collectActions, onAddSection, onRename, o
         </span>
       </div>
 
-      {project.sections.map((s) => {
+      {!project.collapsed &&
+        project.sections.map((s) => {
         const secTaskActions: SectionLevelTaskActions = {
           onToggle: (tid) => actions.taskActions.onToggle(s.id, tid),
           onPrioCycle: (tid) => actions.taskActions.onPrioCycle(s.id, tid),
@@ -140,8 +172,8 @@ export function ProjectCard({ project, collectActions, onAddSection, onRename, o
             prioSort={prioSort}
             filters={filters}
           />
-        );
-      })}
+);
+        })}
 
       {modal?.kind === "rename" && (
         <Modal
@@ -149,6 +181,7 @@ export function ProjectCard({ project, collectActions, onAddSection, onRename, o
           submitLabel="salvar"
           fields={[
             { key: "title", label: "título", value: project.title },
+            { key: "due", label: "vencimento", type: "date", value: project.due },
           ]}
           onSubmit={submitProject}
           onCancel={() => setModal(null)}

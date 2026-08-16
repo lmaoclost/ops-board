@@ -1,6 +1,6 @@
 import { DndContext, PointerSensor, TouchSensor, pointerWithin, useSensor, useSensors, type DragEndEvent } from "@dnd-kit/core";
 import { useMemo } from "react";
-import { isFiltering, projMatches, type Filters } from "@/lib/filter";
+import { isFiltering, prioSort, projMatches, type Filters } from "@/lib/filter";
 import { resolveDrop } from "@/lib/dnd";
 import type { Project, Status, TaskPatch } from "@/lib/types";
 import { ProjectCard } from "./ProjectCard";
@@ -8,9 +8,11 @@ import { Kanban } from "@/components/client/dnd/Kanban";
 
 export interface BoardProjectActions {
   onAddSection: (pid: string, title: string) => void;
-  onRename: (id: string, title: string, blocked: boolean) => void;
+  onRename: (id: string, title: string, blocked: boolean, due?: string) => void;
   onDelete: (id: string) => void;
   onToggleArchive: (id: string) => void;
+  onCyclePrio: (id: string) => void;
+  onToggleCollapse: (id: string) => void;
 }
 
 export interface BoardSectionActions {
@@ -77,10 +79,10 @@ export function Board({ projetos, filters, onNewProject, onClearFilters, project
     },
   });
 
-  const filtered = useMemo(
-    () => (isFiltering(filters) ? projetos.filter((p) => projMatches(p, filters)) : projetos),
-    [projetos, filters],
-  );
+  const filtered = useMemo(() => {
+    const list = isFiltering(filters) ? projetos.filter((p) => projMatches(p, filters)) : projetos;
+    return filters.prioSort ? [...list].sort((a, b) => prioSort(a.prio, b.prio)) : list;
+  }, [projetos, filters]);
 
   const handleDragEnd = (e: DragEndEvent) => {
     const active = String(e.active.id);
@@ -140,9 +142,11 @@ export function Board({ projetos, filters, onNewProject, onClearFilters, project
             project={p}
             collectActions={collectActions}
             onAddSection={(title) => projectActions.onAddSection(p.id, title)}
-            onRename={(id, title, blocked) => projectActions.onRename(id, title, blocked)}
+            onRename={(id, title, blocked, due) => projectActions.onRename(id, title, blocked, due)}
             onDelete={(id) => projectActions.onDelete(id)}
             onToggleArchive={() => projectActions.onToggleArchive(p.id)}
+            onCyclePrio={() => projectActions.onCyclePrio(p.id)}
+            onToggleCollapse={() => projectActions.onToggleCollapse(p.id)}
             prioSort={filters.prioSort}
             filters={filters}
           />
