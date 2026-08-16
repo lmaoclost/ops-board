@@ -71,6 +71,11 @@ describe("TaskRow", () => {
     expect(screen.getByText(/vencida/)).toBeTruthy();
   });
 
+  it("trigger do status mostra o label traduzido", () => {
+    render(<TaskRow {...base()} />);
+    expect(screen.getByLabelText("mudar status")).toHaveTextContent("a fazer");
+  });
+
   it("troca status via select", async () => {
     const p = base();
     render(<TaskRow {...p} />);
