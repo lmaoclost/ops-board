@@ -23,6 +23,11 @@ async function addTask(page: Page, projectTitle: string, text: string) {
 const archiveMenu = (page: Page, title: string) =>
   projectCard(page, title).getByLabel("ações do projeto");
 
+async function expectStat(page: Page, testid: string, text: string) {
+  await page.getByRole("heading", { name: /ops\/board/ }).hover();
+  await expect(page.getByTestId(testid)).toHaveText(text);
+}
+
 test("chip arquivados filtra de verdade: só arquivados visíveis; limpar reseta", async ({ page }) => {
   await page.goto("/");
   await createProject(page, "Ativo A");
@@ -34,7 +39,7 @@ test("chip arquivados filtra de verdade: só arquivados visíveis; limpar reseta
   await page.getByRole("menuitem", { name: "arquivar projeto" }).click();
 
   await expect(page.getByText("Arquivo P")).toHaveCount(0);
-  await expect(page.getByTestId("stat-total")).toHaveText("1");
+  await expectStat(page, "stat-total", "1");
   const chip = page.getByRole("button", { name: /arquivados/ });
   await expect(chip).toContainText("1");
   await expect(page.getByRole("button", { name: "✕ limpar" })).toHaveCount(0);
@@ -43,7 +48,7 @@ test("chip arquivados filtra de verdade: só arquivados visíveis; limpar reseta
   await expect(page.getByText("Arquivo P")).toBeVisible();
   await expect(page.getByText("Ativo A")).toHaveCount(0);
   await expect(page.getByText("arquivado", { exact: true })).toBeVisible();
-  await expect(page.getByTestId("stat-total")).toHaveText("1");
+  await expectStat(page, "stat-total", "1");
   await expect(page.getByRole("button", { name: "✕ limpar" })).toBeVisible();
 
   await page.getByLabel("ações do projeto").click();
@@ -54,7 +59,7 @@ test("chip arquivados filtra de verdade: só arquivados visíveis; limpar reseta
 
   await page.getByRole("button", { name: "✕ limpar" }).click();
   await expect(page.getByText("Arquivo P")).toBeVisible();
-  await expect(page.getByTestId("stat-total")).toHaveText("2");
+  await expectStat(page, "stat-total", "2");
   await expect(page.getByRole("button", { name: /arquivados/ })).toHaveAttribute("aria-pressed", "false");
 });
 

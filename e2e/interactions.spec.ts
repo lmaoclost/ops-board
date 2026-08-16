@@ -106,10 +106,13 @@ test("ordena por prioridade (P1 no topo) com ↕ prio", async ({ page }) => {
   await expect(rows.nth(0)).toContainText("tarefa b");
   await expect(rows.nth(1)).toContainText("tarefa a");
 
+
   await rows.nth(1).getByRole("button", { name: "prioridade: clique pra mudar" }).click();
   await expect(rows.nth(1)).toContainText("P1");
 
-  await page.getByRole("button", { name: "↕ prio" }).click();
+  await page.getByRole("heading", { name: /ops\/board/ }).hover();
+  await expect(page.getByRole("button", { name: "↕ prio" })).toBeVisible();
+  await page.getByRole("button", { name: "↕ prio" }).click({ force: true });
   await expect(rows.nth(0)).toContainText("tarefa a");
   await expect(rows.nth(1)).toContainText("tarefa b");
 });

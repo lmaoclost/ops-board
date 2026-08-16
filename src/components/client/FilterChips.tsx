@@ -1,4 +1,5 @@
 import { Button } from "@/components/ui/button";
+import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip";
 import type { StatusFilter } from "@/lib/filter";
 import type { Status } from "@/lib/types";
 import { useT } from "@/hooks/useT";
@@ -28,6 +29,8 @@ interface FilterChipsProps {
   onToggleStatus: (status: StatusFilter) => void;
   onToggleArchived: () => void;
   onClear: () => void;
+  prioSort: boolean;
+  onTogglePrioSort: () => void;
 }
 
 export function FilterChips({
@@ -40,6 +43,8 @@ export function FilterChips({
   onToggleStatus,
   onToggleArchived,
   onClear,
+  prioSort,
+  onTogglePrioSort,
 }: FilterChipsProps) {
   const { t, status } = useT();
   return (
@@ -75,6 +80,23 @@ export function FilterChips({
         arquivados
         <span className="opacity-60">{archivedCount}</span>
       </Button>
+      <Tooltip>
+        <TooltipTrigger
+          render={
+            <Button
+              type="button"
+              variant={prioSort ? "outline" : "ghost"}
+              size="xs"
+              onClick={onTogglePrioSort}
+              aria-pressed={prioSort}
+              className={`text-[var(--muted-text)] ${prioSort ? "border-current text-[var(--warn)] bg-[var(--hover)]" : ""}`}
+            >
+              ↕ prio
+            </Button>
+          }
+        />
+        <TooltipContent side="bottom">{t("filtro de prioridade (P1 no topo)")}</TooltipContent>
+      </Tooltip>
       {filtering && (
         <Button
           type="button"

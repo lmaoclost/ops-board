@@ -54,5 +54,6 @@ test("concluir tarefa dispara confete (canvas) e toast acessível de backup", as
 
 test("hint da lista descreve arraste entre seções/projetos", async ({ page }) => {
   await page.goto("/");
+  await page.getByRole("heading", { name: /ops\/board/ }).hover();
   await expect(page.getByText(/lista: arraste tarefas entre seções\/projetos/)).toBeVisible();
 });

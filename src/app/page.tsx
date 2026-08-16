@@ -5,7 +5,6 @@ import { Board } from "@/components/client/board/Board";
 import { FilterChips } from "@/components/client/FilterChips";
 import { Modal } from "@/components/client/Modal";
 import { PrivacyNotice } from "@/components/client/PrivacyNotice";
-import { Stats } from "@/components/client/Stats";
 import { Topbar } from "@/components/client/Topbar";
 import { useT } from "@/hooks/useT";
 import { useFilters } from "@/hooks/useFilters";
@@ -178,6 +177,7 @@ export default function Home() {
         onImport={() => setConfirmImportOpen(true)}
         locale={locale}
         onToggleLocale={() => setLocale(locale === "pt" ? "en" : "pt")}
+        stats={stats}
       />
       <input
         ref={fileRef}
@@ -202,12 +202,10 @@ export default function Home() {
           onToggleStatus={toggleStatus}
           onToggleArchived={toggleArchived}
           onClear={clear}
+          prioSort={filters.prioSort}
+          onTogglePrioSort={togglePrioSort}
         />
       </div>
-      <div className="mx-auto max-w-5xl px-4 pb-2">
-        <Stats stats={stats} filters={filters} onTogglePrioSort={togglePrioSort} />
-      </div>
-
       <main className="mx-auto max-w-5xl px-4 py-6">
         <Board
           projetos={boardProjetos}

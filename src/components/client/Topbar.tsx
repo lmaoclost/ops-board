@@ -7,6 +7,8 @@ import { Button, buttonVariants } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip";
 import type { View } from "@/lib/filter";
+import { Stats } from "@/components/client/Stats";
+import type { BoardStats } from "@/lib/selectors";
 
 interface TopbarProps {
   query: string;
@@ -21,6 +23,7 @@ interface TopbarProps {
   onImport: () => void;
   locale: Locale;
   onToggleLocale: () => void;
+  stats: BoardStats;
 }
 
 const DEBOUNCE_MS = 200;
@@ -38,6 +41,7 @@ export function Topbar({
   onImport,
   locale,
   onToggleLocale,
+  stats,
 }: TopbarProps) {
   const { t } = useT();
   const [draft, setDraft] = useState(query);
@@ -62,12 +66,21 @@ export function Topbar({
     <header className="sticky top-0 z-30 border-b border-[var(--line)] bg-[var(--bg)]/95 backdrop-blur">
       <div className="mx-auto max-w-5xl px-4 py-3 flex flex-col gap-3 sm:flex-row sm:items-center sm:gap-6">
         <div className="flex items-center justify-between gap-4">
-          <h1 className="text-sm font-bold tracking-tight text-[var(--text)]">
-            ops<span className="text-[var(--fired)]">/</span>board
-          </h1>
+          <Tooltip>
+            <TooltipTrigger closeDelay={300}
+              render={
+                <h1 className="text-sm font-bold tracking-tight text-[var(--text)] cursor-help">
+                  ops<span className="text-[var(--fired)]">/</span>board
+                </h1>
+              }
+            />
+            <TooltipContent side="bottom" className="z-40">
+              <Stats stats={stats} view={view} />
+            </TooltipContent>
+          </Tooltip>
           <div className="flex items-center gap-1.5">
             <Tooltip>
-            <TooltipTrigger
+            <TooltipTrigger closeDelay={300}
               render={
                 <Button
                   type="button"
