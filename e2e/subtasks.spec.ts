@@ -65,7 +65,7 @@ test("adiciona sub-tarefa inline na lista, alterna e remove", async ({ page }) =
   await page.getByLabel("nova tarefa").first().fill("setup");
   await page.getByLabel("nova tarefa").first().press("Enter");
 
-  const addSub = page.getByTestId("task-row").getByRole("button", { name: "nova sub-tarefa" });
+  const addSub = page.getByTestId("task-row").getByRole("button", { name: "nova sub-tarefa", exact: true });
   await addSub.click();
   await page.getByRole("textbox", { name: "nova sub-tarefa" }).fill("instalar deps");
   await page.getByRole("textbox", { name: "nova sub-tarefa" }).press("Enter");
@@ -96,7 +96,7 @@ test("pai vira done quando todas as sub-tarefas são concluídas", async ({ page
   await page.getByLabel("nova tarefa").first().fill("setup");
   await page.getByLabel("nova tarefa").first().press("Enter");
 
-  const addSub = page.getByTestId("task-row").getByRole("button", { name: "nova sub-tarefa" });
+  const addSub = page.getByTestId("task-row").getByRole("button", { name: "nova sub-tarefa", exact: true });
   await addSub.click();
   await page.getByRole("textbox", { name: "nova sub-tarefa" }).fill("instalar deps");
   await page.getByRole("textbox", { name: "nova sub-tarefa" }).press("Enter");
@@ -108,5 +108,79 @@ test("pai vira done quando todas as sub-tarefas são concluídas", async ({ page
   await page.getByRole("checkbox", { name: "sub-tarefa configurar env" }).click();
 
   await page.getByRole("button", { name: "kanban" }).click();
+  await expect(page.getByText("concluída 1")).toBeVisible();
+});
+
+test("edita sub-tarefa no modal: prio, vencimento, nota e bloqueada", async ({ page }) => {
+  await page.goto("/");
+  await createProject(page, "app");
+  await page.getByLabel("nova tarefa").first().fill("setup");
+  await page.getByLabel("nova tarefa").first().press("Enter");
+
+  const addSub = page.getByTestId("task-row").getByRole("button", { name: "nova sub-tarefa", exact: true });
+  await addSub.click();
+  await page.getByRole("textbox", { name: "nova sub-tarefa" }).fill("instalar deps");
+  await page.getByRole("textbox", { name: "nova sub-tarefa" }).press("Enter");
+
+  await page.getByRole("button", { name: "instalar deps", exact: true }).click();
+  const dialog = page.getByRole("dialog", { name: "editar sub-tarefa" });
+  await expect(dialog).toBeVisible();
+  await dialog.getByLabel("prioridade").selectOption({ label: "P2 — em breve" });
+  await dialog.getByLabel("vencimento").fill("2026-09-01");
+  await dialog.getByLabel("nota").fill("detalhe da sub");
+  await dialog.getByRole("switch").click();
+  await dialog.getByRole("button", { name: "salvar" }).click();
+
+  await expect(page.getByText("instalar deps")).toBeVisible();
+  await expect(page.getByText("P2", { exact: true })).toBeVisible();
+  await expect(page.getByText("01/09/2026")).toBeVisible();
+  await expect(page.getByText(/detalhe da sub/)).toBeVisible();
+  await expect(page.getByText("bloqueada", { exact: true })).toBeVisible();
+});
+
+test("altera texto da sub-tarefa pelo modal", async ({ page }) => {
+  await page.goto("/");
+  await createProject(page, "app");
+  await page.getByLabel("nova tarefa").first().fill("setup");
+  await page.getByLabel("nova tarefa").first().press("Enter");
+
+  const addSub = page.getByTestId("task-row").getByRole("button", { name: "nova sub-tarefa", exact: true });
+  await addSub.click();
+  await page.getByRole("textbox", { name: "nova sub-tarefa" }).fill("instalar deps");
+  await page.getByRole("textbox", { name: "nova sub-tarefa" }).press("Enter");
+
+  await page.getByRole("button", { name: "instalar deps", exact: true }).click();
+  const dialog = page.getByRole("dialog", { name: "editar sub-tarefa" });
+  await dialog.getByLabel("tarefa", { exact: true }).fill("instalar pacotes");
+  await dialog.getByRole("button", { name: "salvar" }).click();
+
+  await expect(page.getByText("instalar pacotes", { exact: true })).toBeVisible();
+  await expect(page.getByText("instalar deps", { exact: true })).toHaveCount(0);
+});
+
+test("sub de sub: adiciona, alterna neta e sub pai vira done (regra recursiva)", async ({ page }) => {
+  await page.goto("/");
+  await createProject(page, "app");
+  await page.getByLabel("nova tarefa").first().fill("setup");
+  await page.getByLabel("nova tarefa").first().press("Enter");
+
+  const addSub = page.getByTestId("task-row").getByRole("button", { name: "nova sub-tarefa", exact: true });
+  await addSub.click();
+  await page.getByRole("textbox", { name: "nova sub-tarefa" }).fill("instalar deps");
+  await page.getByRole("textbox", { name: "nova sub-tarefa" }).press("Enter");
+
+  const taskRow = page.getByTestId("task-row");
+  await taskRow.getByRole("button", { name: "nova sub-tarefa instalar deps" }).click();
+  await taskRow.getByRole("textbox", { name: "nova sub-tarefa instalar deps" }).fill("rodar setup");
+  await taskRow.getByRole("textbox", { name: "nova sub-tarefa instalar deps" }).press("Enter");
+
+  await expect(page.getByText("rodar setup", { exact: true })).toBeVisible();
+  await expect(page.getByRole("checkbox", { name: "sub-tarefa instalar deps" })).toHaveAttribute("aria-checked", "false");
+
+  await page.getByRole("checkbox", { name: "sub-tarefa rodar setup" }).click();
+  await expect(page.getByRole("checkbox", { name: "sub-tarefa instalar deps" })).toHaveAttribute("aria-checked", "true");
+
+  await page.getByRole("button", { name: "kanban" }).click();
+  await expect(page.getByLabel("sub-tarefas 1/1")).toBeVisible();
   await expect(page.getByText("concluída 1")).toBeVisible();
 });

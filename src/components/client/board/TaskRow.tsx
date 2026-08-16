@@ -11,11 +11,11 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip";
-import { isDueSoon, isOverdue } from "@/lib/date";
+import { isDueSoon, isOverdue, fmtDate } from "@/lib/date";
 import { linkify } from "@/lib/escape";
-import { fmtDate } from "@/lib/date";
-import { uid } from "@/lib/uid";
-import { PRIO_KEYS, STATUS_ORDER, type Prio, type Status, type Task, type TaskPatch } from "@/lib/types";
+import { addSub, makeSub, mapSubs, removeSub } from "@/lib/subtasks";
+import { PRIO_KEYS, STATUS_ORDER, type Prio, type Status, type SubTask, type Task, type TaskPatch } from "@/lib/types";
+import { TaskEditModal } from "./TaskEditModal";
 
 export interface TaskRowProps {
   task: Task;
@@ -42,17 +42,165 @@ const PRIO_CLS: Record<Prio, string> = {
   3: "text-[var(--muted-text)] border-[var(--line)]",
 };
 
+function SubRow({
+  subs,
+  sub,
+  depth,
+  onUpdate,
+  onEdit,
+}: {
+  subs: SubTask[];
+  sub: SubTask;
+  depth: number;
+  onUpdate: (patch: TaskPatch) => void;
+  onEdit: (s: SubTask) => void;
+}) {
+  const { t } = useT();
+  const [addingSub, setAddingSub] = useState(false);
+  const [subDraft, setSubDraft] = useState("");
+  const overdue = isOverdue(sub.due, sub.status);
+  const dueSoon = isDueSoon(sub.due, sub.status);
+  const done = sub.status === "done";
+
+  const submitSub = () => {
+    const text = subDraft.trim();
+    if (text) onUpdate({ subs: addSub(subs, sub.id, makeSub(text)) });
+    setSubDraft("");
+    setAddingSub(false);
+  };
+
+  return (
+    <div>
+      <div className="flex items-center gap-2.5 py-1 pr-2" style={{ paddingLeft: 48 + depth * 16 }}>
+        <button
+          type="button"
+          onClick={() => setAddingSub(true)}
+          title={`${t("nova sub-tarefa")} ${sub.text}`}
+          aria-label={`${t("nova sub-tarefa")} ${sub.text}`}
+          className="flex h-5 w-5 shrink-0 items-center justify-center rounded-full text-[var(--dimmer)] transition-colors hover:bg-[var(--hover)] hover:text-[var(--text)]"
+        >
+          +
+        </button>
+        <button
+          type="button"
+          role="checkbox"
+          aria-checked={done}
+          onClick={() => onUpdate({ subs: mapSubs(subs, sub.id, (s) => ({ ...s, status: s.status === "done" ? "todo" : "done" })) })}
+          aria-label={`sub-tarefa ${sub.text}`}
+          className="flex h-5 w-5 shrink-0 items-center justify-center rounded-full transition-colors hover:bg-[var(--hover)]"
+        >
+          <span
+            className={`h-1.5 w-1.5 rounded-full ${sub.blocked ? "bg-[var(--gave)]" : LED[sub.status]} transition-transform group-hover:scale-110`}
+          />
+        </button>
+        {addingSub ? (
+          <input
+            autoFocus
+            value={subDraft}
+            onChange={(e) => setSubDraft(e.target.value)}
+            onKeyDown={(e) => {
+              if (e.key === "Enter") {
+                e.preventDefault();
+                submitSub();
+              } else if (e.key === "Escape") {
+                setAddingSub(false);
+                setSubDraft("");
+              }
+            }}
+            placeholder={`${t("nova sub-tarefa")}…`}
+            aria-label={`${t("nova sub-tarefa")} ${sub.text}`}
+            autoComplete="off"
+            spellCheck={false}
+            className="min-w-0 flex-1 rounded border border-[var(--line)] bg-[var(--field)] px-1.5 py-1 text-[12px] text-[var(--text)] outline-none focus:border-[var(--fired)]"
+          />
+        ) : (
+          <span
+            role="button"
+            tabIndex={0}
+            onClick={() => onEdit(sub)}
+            onKeyDown={(e) => {
+              if (e.key === "Enter" || e.key === " ") {
+                e.preventDefault();
+                onEdit(sub);
+              }
+            }}
+            className="min-w-0 flex-1 cursor-pointer text-[12px] leading-snug break-words"
+          >
+            <span
+              className={done ? "text-[var(--dim)] line-through decoration-[var(--line)]" : "text-[var(--muted-text)]"}
+              dangerouslySetInnerHTML={{ __html: linkify(sub.text) }}
+            />
+            {sub.note && (
+              <span
+                className="text-[var(--dimmer)]"
+                dangerouslySetInnerHTML={{ __html: ` — ${linkify(sub.note)}` }}
+              />
+            )}
+          </span>
+        )}
+        {sub.blocked && (
+          <Badge variant="destructive" className="rounded-[4px] px-1.5 text-[11px] font-bold uppercase tracking-[0.08em]">
+            bloqueada
+          </Badge>
+        )}
+        <button
+          type="button"
+          onClick={() => onUpdate({ subs: mapSubs(subs, sub.id, (s) => ({ ...s, prio: NEXT_PRIO[s.prio] })) })}
+          aria-label={t("prioridade: clique pra mudar")}
+          className={`shrink-0 rounded border px-1.5 py-0.5 text-[10.5px] font-bold ${PRIO_CLS[sub.prio]}`}
+        >
+          {PRIO_KEYS[sub.prio]}
+        </button>
+        {sub.due &&
+          (overdue ? (
+            <Badge
+              variant="destructive"
+              className="rounded-[4px] px-1.5 text-[10.5px] font-bold uppercase tracking-[0.08em]"
+              title={`vencimento ${sub.due}`}
+            >
+              {fmtDate(sub.due)} vencida
+            </Badge>
+          ) : (
+            <span
+              className={`shrink-0 text-[10.5px] font-semibold ${dueSoon ? "text-[var(--warn)]" : "text-[var(--dimmer)]"}`}
+              title={`vencimento ${sub.due}`}
+            >
+              {fmtDate(sub.due)}
+            </span>
+          ))}
+        <button
+          type="button"
+          onClick={() => onUpdate({ subs: removeSub(subs, sub.id) })}
+          title={`${t("remover sub-tarefa")} ${sub.text}`}
+          aria-label={`${t("remover sub-tarefa")} ${sub.text}`}
+          className="shrink-0 text-[var(--dimmer)] transition-colors hover:text-[var(--fired)]"
+        >
+          ×
+        </button>
+      </div>
+      {sub.subs.length > 0 && (
+        <div className="pb-1">
+          {sub.subs.map((c) => (
+            <SubRow key={c.id} subs={subs} sub={c} depth={depth + 1} onUpdate={onUpdate} onEdit={onEdit} />
+          ))}
+        </div>
+      )}
+    </div>
+  );
+}
+
 export function TaskRow({ task, onToggle, onPrioCycle, onStatusChange, onEdit, onDelete, onUpdate }: TaskRowProps) {
   const { t, status } = useT();
   const [addingSub, setAddingSub] = useState(false);
   const [subDraft, setSubDraft] = useState("");
+  const [editingSub, setEditingSub] = useState<SubTask | null>(null);
   const overdue = isOverdue(task.due, task.status);
   const dueSoon = isDueSoon(task.due, task.status);
   const done = task.status === "done";
 
   const submitSub = () => {
     const text = subDraft.trim();
-    if (text) onUpdate({ subs: [...task.subs, { id: uid(), text, done: false }] });
+    if (text) onUpdate({ subs: [...task.subs, makeSub(text)] });
     setSubDraft("");
     setAddingSub(false);
   };
@@ -197,34 +345,20 @@ export function TaskRow({ task, onToggle, onPrioCycle, onStatusChange, onEdit, o
       {task.subs.length > 0 && (
         <div className="pb-1">
           {task.subs.map((s) => (
-            <div key={s.id} className="flex items-center gap-2.5 pl-8 pr-2 py-1">
-              <button
-                type="button"
-                role="checkbox"
-                aria-checked={s.done}
-                onClick={() => onUpdate({ subs: task.subs.map((x) => (x.id === s.id ? { ...x, done: !x.done } : x)) })}
-                aria-label={`sub-tarefa ${s.text}`}
-                className="flex h-5 w-5 shrink-0 items-center justify-center rounded-full transition-colors hover:bg-[var(--hover)]"
-              >
-                <span
-                  className={`h-1.5 w-1.5 rounded-full ${s.done ? "bg-[var(--fired)]" : "bg-[var(--dimmer)]"} transition-transform group-hover:scale-110`}
-                />
-              </button>
-              <span className={`min-w-0 flex-1 break-words text-[12px] ${s.done ? "text-[var(--dim)] line-through" : "text-[var(--muted-text)]"}`}>
-                {s.text}
-              </span>
-              <button
-                type="button"
-                onClick={() => onUpdate({ subs: task.subs.filter((x) => x.id !== s.id) })}
-                title={`${t("remover sub-tarefa")} ${s.text}`}
-                aria-label={`${t("remover sub-tarefa")} ${s.text}`}
-                className="shrink-0 text-[var(--dimmer)] transition-colors hover:text-[var(--fired)]"
-              >
-                ×
-              </button>
-            </div>
+            <SubRow key={s.id} subs={task.subs} sub={s} depth={0} onUpdate={onUpdate} onEdit={setEditingSub} />
           ))}
         </div>
+      )}
+      {editingSub && (
+        <TaskEditModal
+          task={editingSub}
+          isSub
+          onSubmit={(patch) => {
+            onUpdate({ subs: mapSubs(task.subs, editingSub.id, (x) => ({ ...x, ...patch })) });
+            setEditingSub(null);
+          }}
+          onCancel={() => setEditingSub(null)}
+        />
       )}
     </div>
   );

@@ -1,5 +1,5 @@
 import { beforeEach, describe, expect, it, vi } from "vitest";
-import { createBoardStore, setStorageErrorHandler } from "./store";
+import { createBoardStore, reconcileSubs, setStorageErrorHandler } from "./store";
 import type { Project } from "./types";
 
 const seedProjeto = (): Project => ({
@@ -92,22 +92,66 @@ describe("board store", () => {
   });
 
   it("subs: todas done tornam a tarefa pai done; parcial mantém todo", () => {
-    const subA = { id: "a", text: "sub a", done: false };
-    const subB = { id: "b", text: "sub b", done: false };
+    const subA = { id: "a", text: "sub a", note: "", prio: 3 as const, due: "", status: "todo" as const, blocked: false, subs: [] };
+    const subB = { id: "b", text: "sub b", note: "", prio: 3 as const, due: "", status: "todo" as const, blocked: false, subs: [] };
     store.getState().editTask("p1", "s1", "t1", { subs: [subA, subB] });
-    store.getState().editTask("p1", "s1", "t1", { subs: [{ ...subA, done: true }, subB] });
+    store.getState().editTask("p1", "s1", "t1", { subs: [{ ...subA, status: "done" }, subB] });
     expect(store.getState().projetos[0].sections[0].tasks[0].status).toBe("todo");
-    store.getState().editTask("p1", "s1", "t1", { subs: [{ ...subA, done: true }, { ...subB, done: true }] });
+    store.getState().editTask("p1", "s1", "t1", { subs: [{ ...subA, status: "done" }, { ...subB, status: "done" }] });
     expect(store.getState().projetos[0].sections[0].tasks[0].status).toBe("done");
   });
 
   it("subs: desmarcar uma sub em tarefa done volta o pai para todo", () => {
-    const subA = { id: "a", text: "sub a", done: true };
-    const subB = { id: "b", text: "sub b", done: true };
+    const subA = { id: "a", text: "sub a", note: "", prio: 3 as const, due: "", status: "done" as const, blocked: false, subs: [] };
+    const subB = { id: "b", text: "sub b", note: "", prio: 3 as const, due: "", status: "done" as const, blocked: false, subs: [] };
     store.getState().editTask("p1", "s1", "t1", { subs: [subA, subB] });
     expect(store.getState().projetos[0].sections[0].tasks[0].status).toBe("done");
-    store.getState().editTask("p1", "s1", "t1", { subs: [{ ...subA, done: false }, subB] });
+    store.getState().editTask("p1", "s1", "t1", { subs: [{ ...subA, status: "todo" }, subB] });
     expect(store.getState().projetos[0].sections[0].tasks[0].status).toBe("todo");
+  });
+
+  it("reconcilia sub com subs próprias: só done quando todas as filhas são done", () => {
+    const filha1 = { id: "x", text: "x", note: "", prio: 3 as const, due: "", status: "todo" as const, blocked: false, subs: [] };
+    const filha2 = { id: "y", text: "y", note: "", prio: 3 as const, due: "", status: "todo" as const, blocked: false, subs: [] };
+    const subA = { id: "a", text: "sub a", note: "", prio: 3 as const, due: "", status: "todo" as const, blocked: false, subs: [filha1, filha2] };
+    store.getState().editTask("p1", "s1", "t1", { subs: [subA] });
+
+    store.getState().editTask("p1", "s1", "t1", {
+      subs: [{ ...subA, subs: [{ ...filha1, status: "done" }, filha2] }],
+    });
+    const t1 = store.getState().projetos[0].sections[0].tasks[0];
+    expect(t1.subs[0].status).toBe("todo");
+    expect(t1.status).toBe("todo");
+
+    store.getState().editTask("p1", "s1", "t1", {
+      subs: [{ ...subA, subs: [{ ...filha1, status: "done" }, { ...filha2, status: "done" }] }],
+    });
+    const t2 = store.getState().projetos[0].sections[0].tasks[0];
+    expect(t2.subs[0].status).toBe("done");
+    expect(t2.status).toBe("done");
+  });
+
+  it("reconcilia recursivamente: desmarcar neta volta sub e pai para todo", () => {
+    const neta = { id: "x", text: "x", note: "", prio: 3 as const, due: "", status: "done" as const, blocked: false, subs: [] };
+    const subA = { id: "a", text: "sub a", note: "", prio: 3 as const, due: "", status: "todo" as const, blocked: false, subs: [neta] };
+    store.getState().editTask("p1", "s1", "t1", { subs: [subA] });
+    expect(store.getState().projetos[0].sections[0].tasks[0].status).toBe("done");
+
+    store.getState().editTask("p1", "s1", "t1", {
+      subs: [{ ...subA, subs: [{ ...neta, status: "todo" }] }],
+    });
+    const t = store.getState().projetos[0].sections[0].tasks[0];
+    expect(t.subs[0].status).toBe("todo");
+    expect(t.status).toBe("todo");
+  });
+
+  it("reconcileSubs preserva status manual de sub sem filhas", () => {
+    const out = reconcileSubs([
+      { id: "a", text: "a", note: "", prio: 2 as const, due: "", status: "doing" as const, blocked: true, subs: [] },
+    ]);
+    expect(out[0].status).toBe("doing");
+    expect(out[0].prio).toBe(2);
+    expect(out[0].blocked).toBe(true);
   });
 
   it("exclui tarefa", () => {

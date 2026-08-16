@@ -2,16 +2,17 @@ import { useState } from "react";
 import { Modal } from "@/components/client/Modal";
 import { Label } from "@/components/ui/label";
 import { useT } from "@/hooks/useT";
-import { uid } from "@/lib/uid";
+import { makeSub } from "@/lib/subtasks";
 import type { SubTask, Task, TaskPatch } from "@/lib/types";
 
 export interface TaskEditModalProps {
-  task: Task;
+  task: Task | SubTask;
+  isSub?: boolean;
   onSubmit: (patch: TaskPatch) => void;
   onCancel: () => void;
 }
 
-export function TaskEditModal({ task, onSubmit, onCancel }: TaskEditModalProps) {
+export function TaskEditModal({ task, isSub, onSubmit, onCancel }: TaskEditModalProps) {
   const { t } = useT();
   const [subs, setSubs] = useState<SubTask[]>(task.subs);
   const [newSub, setNewSub] = useState("");
@@ -19,12 +20,12 @@ export function TaskEditModal({ task, onSubmit, onCancel }: TaskEditModalProps) 
   const addSub = () => {
     const text = newSub.trim();
     if (!text) return;
-    setSubs((prev) => [...prev, { id: uid(), text, done: false }]);
+    setSubs((prev) => [...prev, makeSub(text)]);
     setNewSub("");
   };
 
   const toggleSub = (id: string) =>
-    setSubs((prev) => prev.map((s) => (s.id === id ? { ...s, done: !s.done } : s)));
+    setSubs((prev) => prev.map((s) => (s.id === id ? { ...s, status: s.status === "done" ? "todo" : "done" } : s)));
 
   const removeSub = (id: string) => setSubs((prev) => prev.filter((s) => s.id !== id));
   const submit = (v: Record<string, string | boolean>) => {
@@ -40,7 +41,7 @@ export function TaskEditModal({ task, onSubmit, onCancel }: TaskEditModalProps) 
 
   return (
     <Modal
-      title={t("editar tarefa")}
+      title={t(isSub ? "editar sub-tarefa" : "editar tarefa")}
       submitLabel={t("salvar")}
       fields={[
         { key: "text", label: t("tarefa"), value: task.text },
@@ -73,16 +74,16 @@ export function TaskEditModal({ task, onSubmit, onCancel }: TaskEditModalProps) 
                 <button
                   type="button"
                   role="checkbox"
-                  aria-checked={s.done}
+                  aria-checked={s.status === "done"}
                   aria-label={`sub-tarefa ${s.text}`}
                   onClick={() => toggleSub(s.id)}
                   className={`flex h-4 w-4 shrink-0 items-center justify-center rounded border text-[9px] ${
-                    s.done ? "border-[var(--fired)] bg-[var(--fired)] text-primary-foreground" : "border-[var(--line-soft)]"
+                    s.status === "done" ? "border-[var(--fired)] bg-[var(--fired)] text-primary-foreground" : "border-[var(--line-soft)]"
                   }`}
                 >
-                  {s.done ? "✓" : ""}
+                  {s.status === "done" ? "✓" : ""}
                 </button>
-                <span className={`min-w-0 flex-1 text-xs ${s.done ? "line-through text-[var(--dim)]" : "text-[var(--text)]"}`}>
+                <span className={`min-w-0 flex-1 text-xs ${s.status === "done" ? "line-through text-[var(--dim)]" : "text-[var(--text)]"}`}>
                   {s.text}
                 </span>
                 <button

@@ -118,8 +118,8 @@ it("clique no card abre o modal de edição e submit chama onEditTask", () => {
     renderKanban({
       projetos: [projeto({ sections: [{ ...projeto().sections[0], tasks: [
         { ...projeto().sections[0].tasks[0], subs: [
-          { id: "s1", text: "a", done: true },
-          { id: "s2", text: "b", done: false },
+          { id: "s1", text: "a", note: "", prio: 3, due: "", status: "done", blocked: false, subs: [] },
+          { id: "s2", text: "b", note: "", prio: 3, due: "", status: "todo", blocked: false, subs: [] },
         ] },
       ] }] })],
     });
@@ -135,7 +135,7 @@ it("clique no card abre o modal de edição e submit chama onEditTask", () => {
     fireEvent.click(screen.getByLabelText("sub-tarefa aquecer"));
     fireEvent.click(screen.getByText("salvar"));
     expect(onEditTask).toHaveBeenCalledWith("p1", "s1", "t1", expect.objectContaining({
-      subs: [expect.objectContaining({ text: "aquecer", done: true })],
+      subs: [expect.objectContaining({ text: "aquecer", status: "done" })],
     }));
   });
 

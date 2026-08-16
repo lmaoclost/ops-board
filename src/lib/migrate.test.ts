@@ -29,7 +29,7 @@ describe("migrateLegacy", () => {
     expect(t.subs).toEqual([]);
   });
 
-  it("normaliza sub-tarefas (text/done) e preserva as válidas", () => {
+  it("migra sub-tarefas legadas (done) para formato completo", () => {
     const out = migrateLegacy({
       projetos: [
         {
@@ -49,9 +49,45 @@ describe("migrateLegacy", () => {
     });
     const t = out!.projetos[0].sections[0].tasks[0];
     expect(t.subs).toEqual([
-      { id: "a", text: "sub", done: true },
-      { id: "b", text: "outra", done: false },
+      { id: "a", text: "sub", note: "", prio: 3, due: "", status: "done", blocked: false, subs: [] },
+      { id: "b", text: "outra", note: "", prio: 3, due: "", status: "todo", blocked: false, subs: [] },
     ]);
+  });
+
+  it("migra sub-tarefas legadas aninhadas recursivamente (v5 → v6)", () => {
+    const out = migrateLegacy({
+      projetos: [
+        {
+          id: "p1",
+          title: "P",
+          sections: [
+            {
+              id: "s1",
+              title: "S",
+              tasks: [
+                {
+                  id: "t1",
+                  text: "x",
+                  status: "todo",
+                  subs: [{ id: "a", text: "sub", done: false, subs: [{ id: "c", text: "neta", done: true }] }],
+                },
+              ],
+            },
+          ],
+        },
+      ],
+    });
+    const sub = out!.projetos[0].sections[0].tasks[0].subs[0];
+    expect(sub).toEqual({
+      id: "a",
+      text: "sub",
+      note: "",
+      prio: 3,
+      due: "",
+      status: "todo",
+      blocked: false,
+      subs: [{ id: "c", text: "neta", note: "", prio: 3, due: "", status: "done", blocked: false, subs: [] }],
+    });
   });
 
   it("normaliza seções sem tasks/notes/collapsed", () => {
@@ -122,7 +158,7 @@ describe("migrateLegacy", () => {
   });
 
   it("mantém versão de schema estável e exportada", () => {
-    expect(SCHEMA_VERSION).toBe(5);
+    expect(SCHEMA_VERSION).toBe(6);
   });
 });
 

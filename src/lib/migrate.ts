@@ -1,14 +1,21 @@
 import { PRIOS, STATUSES, type Prio, type Project, type Section, type Status, type SubTask, type Task } from "./types";
 
-export const SCHEMA_VERSION = 5;
+export const SCHEMA_VERSION = 6;
 
 type UnknownRecord = Record<string, unknown>;
 
 function normSub(s: UnknownRecord | undefined): SubTask {
+  const status = STATUSES.includes(s?.status as Status) ? (s!.status as Status) : s?.done ? "done" : "todo";
+  const prio = PRIOS.includes(s?.prio as Prio) ? (s!.prio as Prio) : 3;
   return {
     id: String(s?.id ?? ""),
     text: String(s?.text ?? ""),
-    done: Boolean(s?.done),
+    note: String(s?.note ?? ""),
+    prio,
+    due: String(s?.due ?? ""),
+    status,
+    blocked: Boolean(s?.blocked),
+    subs: Array.isArray(s?.subs) ? s.subs.map((x) => normSub(x as UnknownRecord)) : [],
   };
 }
 

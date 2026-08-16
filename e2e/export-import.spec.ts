@@ -38,7 +38,22 @@ const SEED = {
           title: "geral",
           notes: "",
           collapsed: false,
-          tasks: [{ id: "t1", text: "tarefa do alpha", status: "todo", note: "", blocked: false, prio: 3, due: "", doneAt: null }],
+          tasks: [
+            {
+              id: "t1",
+              text: "tarefa do alpha",
+              status: "todo",
+              note: "",
+              blocked: false,
+              prio: 3,
+              due: "",
+              doneAt: null,
+              subs: [
+                { id: "s1", text: "passo do alpha", note: "", prio: 3, due: "", status: "todo", blocked: false, subs: [] },
+                { id: "s2", text: "passo pronto", note: "", prio: 3, due: "", status: "done", blocked: false, subs: [] },
+              ],
+            },
+          ],
         },
       ],
     },
@@ -128,7 +143,7 @@ test("import de arquivo gigante é rejeitado sem quebrar o estado", async ({ pag
   await expect(page.getByText("nenhum projeto na fila.")).toBeVisible();
 });
 
-test("migra localStorage v1 → v5 no carregamento", async ({ page }) => {
+test("migra localStorage v1 → v6 no carregamento (sub legada v5 migrada)", async ({ page }) => {
   const v1 = {
     state: {
       projetos: [
@@ -142,7 +157,14 @@ test("migra localStorage v1 → v5 no carregamento", async ({ page }) => {
               title: "geral",
               notes: "",
               collapsed: false,
-              tasks: [{ id: "t1", text: "tarefa antiga", status: "todo" }],
+              tasks: [
+                {
+                  id: "t1",
+                  text: "tarefa antiga",
+                  status: "todo",
+                  subs: [{ id: "s1", text: "sub antiga", done: true }],
+                },
+              ],
             },
           ],
         },
@@ -157,8 +179,18 @@ test("migra localStorage v1 → v5 no carregamento", async ({ page }) => {
   await page.goto("/");
   await expect(page.getByRole("heading", { name: "legado" })).toBeVisible();
   await expect(page.getByText("tarefa antiga", { exact: false })).toBeVisible();
+  await expect(page.getByRole("checkbox", { name: "sub-tarefa sub antiga" })).toHaveAttribute("aria-checked", "true");
 
   const stored = await page.evaluate(() => JSON.parse(localStorage.getItem("opsboard.v1") ?? "{}"));
-  expect(stored.version).toBe(5);
+  expect(stored.version).toBe(6);
   expect(stored.state.projetos[0].sections[0].tasks[0]).toMatchObject({ text: "tarefa antiga", prio: 3, doneAt: null });
+  expect(stored.state.projetos[0].sections[0].tasks[0].subs[0]).toMatchObject({
+    id: "s1",
+    text: "sub antiga",
+    status: "done",
+    prio: 3,
+    note: "",
+    blocked: false,
+    subs: [],
+  });
 });
