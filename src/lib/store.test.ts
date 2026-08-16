@@ -82,6 +82,41 @@ describe("board store", () => {
     expect(tasks.at(-1)!.status).toBe("todo");
   });
 
+  it("addTaskFull cria tarefa com status, campos e subs", () => {
+    store.getState().addTaskFull("p1", "s1", {
+      text: "  kanban  ",
+      status: "doing",
+      note: "obs",
+      prio: 1,
+      due: "2026-03-01",
+      blocked: true,
+      subs: [{ id: "a", text: "sub", note: "", prio: 3, due: "", status: "todo", blocked: false, subs: [] }],
+    });
+    const t = store.getState().projetos[0].sections[0].tasks.at(-1)!;
+    expect(t.text).toBe("kanban");
+    expect(t.status).toBe("doing");
+    expect(t.note).toBe("obs");
+    expect(t.prio).toBe(1);
+    expect(t.due).toBe("2026-03-01");
+    expect(t.blocked).toBe(true);
+    expect(t.subs).toHaveLength(1);
+    expect(t.doneAt).toBeNull();
+  });
+
+  it("addTaskFull com status done marca doneAt", () => {
+    store.getState().addTaskFull("p1", "s1", { text: "feita", status: "done" });
+    const t = store.getState().projetos[0].sections[0].tasks.at(-1)!;
+    expect(t.status).toBe("done");
+    expect(t.doneAt).not.toBeNull();
+  });
+
+  it("addTaskFull é uma entrada única de undo", () => {
+    store.getState().addTaskFull("p1", "s1", { text: "x", status: "todo", note: "n", prio: 1 });
+    expect(store.getState().projetos[0].sections[0].tasks.some((x) => x.text === "x")).toBe(true);
+    store.getState().undo();
+    expect(store.getState().projetos[0].sections[0].tasks.map((x) => x.text)).toEqual(["tarefa 1", "tarefa 2"]);
+  });
+
   it("edita campos de tarefa via patch", () => {
     store.getState().editTask("p1", "s1", "t1", { note: "nota", prio: 1, due: "2026-02-01", blocked: true });
     const t = store.getState().projetos[0].sections[0].tasks[0];

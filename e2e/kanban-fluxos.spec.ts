@@ -122,19 +122,73 @@ test("Enter no ⋯ da seção não colapsa a seção", async ({ page }) => {
   await expect(page.getByLabel("nova tarefa")).toHaveCount(1);
 });
 
-test("kanban: cria card direto na coluna a fazer", async ({ page }) => {
+test("kanban: + no header abre modal de criação e cria card na coluna", async ({ page }) => {
   await page.goto("/");
   await createProject(page, "app");
 
   await page.getByRole("button", { name: "kanban" }).click();
+  await page.getByRole("button", { name: "nova tarefa em a fazer" }).click();
 
-  const input = page.getByLabel("nova tarefa").first();
-  await input.fill("nova card");
-  await input.press("Enter");
+  const dialog = page.getByRole("dialog", { name: "nova tarefa" });
+  await expect(dialog.getByText("a fazer", { exact: true })).toBeVisible();
+  await expect(dialog.getByLabel("projeto")).toBeVisible();
+  await expect(dialog.getByLabel("status")).toHaveCount(0);
+
+  await dialog.getByLabel("tarefa", { exact: true }).fill("nova card");
+  await page.getByRole("button", { name: "salvar" }).click();
 
   const card = page.getByTestId("kanban-task").filter({ hasText: "nova card" });
   await expect(card).toBeVisible();
 
   await page.getByRole("button", { name: "lista" }).click();
   await expect(page.getByText("nova card", { exact: true })).toBeVisible();
+});
+
+test("kanban: hover no card mostra o nome da tarefa", async ({ page }) => {
+  await page.goto("/");
+  await createProject(page, "app");
+  await addTask(page, "hover me");
+
+  await page.getByRole("button", { name: "kanban" }).click();
+
+  const card = page.getByTestId("kanban-task").filter({ hasText: "hover me" });
+  await card.hover();
+  await expect(card).toHaveAttribute("title", "hover me");
+});
+
+test("kanban: modal de criação aceita nota, prio e subs", async ({ page }) => {
+  await page.goto("/");
+  await createProject(page, "app");
+
+  await page.getByRole("button", { name: "kanban" }).click();
+  await page.getByRole("button", { name: "nova tarefa em a fazer" }).click();
+
+  const dialog = page.getByRole("dialog", { name: "nova tarefa" });
+  await dialog.getByLabel("tarefa", { exact: true }).fill("tarefa completa");
+  await dialog.getByLabel("nota").fill("detalhe");
+  await dialog.getByLabel("nova sub-tarefa").fill("sub 1");
+  await dialog.getByLabel("nova sub-tarefa").press("Enter");
+  await page.getByRole("button", { name: "salvar" }).click();
+
+  const card = page.getByTestId("kanban-task").filter({ hasText: "tarefa completa" });
+  await expect(card).toContainText("detalhe");
+  await expect(card.getByLabel("sub-tarefas 0/1")).toBeVisible();
+});
+
+test("kanban: modal de criação permite escolher o projeto", async ({ page }) => {
+  await page.goto("/");
+  await createProject(page, "app");
+  await createProject(page, "web");
+
+  await page.getByRole("button", { name: "kanban" }).click();
+  await page.getByRole("button", { name: "nova tarefa em a fazer" }).click();
+
+  const dialog = page.getByRole("dialog", { name: "nova tarefa" });
+  await dialog.getByLabel("projeto").click();
+  await page.getByRole("option", { name: "web" }).click();
+  await dialog.getByLabel("tarefa", { exact: true }).fill("no web");
+  await page.getByRole("button", { name: "salvar" }).click();
+
+  const card = page.getByTestId("kanban-task").filter({ hasText: "no web" });
+  await expect(card).toContainText("web · geral");
 });

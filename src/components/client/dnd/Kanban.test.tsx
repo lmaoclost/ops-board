@@ -1,8 +1,8 @@
-import { fireEvent, render, screen } from "@testing-library/react";
+import { fireEvent, render, screen, within } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import { describe, expect, it, vi } from "vitest";
 import { Kanban } from "./Kanban";
-import type { Project, TaskPatch } from "@/lib/types";
+import type { AddTaskInput, Project, TaskPatch } from "@/lib/types";
 
 const projeto = (over: Partial<Project> = {}): Project => ({
   id: "p1",
@@ -25,7 +25,7 @@ const projeto = (over: Partial<Project> = {}): Project => ({
   ...over,
 });
 
-const renderKanban = (props: { projetos?: Project[]; onEditTask?: (pid: string, sid: string, tid: string, patch: TaskPatch) => void; onAddTask?: (pid: string, sid: string, text: string) => void } = {}) =>
+const renderKanban = (props: { projetos?: Project[]; onEditTask?: (pid: string, sid: string, tid: string, patch: TaskPatch) => void; onAddTask?: (pid: string, sid: string, input: AddTaskInput) => void } = {}) =>
   render(
     <Kanban
       projetos={props.projetos ?? [projeto()]}
@@ -139,46 +139,53 @@ it("clique no card abre o modal de edição e submit chama onEditTask", () => {
     }));
   });
 
-  it("Enter no input da coluna cria tarefa com projeto, status e texto", () => {
-    const onAddTask = vi.fn();
-    renderKanban({ onAddTask });
-    const input = screen.getAllByLabelText("nova tarefa")[0];
-    fireEvent.change(input, { target: { value: "nova card" } });
-    fireEvent.keyDown(input, { key: "Enter" });
-    expect(onAddTask).toHaveBeenCalledWith("p1", "s1", "nova card");
-    expect(input).toHaveValue("");
+it("title do card é o texto da tarefa", () => {
+    renderKanban();
+    expect(screen.getByRole("button", { name: /editar tarefa correr pra base/ })).toHaveAttribute("title", "correr pra base");
   });
 
-  it("Enter vazio não cria tarefa", () => {
+  it("botão + da coluna abre modal de criação com status fixo", () => {
+    renderKanban();
+    fireEvent.click(screen.getByRole("button", { name: "nova tarefa em a fazer" }));
+    const dialog = screen.getByRole("dialog", { name: "nova tarefa" });
+    expect(within(dialog).getByText("a fazer")).toBeTruthy();
+  });
+
+  it("salvar no modal de criação chama onAddTask com projeto, status e campos", () => {
     const onAddTask = vi.fn();
     renderKanban({ onAddTask });
-    fireEvent.keyDown(screen.getAllByLabelText("nova tarefa")[0], { key: "Enter" });
+    fireEvent.click(screen.getByRole("button", { name: "nova tarefa em a fazer" }));
+    fireEvent.change(screen.getByLabelText("tarefa", { exact: true }), { target: { value: "nova card" } });
+    fireEvent.change(screen.getByLabelText("nota"), { target: { value: "obs" } });
+    fireEvent.click(screen.getByText("salvar"));
+    expect(onAddTask).toHaveBeenCalledWith(
+      "p1",
+      "s1",
+      expect.objectContaining({ text: "nova card", status: "todo", note: "obs", prio: 3 }),
+    );
+  });
+
+  it("texto vazio no modal de criação não chama onAddTask", () => {
+    const onAddTask = vi.fn();
+    renderKanban({ onAddTask });
+    fireEvent.click(screen.getByRole("button", { name: "nova tarefa em a fazer" }));
+    fireEvent.click(screen.getByText("salvar"));
     expect(onAddTask).not.toHaveBeenCalled();
   });
 
-  it("Esc limpa o rascunho sem criar", () => {
-    const onAddTask = vi.fn();
-    renderKanban({ onAddTask });
-    const input = screen.getAllByLabelText("nova tarefa")[0];
-    fireEvent.change(input, { target: { value: "nova card" } });
-    fireEvent.keyDown(input, { key: "Escape" });
-    expect(onAddTask).not.toHaveBeenCalled();
-    expect(input).toHaveValue("");
-  });
-
-  it("usa o projeto escolhido no select ao criar", async () => {
+  it("usa o projeto escolhido no select do modal de criação", async () => {
     const onAddTask = vi.fn();
     const p2 = projeto({ id: "p2", title: "Q", sections: [{ ...projeto().sections[0], id: "s2" }] });
     renderKanban({ projetos: [projeto(), p2], onAddTask });
-    await userEvent.click(screen.getAllByLabelText("projeto")[0]);
+    fireEvent.click(screen.getByRole("button", { name: "nova tarefa em a fazer" }));
+    await userEvent.click(screen.getByLabelText("projeto"));
     await userEvent.click(await screen.findByRole("option", { name: "Q" }));
-    await userEvent.type(screen.getAllByLabelText("nova tarefa")[0], "na fila{Enter}");
-    expect(onAddTask).toHaveBeenCalledWith("p2", "s2", "na fila");
-  });
-
-  it("coluna vazia mostra o input de criação sempre visível", () => {
-    renderKanban({ projetos: [projeto({ sections: [{ ...projeto().sections[0], tasks: [] }] })] });
-    const row = screen.getAllByLabelText("nova tarefa")[0].parentElement;
-    expect(row?.className).toContain("opacity-100");
+    fireEvent.change(screen.getByLabelText("tarefa", { exact: true }), { target: { value: "na fila" } });
+    fireEvent.click(screen.getByText("salvar"));
+    expect(onAddTask).toHaveBeenCalledWith(
+      "p2",
+      "s2",
+      expect.objectContaining({ text: "na fila", status: "todo" }),
+    );
   });
 });

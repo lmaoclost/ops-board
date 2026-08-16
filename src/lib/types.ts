@@ -52,6 +52,16 @@ export interface TaskPatch {
   subs?: SubTask[];
 }
 
+export interface AddTaskInput {
+  text: string;
+  status: Status;
+  note?: string;
+  blocked?: boolean;
+  prio?: Prio;
+  due?: string;
+  subs?: SubTask[];
+}
+
 export const STATUS_ORDER: Status[] = ["todo", "doing", "waiting", "done"];
 
 export const STATUS_LABEL: Record<Status, string> = {

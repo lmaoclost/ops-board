@@ -3,7 +3,7 @@ import { useMemo } from "react";
 import { useT } from "@/hooks/useT";
 import { isFiltering, prioSort, projMatches, type Filters } from "@/lib/filter";
 import { resolveDrop } from "@/lib/dnd";
-import type { Project, Status, TaskPatch } from "@/lib/types";
+import type { AddTaskInput, Project, Status, TaskPatch } from "@/lib/types";
 import { ProjectCard } from "./ProjectCard";
 import { Kanban } from "@/components/client/dnd/Kanban";
 
@@ -19,6 +19,7 @@ export interface BoardProjectActions {
 export interface BoardSectionActions {
   onToggle: (pid: string, sid: string) => void;
   onAddTask: (pid: string, sid: string, text: string) => void;
+  onAddTaskFull: (pid: string, sid: string, input: AddTaskInput) => void;
   onRename: (pid: string, sid: string, title: string) => void;
   onDelete: (pid: string, sid: string) => void;
 }
@@ -136,7 +137,7 @@ export function Board({ projetos, filters, onNewProject, onClearFilters, project
         projetos={filtered}
         prioSort={filters.prioSort}
         onEditTask={(pid, sid, tid, patch) => taskActions.onEdit(pid, sid, tid, patch)}
-        onAddTask={(pid, sid, text) => sectionActions.onAddTask(pid, sid, text)}
+        onAddTask={(pid, sid, input) => sectionActions.onAddTaskFull(pid, sid, input)}
       />
     );
   } else {

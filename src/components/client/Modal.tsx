@@ -32,9 +32,10 @@ interface ModalProps {
   onSubmit: (values: Record<string, string | boolean>) => void;
   onCancel: () => void;
   children?: ReactNode;
+  topChildren?: ReactNode;
 }
 
-export function Modal({ title, fields, submitLabel = "salvar", onSubmit, onCancel, children }: ModalProps) {
+export function Modal({ title, fields, submitLabel = "salvar", onSubmit, onCancel, children, topChildren }: ModalProps) {
   const { t } = useT();
   const titleId = useId();
   const [checks, setChecks] = useState<Record<string, boolean>>(() =>
@@ -73,6 +74,7 @@ export function Modal({ title, fields, submitLabel = "salvar", onSubmit, onCance
           }}
         >
           <div className="flex flex-col gap-3 px-4 py-4">
+            {topChildren}
             {fields.map((f, i) => (
               <div key={f.key}>
                 <Label

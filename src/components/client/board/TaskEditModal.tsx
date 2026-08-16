@@ -3,19 +3,30 @@ import { Modal } from "@/components/client/Modal";
 import { Label } from "@/components/ui/label";
 import { useT } from "@/hooks/useT";
 import { makeSub } from "@/lib/subtasks";
-import type { SubTask, Task, TaskPatch } from "@/lib/types";
+import type { Project, Status, SubTask, Task, TaskPatch } from "@/lib/types";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
 
 export interface TaskEditModalProps {
-  task: Task | SubTask;
+  task?: Task | SubTask;
   isSub?: boolean;
-  onSubmit: (patch: TaskPatch) => void;
+  status?: Status;
+  projetos?: Project[];
+  onSubmit: (patch: TaskPatch, pid?: string) => void;
   onCancel: () => void;
 }
 
-export function TaskEditModal({ task, isSub, onSubmit, onCancel }: TaskEditModalProps) {
-  const { t } = useT();
-  const [subs, setSubs] = useState<SubTask[]>(task.subs);
+export function TaskEditModal({ task, isSub, status, projetos, onSubmit, onCancel }: TaskEditModalProps) {
+  const { t, status: statusLabel } = useT();
+  const isCreate = status !== undefined;
+  const [subs, setSubs] = useState<SubTask[]>(task?.subs ?? []);
   const [newSub, setNewSub] = useState("");
+  const [pid, setPid] = useState<string | null>(projetos?.[0]?.id ?? null);
 
   const addSub = () => {
     const text = newSub.trim();
@@ -29,37 +40,72 @@ export function TaskEditModal({ task, isSub, onSubmit, onCancel }: TaskEditModal
 
   const removeSub = (id: string) => setSubs((prev) => prev.filter((s) => s.id !== id));
   const submit = (v: Record<string, string | boolean>) => {
-    onSubmit({
-      text: String(v.text).trim(),
-      note: String(v.note).trim(),
-      blocked: Boolean(v.blocked),
-      prio: (Number(v.prio) || 3) as Task["prio"],
-      due: String(v.due ?? ""),
-      subs,
-    });
+    onSubmit(
+      {
+        text: String(v.text).trim(),
+        note: String(v.note).trim(),
+        blocked: Boolean(v.blocked),
+        prio: (Number(v.prio) || 3) as Task["prio"],
+        due: String(v.due ?? ""),
+        subs,
+      },
+      pid ?? undefined,
+    );
   };
 
   return (
     <Modal
-      title={t(isSub ? "editar sub-tarefa" : "editar tarefa")}
+      title={t(isCreate ? "nova tarefa" : isSub ? "editar sub-tarefa" : "editar tarefa")}
       submitLabel={t("salvar")}
       fields={[
-        { key: "text", label: t("tarefa"), value: task.text },
+        { key: "text", label: t("tarefa"), value: task?.text ?? "" },
         {
           key: "prio",
           label: t("prioridade"),
           type: "select",
-          value: task.prio,
+          value: task?.prio ?? 3,
           options: [
             { value: 1, label: t("P1 — urgente") },
             { value: 2, label: t("P2 — em breve") },
             { value: 3, label: t("P3 — normal") },
           ],
         },
-        { key: "due", label: t("vencimento"), type: "date", value: task.due },
-        { key: "note", label: t("nota"), type: "textarea", value: task.note, placeholder: t("detalhe opcional…") },
-        { key: "blocked", label: t("marcar como bloqueada / stuck"), type: "checkbox", value: task.blocked },
+        { key: "due", label: t("vencimento"), type: "date", value: task?.due ?? "" },
+        { key: "note", label: t("nota"), type: "textarea", value: task?.note ?? "", placeholder: t("detalhe opcional…") },
+        { key: "blocked", label: t("marcar como bloqueada / stuck"), type: "checkbox", value: task?.blocked ?? false },
       ]}
+      topChildren={
+        isCreate ? (
+          <>
+            <div>
+              <Label className="mb-1.5 block text-[11px] font-semibold uppercase tracking-wider text-[var(--muted-text)]">
+                {t("status")}
+              </Label>
+              <div className="text-xs text-[var(--text)]">{statusLabel(status)}</div>
+            </div>
+            <div>
+              <Label className="mb-1.5 block text-[11px] font-semibold uppercase tracking-wider text-[var(--muted-text)]">
+                {t("projeto")}
+              </Label>
+              <Select value={pid} onValueChange={setPid} disabled={!projetos?.length}>
+                <SelectTrigger
+                  aria-label={t("projeto")}
+                  className="w-full border-[var(--line)] bg-[var(--field)] px-2 text-xs text-[var(--text)] hover:border-[var(--muted-text)]"
+                >
+                  <SelectValue>{projetos?.find((p) => p.id === pid)?.title ?? t("projeto")}</SelectValue>
+                </SelectTrigger>
+                <SelectContent>
+                  {(projetos ?? []).map((p) => (
+                    <SelectItem key={p.id} value={p.id} className="py-1 text-xs">
+                      {p.title}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            </div>
+          </>
+        ) : undefined
+      }
       onSubmit={submit}
       onCancel={onCancel}
     >

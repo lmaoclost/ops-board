@@ -34,6 +34,7 @@ export default function Home() {
   const renameSection = useBoard((s) => s.renameSection);
   const deleteSection = useBoard((s) => s.deleteSection);
   const addTask = useBoard((s) => s.addTask);
+  const addTaskFull = useBoard((s) => s.addTaskFull);
   const editTask = useBoard((s) => s.editTask);
   const deleteTask = useBoard((s) => s.deleteTask);
   const setTaskStatus = useBoard((s) => s.setTaskStatus);
@@ -235,6 +236,7 @@ export default function Home() {
           sectionActions={{
             onToggle: (pid, sid) => toggleSection(pid, sid),
             onAddTask: (pid, sid, text) => addTask(pid, sid, text),
+            onAddTaskFull: (pid, sid, input) => addTaskFull(pid, sid, input),
             onRename: (pid, sid, title) => renameSection(pid, sid, title),
             onDelete: (pid, sid) => deleteSection(pid, sid),
           }}
