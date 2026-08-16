@@ -121,3 +121,20 @@ test("Enter no ⋯ da seção não colapsa a seção", async ({ page }) => {
   await expect(page.getByRole("menuitem", { name: "renomear seção" })).toBeVisible();
   await expect(page.getByLabel("nova tarefa")).toHaveCount(1);
 });
+
+test("kanban: cria card direto na coluna a fazer", async ({ page }) => {
+  await page.goto("/");
+  await createProject(page, "app");
+
+  await page.getByRole("button", { name: "kanban" }).click();
+
+  const input = page.getByLabel("nova tarefa").first();
+  await input.fill("nova card");
+  await input.press("Enter");
+
+  const card = page.getByTestId("kanban-task").filter({ hasText: "nova card" });
+  await expect(card).toBeVisible();
+
+  await page.getByRole("button", { name: "lista" }).click();
+  await expect(page.getByText("nova card", { exact: true })).toBeVisible();
+});
