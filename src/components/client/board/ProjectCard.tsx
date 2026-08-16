@@ -51,7 +51,7 @@ export function ProjectCard({ project, collectActions, onAddSection, onRename, o
   const submitProject = (v: Record<string, string | boolean>) => {
     setModal(null);
     if (!String(v.title).trim()) return;
-    onRename(project.id, String(v.title).trim(), project.blocked, String(v.due ?? ""));
+onRename(project.id, String(v.title).trim(), project.blocked, String(v.due ?? ""));
   };
 
   const submitSection = (v: Record<string, string | boolean>) => {
