@@ -1,4 +1,29 @@
 import type { Project, Status } from "@/lib/types";
+import { rectIntersection, type CollisionDetection, type Collision } from "@dnd-kit/core";
+
+function containsPoint(rect: { left: number; top: number; right: number; bottom: number }, x: number, y: number): boolean {
+  return x >= rect.left && x <= rect.right && y >= rect.top && y <= rect.bottom;
+}
+
+export const smartCollision: CollisionDetection = (args) => {
+  const base = rectIntersection(args);
+  const { pointerCoordinates, droppableRects } = args;
+  if (!pointerCoordinates) return base;
+  const containing = base
+    .map((c): Collision & { area: number } => {
+      const rect = droppableRects.get(c.id);
+      return { ...c, area: rect ? rect.width * rect.height : Infinity };
+    })
+    .filter((c) => {
+      const rect = droppableRects.get(c.id);
+      return rect != null && containsPoint(rect, pointerCoordinates.x, pointerCoordinates.y);
+    })
+    .sort((a, b) => a.area - b.area);
+  if (containing.length > 0) {
+    return containing.map((c) => ({ id: c.id, data: c.data }));
+  }
+  return base;
+};
 
 export interface OverInfo {
   overIdx: number;

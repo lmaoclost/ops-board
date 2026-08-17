@@ -113,3 +113,22 @@ test("kanban: move tarefa entre colunas (todo → em andamento)", async ({ page 
   await expect(page.getByText("a fazer 0", { exact: true })).toBeVisible();
   await expect(page.getByText("na fila", { exact: true })).toBeVisible();
 });
+test("reordena tarefa dentro da coluna do kanban", async ({ page }) => {
+  await page.goto("/");
+  await createProject(page, "app");
+  await addTask(page, "primeira");
+  await addTask(page, "segunda");
+  await addTask(page, "terceira");
+
+  await page.getByRole("button", { name: "kanban" }).click();
+  const cards = page.getByTestId("kanban-task");
+  await expect(cards).toHaveCount(3);
+  await expect(cards.nth(0)).toContainText("primeira");
+  await expect(cards.nth(2)).toContainText("terceira");
+
+  await drag(page, cards.nth(0), cards.nth(1));
+
+  await expect(cards.nth(0)).toContainText("segunda");
+  await expect(cards.nth(1)).toContainText("primeira");
+  await expect(cards.nth(2)).toContainText("terceira");
+});

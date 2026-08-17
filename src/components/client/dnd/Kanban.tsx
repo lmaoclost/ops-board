@@ -6,6 +6,7 @@ import { useT } from "@/hooks/useT";
 import { isDueSoon, isOverdue, fmtDate } from "@/lib/date";
 import { PRIO_CLS, PRIO_KEYS, STATUS_ORDER, type AddTaskInput, type Project, type Status, type Task, type TaskPatch } from "@/lib/types";
 import { TaskEditModal } from "@/components/client/board/TaskEditModal";
+import { NEXT_PRIO } from "@/components/client/board/TaskRow";
 
 interface FlatTask {
   task: Project["sections"][number]["tasks"][number];
@@ -19,6 +20,7 @@ interface KanbanProps {
   projetos: Project[];
   prioSort?: boolean;
   onEditTask: (pid: string, sid: string, tid: string, patch: TaskPatch) => void;
+  onDeleteTask: (pid: string, sid: string, tid: string) => void;
   onAddTask: (pid: string, sid: string, input: AddTaskInput) => void;
 }
 
@@ -28,15 +30,31 @@ function flatTasks(projetos: Project[]): FlatTask[] {
   );
 }
 
-function KanbanTask({ item, onEdit }: { item: FlatTask; onEdit: () => void }) {
+function KanbanTask({
+  item,
+  onEdit,
+  onUpdate,
+  onDelete,
+}: {
+  item: FlatTask;
+  onEdit: () => void;
+  onUpdate: (patch: TaskPatch) => void;
+  onDelete: () => void;
+}) {
   const { t } = useT();
   const { attributes, listeners, setNodeRef, transform, isDragging } = useDraggable({ id: `task:${item.task.id}` });
+  const { setNodeRef: setCardDropRef } = useDroppable({ id: `task:${item.task.id}` });
+  const setRefs = (el: HTMLDivElement | null) => {
+    setNodeRef(el);
+    setCardDropRef(el);
+  };
   const start = useRef<{ x: number; y: number } | null>(null);
   const overdue = isOverdue(item.task.due, item.task.status);
   const dueSoon = isDueSoon(item.task.due, item.task.status);
+  const onInteractive = (e: { target: EventTarget }) => (e.target as HTMLElement).closest("button") != null;
   return (
     <div
-      ref={setNodeRef}
+      ref={setRefs}
       style={{ transform: CSS.Translate.toString(transform) }}
       className={`cursor-grab rounded-md border border-[var(--line)] bg-[var(--panel-2)] px-2.5 py-1.5 text-xs hover:bg-[var(--panel-3)] ${isDragging ? "opacity-90 shadow-lg ring-2 ring-[var(--fired)]/70 z-10" : ""}`}
       data-testid="kanban-task"
@@ -46,6 +64,7 @@ function KanbanTask({ item, onEdit }: { item: FlatTask; onEdit: () => void }) {
         start.current = { x: e.clientX, y: e.clientY };
       }}
       onClick={(e) => {
+        if (onInteractive(e)) return;
         const s = start.current;
         start.current = null;
         if (!s) {
@@ -56,6 +75,7 @@ function KanbanTask({ item, onEdit }: { item: FlatTask; onEdit: () => void }) {
         if (!moved) onEdit();
       }}
       onKeyDown={(e) => {
+        if (onInteractive(e)) return;
         if (e.key === "Enter" || e.key === " ") {
           e.preventDefault();
           onEdit();
@@ -74,9 +94,18 @@ function KanbanTask({ item, onEdit }: { item: FlatTask; onEdit: () => void }) {
             {item.ptitle} · {item.stitle}
           </span>
         </span>
-        <span className={`shrink-0 rounded border px-1 py-0.5 text-[9px] font-bold ${PRIO_CLS[item.task.prio]}`}>
+        <button
+          type="button"
+          onClick={(e) => {
+            e.stopPropagation();
+            onUpdate({ prio: NEXT_PRIO[item.task.prio] });
+          }}
+          aria-label={t("prioridade: clique pra mudar")}
+          title={t("prioridade: clique pra mudar")}
+          className={`shrink-0 rounded border px-1 py-0.5 text-[9px] font-bold ${PRIO_CLS[item.task.prio]}`}
+        >
           {PRIO_KEYS[item.task.prio]}
-        </span>
+        </button>
         {item.task.subs.length > 0 && (
           <span
             className="shrink-0 rounded border border-[var(--line-soft)] px-1 py-0.5 text-[9px] text-[var(--dim)]"
@@ -86,6 +115,18 @@ function KanbanTask({ item, onEdit }: { item: FlatTask; onEdit: () => void }) {
             {item.task.subs.filter((s) => s.status === "done").length}/{item.task.subs.length}
           </span>
         )}
+        <button
+          type="button"
+          onClick={(e) => {
+            e.stopPropagation();
+            onDelete();
+          }}
+          title="excluir"
+          aria-label="excluir"
+          className="shrink-0 rounded px-1 text-xs leading-none text-[var(--dimmer)] opacity-0 transition-opacity group-hover:opacity-100 focus-visible:opacity-100 hover:text-[var(--fired)]"
+        >
+          ×
+        </button>
       </div>
       <div className="mt-1 flex items-center gap-1.5">
         {item.task.blocked && (
@@ -115,12 +156,16 @@ function DroppableCol({
   status,
   items,
   onEdit,
+  onUpdate,
+  onDelete,
   onCreate,
   empty,
 }: {
   status: Status;
   items: FlatTask[];
   onEdit: (item: FlatTask) => void;
+  onUpdate: (item: FlatTask, patch: TaskPatch) => void;
+  onDelete: (item: FlatTask) => void;
   onCreate: () => void;
   empty: boolean;
 }) {
@@ -147,7 +192,13 @@ function DroppableCol({
       </header>
       <div className={`flex flex-col gap-1 px-2 pb-2 ${empty ? "" : "pt-1"}`}>
         {items.map((item) => (
-          <KanbanTask key={item.task.id} item={item} onEdit={() => onEdit(item)} />
+          <KanbanTask
+            key={item.task.id}
+            item={item}
+            onEdit={() => onEdit(item)}
+            onUpdate={(patch) => onUpdate(item, patch)}
+            onDelete={() => onDelete(item)}
+          />
         ))}
       </div>
     </div>
@@ -166,7 +217,7 @@ const emptyTask: Task = {
   subs: [],
 };
 
-export function Kanban({ projetos, prioSort, onEditTask, onAddTask }: KanbanProps) {
+export function Kanban({ projetos, prioSort, onEditTask, onDeleteTask, onAddTask }: KanbanProps) {
   const { t } = useT();
   const [editing, setEditing] = useState<FlatTask | null>(null);
   const [creating, setCreating] = useState<Status | null>(null);
@@ -193,6 +244,8 @@ export function Kanban({ projetos, prioSort, onEditTask, onAddTask }: KanbanProp
             status={status}
             items={items}
             onEdit={setEditing}
+            onUpdate={(item, patch) => onEditTask(item.pid, item.sid, item.task.id, patch)}
+            onDelete={(item) => onDeleteTask(item.pid, item.sid, item.task.id)}
             onCreate={() => {
               if (available.length) setCreating(status);
             }}

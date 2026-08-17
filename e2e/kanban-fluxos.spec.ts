@@ -192,3 +192,28 @@ test("kanban: modal de criação permite escolher o projeto", async ({ page }) =
   const card = page.getByTestId("kanban-task").filter({ hasText: "no web" });
   await expect(card).toContainText("web · geral");
 });
+
+test("kanban: × no hover exclui o card", async ({ page }) => {
+  await page.goto("/");
+  await createProject(page, "app");
+  await addTask(page, "descartável");
+
+  await page.getByRole("button", { name: "kanban" }).click();
+  const card = page.getByTestId("kanban-task").filter({ hasText: "descartável" });
+  await card.getByRole("button", { name: "excluir" }).click();
+  await expect(card).toHaveCount(0);
+  await expect(page.getByText("descartável")).toHaveCount(0);
+});
+
+test("kanban: prio cicla no badge do card", async ({ page }) => {
+  await page.goto("/");
+  await createProject(page, "app");
+  await addTask(page, "ciclar");
+
+  await page.getByRole("button", { name: "kanban" }).click();
+  const card = page.getByTestId("kanban-task").filter({ hasText: "ciclar" });
+  await expect(card.getByText("P3", { exact: true })).toBeVisible();
+  await card.getByRole("button", { name: "prioridade: clique pra mudar" }).click();
+  await expect(card.getByText("P1", { exact: true })).toBeVisible();
+  await expect(page.getByRole("dialog", { name: "editar tarefa" })).toHaveCount(0);
+});
