@@ -1,8 +1,8 @@
-import { DndContext, PointerSensor, TouchSensor, rectIntersection, useSensor, useSensors, type DragEndEvent } from "@dnd-kit/core";
+import { DndContext, PointerSensor, TouchSensor, useSensor, useSensors, type DragEndEvent } from "@dnd-kit/core";
 import { useMemo } from "react";
 import { useT } from "@/hooks/useT";
 import { isFiltering, prioSort, projMatches, type Filters } from "@/lib/filter";
-import { resolveDrop } from "@/lib/dnd";
+import { resolveDrop, smartCollision } from "@/lib/dnd";
 import type { AddTaskInput, Project, Status, TaskPatch } from "@/lib/types";
 import { ProjectCard } from "./ProjectCard";
 import { Kanban } from "@/components/client/dnd/Kanban";
@@ -137,6 +137,7 @@ export function Board({ projetos, filters, onNewProject, onClearFilters, project
         projetos={filtered}
         prioSort={filters.prioSort}
         onEditTask={(pid, sid, tid, patch) => taskActions.onEdit(pid, sid, tid, patch)}
+        onDeleteTask={(pid, sid, tid) => taskActions.onDelete(pid, sid, tid)}
         onAddTask={(pid, sid, input) => sectionActions.onAddTaskFull(pid, sid, input)}
       />
     );
@@ -163,7 +164,7 @@ export function Board({ projetos, filters, onNewProject, onClearFilters, project
   }
 
   return (
-    <DndContext sensors={sensors} collisionDetection={rectIntersection} onDragEnd={handleDragEnd}>
+    <DndContext sensors={sensors} collisionDetection={smartCollision} onDragEnd={handleDragEnd}>
       {content}
     </DndContext>
   );

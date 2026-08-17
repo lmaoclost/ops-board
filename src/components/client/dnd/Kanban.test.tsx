@@ -25,11 +25,17 @@ const projeto = (over: Partial<Project> = {}): Project => ({
   ...over,
 });
 
-const renderKanban = (props: { projetos?: Project[]; onEditTask?: (pid: string, sid: string, tid: string, patch: TaskPatch) => void; onAddTask?: (pid: string, sid: string, input: AddTaskInput) => void } = {}) =>
+const renderKanban = (props: {
+  projetos?: Project[];
+  onEditTask?: (pid: string, sid: string, tid: string, patch: TaskPatch) => void;
+  onDeleteTask?: (pid: string, sid: string, tid: string) => void;
+  onAddTask?: (pid: string, sid: string, input: AddTaskInput) => void;
+} = {}) =>
   render(
     <Kanban
       projetos={props.projetos ?? [projeto()]}
       onEditTask={props.onEditTask ?? (() => {})}
+      onDeleteTask={props.onDeleteTask ?? (() => {})}
       onAddTask={props.onAddTask ?? (() => {})}
     />,
   );
@@ -187,5 +193,35 @@ it("title do card é o texto da tarefa", () => {
       "s2",
       expect.objectContaining({ text: "na fila", status: "todo" }),
     );
+  });
+
+  it("× no card chama onDeleteTask sem abrir o modal", () => {
+    const onDeleteTask = vi.fn();
+    renderKanban({ onDeleteTask });
+    const card = screen.getByRole("button", { name: /editar tarefa correr pra base/ });
+    fireEvent.click(within(card).getByRole("button", { name: "excluir" }));
+    expect(onDeleteTask).toHaveBeenCalledWith("p1", "s1", "t1");
+    expect(screen.queryByText("editar tarefa")).toBeNull();
+  });
+
+  it("clique no badge de prioridade cicla prio via onEditTask sem abrir modal", () => {
+    const onEditTask = vi.fn();
+    renderKanban({
+      onEditTask,
+      projetos: [projeto({ sections: [{ ...projeto().sections[0], tasks: [
+        { ...projeto().sections[0].tasks[0], prio: 1 },
+      ] }] })],
+    });
+    const card = screen.getByRole("button", { name: /editar tarefa correr pra base/ });
+    fireEvent.click(within(card).getByRole("button", { name: "prioridade: clique pra mudar" }));
+    expect(onEditTask).toHaveBeenCalledWith("p1", "s1", "t1", { prio: 2 });
+    expect(screen.queryByText("editar tarefa")).toBeNull();
+  });
+
+  it("teclado no botão excluir não abre o modal", () => {
+    renderKanban({});
+    const card = screen.getByRole("button", { name: /editar tarefa correr pra base/ });
+    fireEvent.keyDown(within(card).getByRole("button", { name: "excluir" }), { key: "Enter" });
+    expect(screen.queryByText("editar tarefa")).toBeNull();
   });
 });

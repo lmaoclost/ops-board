@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { applyStatusDrop, insertIndex, resolveDrop } from "./dnd";
+import { applyStatusDrop, insertIndex, resolveDrop, smartCollision } from "./dnd";
 import type { Project } from "./types";
 
 const projeto = (over: Partial<Project> = {}): Project => ({
@@ -119,6 +119,43 @@ describe("insertIndex", () => {
   it("retorna o índice do alvo (remoção já aplicada)", () => {
     expect(insertIndex({ overIdx: 3 })).toBe(3);
     expect(insertIndex({ overIdx: 0 })).toBe(0);
+  });
+});
+
+describe("smartCollision", () => {
+  const rect = (left: number, top: number, width: number, height: number) => ({ left, top, right: left + width, bottom: top + height, width, height });
+
+  it("prioriza o menor rect que contém o pointer (card vence a coluna)", () => {
+    const cols = new Map<string, ReturnType<typeof rect>>();
+    const coluna = rect(0, 0, 300, 500);
+    const card = rect(10, 10, 280, 60);
+    cols.set("k:todo", coluna);
+    cols.set("task:t2", card);
+    const pointerCoordinates = { x: 50, y: 30 };
+    const collisions = smartCollision({
+      droppableRects: cols,
+      droppableContainers: [{ id: "k:todo" }, { id: "task:t2" }] as never,
+      collisionRect: card,
+      pointerCoordinates,
+      active: { id: "task:t1", data: { current: undefined } } as never,
+    });
+    expect(collisions[0].id).toBe("task:t2");
+  });
+
+  it("sem pointer no rect, mantém o comportamento do rectIntersection", () => {
+    const cols = new Map<string, ReturnType<typeof rect>>();
+    const coluna = rect(0, 0, 300, 500);
+    const card = rect(10, 10, 280, 60);
+    cols.set("k:todo", coluna);
+    cols.set("task:t2", card);
+    const collisions = smartCollision({
+      droppableRects: cols,
+      droppableContainers: [{ id: "k:todo" }, { id: "task:t2" }] as never,
+      collisionRect: rect(0, 0, 300, 500),
+      pointerCoordinates: { x: 10, y: 400 },
+      active: { id: "task:t1", data: { current: undefined } } as never,
+    });
+    expect(collisions[0].id).toBe("k:todo");
   });
 });
 
