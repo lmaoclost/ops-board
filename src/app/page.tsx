@@ -14,6 +14,8 @@ import { celebrate, wasTransitionedToDone } from "@/lib/celebrate";
 import { exportJson, parseImport } from "@/lib/io";
 import { deriveStats } from "@/lib/selectors";
 import { visibleProjetos } from "@/lib/filter";
+import { todayISO } from "@/lib/date";
+import { dueReminder } from "@/lib/notify";
 import { useBoard, setStorageErrorHandler } from "@/lib/store";
 import type { Prio, Status } from "@/lib/types";
 import { Dialog, DialogClose, DialogContent, DialogTitle } from "@/components/ui/dialog";
@@ -65,6 +67,27 @@ export default function Home() {
     if (toastTimer.current) clearTimeout(toastTimer.current);
     toastTimer.current = setTimeout(() => setToast(null), 2500);
   }, []);
+
+const notifiedRef = useRef(false);
+
+  useEffect(() => {
+    if (notifiedRef.current || typeof Notification === "undefined") return;
+    const reminder = dueReminder(projetos, todayISO());
+    if (!reminder) return;
+    notifiedRef.current = true;
+    const fire = () =>
+      new Notification(
+        `${reminder.count} ${reminder.count === 1 ? t("tarefa pendente") : t("tarefas pendentes")}`,
+        { body: reminder.texts.join(" · ") + (reminder.count > 3 ? "…" : "") },
+      );
+    if (Notification.permission === "granted") {
+      fire();
+    } else if (Notification.permission === "default") {
+      void Notification.requestPermission().then((p) => {
+        if (p === "granted") fire();
+      });
+    }
+  }, [projetos, t]);
 
   useEffect(() => {
     setStorageErrorHandler(() => showToast(t("armazenamento cheio: alterações podem não ser salvas")));
