@@ -132,6 +132,22 @@ it("clique no card abre o modal de edição e submit chama onEditTask", () => {
     expect(screen.getByLabelText("sub-tarefas 1/2")).toBeTruthy();
   });
 
+  it("contador de subs abre o modal com foco na seção de sub-tarefas", () => {
+    const onEditTask = vi.fn();
+    renderKanban({
+      onEditTask,
+      projetos: [projeto({ sections: [{ ...projeto().sections[0], tasks: [
+        { ...projeto().sections[0].tasks[0], subs: [
+          { id: "s1", text: "a", note: "", prio: 3, due: "", status: "done", blocked: false, subs: [] },
+        ] },
+      ] }] })],
+    });
+    fireEvent.click(screen.getByRole("button", { name: "sub-tarefas 1/1" }));
+    expect(screen.getByRole("dialog", { name: "editar tarefa" })).toBeTruthy();
+    expect(screen.getByTestId("subs-section")).toHaveAttribute("data-focus", "");
+    expect(onEditTask).not.toHaveBeenCalled();
+  });
+
   it("adiciona e alterna sub-tarefa no modal e salva com subs", () => {
     const onEditTask = vi.fn();
     renderKanban({ onEditTask });

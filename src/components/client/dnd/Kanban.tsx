@@ -35,11 +35,13 @@ function KanbanTask({
   onEdit,
   onUpdate,
   onDelete,
+  onSubs,
 }: {
   item: FlatTask;
   onEdit: () => void;
   onUpdate: (patch: TaskPatch) => void;
   onDelete: () => void;
+  onSubs: () => void;
 }) {
   const { t } = useT();
   const { attributes, listeners, setNodeRef, transform, isDragging } = useDraggable({ id: `task:${item.task.id}` });
@@ -107,13 +109,18 @@ function KanbanTask({
           {PRIO_KEYS[item.task.prio]}
         </button>
         {item.task.subs.length > 0 && (
-          <span
-            className="shrink-0 rounded border border-[var(--line-soft)] px-1 py-0.5 text-[9px] text-[var(--dim)]"
+          <button
+            type="button"
+            onClick={(e) => {
+              e.stopPropagation();
+              onSubs();
+            }}
             title={`${item.task.subs.filter((s) => s.status === "done").length}/${item.task.subs.length} sub-tarefas concluídas`}
             aria-label={`sub-tarefas ${item.task.subs.filter((s) => s.status === "done").length}/${item.task.subs.length}`}
+            className="shrink-0 rounded border border-[var(--line-soft)] px-1 py-0.5 text-[9px] text-[var(--dim)] transition-colors hover:border-[var(--muted-text)] hover:text-[var(--text)]"
           >
             {item.task.subs.filter((s) => s.status === "done").length}/{item.task.subs.length}
-          </span>
+          </button>
         )}
         <button
           type="button"
@@ -158,6 +165,7 @@ function DroppableCol({
   onEdit,
   onUpdate,
   onDelete,
+  onSubs,
   onCreate,
   empty,
 }: {
@@ -166,6 +174,7 @@ function DroppableCol({
   onEdit: (item: FlatTask) => void;
   onUpdate: (item: FlatTask, patch: TaskPatch) => void;
   onDelete: (item: FlatTask) => void;
+  onSubs: (item: FlatTask) => void;
   onCreate: () => void;
   empty: boolean;
 }) {
@@ -198,6 +207,7 @@ function DroppableCol({
             onEdit={() => onEdit(item)}
             onUpdate={(patch) => onUpdate(item, patch)}
             onDelete={() => onDelete(item)}
+            onSubs={() => onSubs(item)}
           />
         ))}
       </div>
@@ -221,6 +231,7 @@ export function Kanban({ projetos, prioSort, onEditTask, onDeleteTask, onAddTask
   const { t } = useT();
   const [editing, setEditing] = useState<FlatTask | null>(null);
   const [creating, setCreating] = useState<Status | null>(null);
+  const [focusSubs, setFocusSubs] = useState(false);
 
   if (!projetos.length) {
     return (
@@ -244,6 +255,10 @@ export function Kanban({ projetos, prioSort, onEditTask, onDeleteTask, onAddTask
             status={status}
             items={items}
             onEdit={setEditing}
+            onSubs={(item) => {
+              setEditing(item);
+              setFocusSubs(true);
+            }}
             onUpdate={(item, patch) => onEditTask(item.pid, item.sid, item.task.id, patch)}
             onDelete={(item) => onDeleteTask(item.pid, item.sid, item.task.id)}
             onCreate={() => {
@@ -256,11 +271,16 @@ export function Kanban({ projetos, prioSort, onEditTask, onDeleteTask, onAddTask
       {editing && (
         <TaskEditModal
           task={editing.task}
+          focusSubs={focusSubs}
           onSubmit={(patch) => {
             onEditTask(editing.pid, editing.sid, editing.task.id, patch);
             setEditing(null);
+            setFocusSubs(false);
           }}
-          onCancel={() => setEditing(null)}
+          onCancel={() => {
+            setEditing(null);
+            setFocusSubs(false);
+          }}
         />
       )}
       {creating && (
