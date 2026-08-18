@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { CircleSlashIcon, SaveIcon } from "lucide-react";
+import { CircleSlashIcon } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { useT } from "@/hooks/useT";
 import { Button } from "@/components/ui/button";
@@ -25,8 +25,6 @@ export interface TaskRowProps {
   onEdit: () => void;
   onDelete: () => void;
   onUpdate: (patch: TaskPatch) => void;
-  onSaveTemplate: () => void;
-  blockedByText?: string;
 }
 
 export const NEXT_PRIO: Record<Prio, Prio> = { 1: 2, 2: 3, 3: 1 };
@@ -191,7 +189,7 @@ function SubRow({
   );
 }
 
-export function TaskRow({ task, onToggle, onPrioCycle, onStatusChange, onEdit, onDelete, onUpdate, onSaveTemplate, blockedByText }: TaskRowProps) {
+export function TaskRow({ task, onToggle, onPrioCycle, onStatusChange, onEdit, onDelete, onUpdate }: TaskRowProps) {
   const { t, status } = useT();
   const [addingSub, setAddingSub] = useState(false);
   const [subDraft, setSubDraft] = useState("");
@@ -267,24 +265,11 @@ export function TaskRow({ task, onToggle, onPrioCycle, onStatusChange, onEdit, o
                 ↻ {t(task.repeat)}
               </span>
             )}
-            {(task.tags ?? []).map((tag) => (
-              <span
-                key={tag}
-                className="shrink-0 rounded border border-[var(--line-soft)] bg-[var(--field)] px-1 py-0.5 text-[10px] text-[var(--dim)]"
-              >
-                #{tag}
-              </span>
-            ))}
           </span>
         )}
         {task.blocked && (
           <Badge variant="destructive" className="rounded-[4px] px-1.5 text-[11px] font-bold uppercase tracking-[0.08em]">
             bloqueada
-          </Badge>
-        )}
-        {blockedByText && (
-          <Badge variant="outline" className="rounded-[4px] px-1.5 text-[11px] font-bold" title={t("bloqueada por X").replace("X", blockedByText)}>
-            ⛓ {t("bloqueada por X").replace("X", blockedByText)}
           </Badge>
         )}
         <Tooltip>
@@ -350,17 +335,6 @@ export function TaskRow({ task, onToggle, onPrioCycle, onStatusChange, onEdit, o
         </Button>
         <Button type="button" variant="ghost" size="icon-xs" onClick={onEdit} title={t("editar")} aria-label={t("editar")}>
           ✎
-        </Button>
-        <Button
-          type="button"
-          variant="ghost"
-          size="icon-xs"
-          onClick={onSaveTemplate}
-          title={t("salvar como template")}
-          aria-label={t("salvar como template")}
-          className="text-[var(--dimmer)] opacity-0 transition-opacity group-hover:opacity-100 focus-visible:opacity-100 hover:text-[var(--text)]"
-        >
-          <SaveIcon />
         </Button>
         <Button
           type="button"

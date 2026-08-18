@@ -37,7 +37,6 @@ const renderKanban = (props: {
       onEditTask={props.onEditTask ?? (() => {})}
       onDeleteTask={props.onDeleteTask ?? (() => {})}
       onAddTask={props.onAddTask ?? (() => {})}
-      onSaveTemplateTask={() => {}}
     />,
   );
 

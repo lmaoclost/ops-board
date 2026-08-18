@@ -12,8 +12,7 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import { isDueSoon, isOverdue, fmtDate } from "@/lib/date";
-import { PRIO_CLS, PRIO_KEYS, type Project, type Status, type Task, type TaskPatch, type TaskTemplate } from "@/lib/types";
-import { blockedBy } from "@/lib/deps";
+import { PRIO_CLS, PRIO_KEYS, type Project } from "@/lib/types";
 import { Section, type SectionTaskActions as SectionLevelTaskActions } from "./Section";
 import type { SectionLevelActions, TaskLevelActions } from "./Board";
 import type { Filters } from "@/lib/filter";
@@ -30,10 +29,6 @@ export interface ProjectCardProps {
     sectionActions: SectionLevelActions;
     taskActions: TaskLevelActions;
   };
-  templates: TaskTemplate[];
-  projectTasks: Task[];
-  onInsertTemplate: (sid: string, tpl: TaskTemplate) => void;
-  onDeleteTemplate: (id: string) => void;
   onAddSection: (title: string) => void;
   onRename: (id: string, title: string, blocked: boolean, due?: string) => void;
   onDelete: (id: string) => void;
@@ -49,7 +44,7 @@ type ModalState =
   | { kind: "add-section" }
   | null;
 
-export function ProjectCard({ project, collectActions, templates, projectTasks, onInsertTemplate, onDeleteTemplate, onAddSection, onRename, onDelete, onToggleArchive, onCyclePrio, onToggleCollapse, prioSort, filters }: ProjectCardProps) {
+export function ProjectCard({ project, collectActions, onAddSection, onRename, onDelete, onToggleArchive, onCyclePrio, onToggleCollapse, prioSort, filters }: ProjectCardProps) {
   const { t } = useT();
   const [modal, setModal] = useState<ModalState>(null);
   const actions = collectActions(project.id);
@@ -167,17 +162,12 @@ onRename(project.id, String(v.title).trim(), project.blocked, String(v.due ?? ""
           onEdit: (tid, patch) => actions.taskActions.onEdit(s.id, tid, patch),
           onDelete: (tid) => actions.taskActions.onDelete(s.id, tid),
           onUpdate: (tid, patch) => actions.taskActions.onUpdate(s.id, tid, patch),
-          onSaveTemplate: (tid) => actions.taskActions.onSaveTemplate(s.id, tid),
         };
         return (
           <Section
             key={s.id}
             projectId={project.id}
             section={s}
-            templates={templates}
-            projectTasks={projectTasks}
-            onInsertTemplate={(tpl) => onInsertTemplate(s.id, tpl)}
-            onDeleteTemplate={onDeleteTemplate}
             onToggleSection={() => actions.sectionActions.onToggle(s.id)}
             onAddTask={(text) => actions.sectionActions.onAddTask(s.id, text)}
             onRename={(title) => actions.sectionActions.onRename(s.id, title)}

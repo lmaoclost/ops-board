@@ -1,10 +1,10 @@
 import { create } from "zustand";
 import { createJSONStorage, persist } from "zustand/middleware";
-import { migrateLegacy, normalizeState, SCHEMA_VERSION } from "./migrate";
+import { migrateLegacy, normalizeState, purgeExpired, SCHEMA_VERSION } from "./migrate";
 import type { Locale } from "./i18n";
 import { nextDue } from "./repeat";
 import { todayISO } from "./date";
-import type { AddTaskInput, Prio, Project, Status, SubTask, Task, TaskPatch, TaskTemplate } from "./types";
+import type { AddTaskInput, Prio, Project, Status, SubTask, Task, TaskPatch } from "./types";
 import { uid } from "./uid";
 
 let storageErrorHandler: (() => void) | null = null;
@@ -27,7 +27,6 @@ const safeLocalStorage = {
 
 interface BoardStore {
   projetos: Project[];
-  templates: TaskTemplate[];
   locale: Locale;
   setLocale: (locale: Locale) => void;
   canUndo: boolean;
@@ -59,9 +58,6 @@ interface BoardStore {
   ) => void;
   reset: () => void;
   importState: (projetos: Project[]) => void;
-  saveTemplate: (t: Task) => void;
-  insertTemplate: (pid: string, sid: string, tpl: TaskTemplate) => void;
-  deleteTemplate: (id: string) => void;
 }
 
 const findProject = (projetos: Project[], pid: string) => projetos.find((p) => p.id === pid);
@@ -99,7 +95,6 @@ export function createBoardStore(initial: Project[] = []) {
         };
         return {
         projetos: initial,
-        templates: [],
         locale: "pt",
         setLocale: (locale) => set({ locale }),
         canUndo: false,
@@ -220,8 +215,6 @@ export function createBoardStore(initial: Project[] = []) {
                                   doneAt: input.status === "done" ? new Date().toISOString() : null,
                                   subs: input.subs ? reconcileSubs(input.subs) : [],
                                   repeat: input.repeat,
-                                  tags: input.tags,
-                                  dependsOn: input.dependsOn,
                                 },
                               ],
                             }
@@ -264,9 +257,7 @@ export function createBoardStore(initial: Project[] = []) {
                                         subs,
                                         status,
                                         repeat: patch.repeat !== undefined ? (patch.repeat ?? undefined) : t.repeat,
-                                        tags: patch.tags ?? t.tags,
                                         deletedAt: patch.deletedAt !== undefined ? patch.deletedAt : t.deletedAt,
-                                        dependsOn: patch.dependsOn ?? t.dependsOn,
                                       };
                                     })()
                                   : t,
@@ -477,44 +468,28 @@ export function createBoardStore(initial: Project[] = []) {
         reset: () => commit(() => set({ projetos: [] })),
 
         importState: (projetos) => commit(() => set({ projetos })),
-
-        saveTemplate: (t) =>
-          commit(() =>
-            set((s) => ({
-              templates: [
-                ...s.templates.filter((x) => x.text !== t.text),
-                { id: uid(), text: t.text, prio: t.prio, note: t.note, subs: t.subs, tags: t.tags, repeat: t.repeat },
-              ],
-            })),
-          ),
-
-        insertTemplate: (pid, sid, tpl) =>
-          get().addTaskFull(pid, sid, {
-            text: tpl.text,
-            status: "todo",
-            note: tpl.note,
-            prio: tpl.prio,
-            subs: tpl.subs,
-            tags: tpl.tags,
-            repeat: tpl.repeat,
-          }),
-
-        deleteTemplate: (id) =>
-          commit(() => set((s) => ({ templates: s.templates.filter((x) => x.id !== id) }))),
       };
       },
       {
         name: "opsboard.v1",
         version: SCHEMA_VERSION,
         storage: createJSONStorage(() => safeLocalStorage),
-        partialize: (s) => ({ projetos: s.projetos, templates: s.templates, locale: s.locale }),
+        partialize: (s) => ({ projetos: s.projetos, locale: s.locale }),
+        merge: (persistedState, currentState) => {
+          const p = persistedState as { projetos?: Project[]; locale?: Locale } | undefined;
+          return {
+            ...currentState,
+            projetos: purgeExpired(Array.isArray(p?.projetos) ? p.projetos : currentState.projetos),
+            locale: p?.locale ?? currentState.locale,
+          };
+        },
         migrate: (persisted, version) => {
           if (version < SCHEMA_VERSION) {
             const legacy = migrateLegacy(persisted);
-            if (legacy) return { ...legacy, locale: "pt" };
+            if (legacy) return { projetos: legacy, locale: "pt" };
           }
           if (persisted && Array.isArray((persisted as { projetos?: unknown }).projetos)) {
-            return { ...normalizeState(persisted), locale: "pt" };
+            return { projetos: normalizeState(persisted), locale: "pt" };
           }
           return { projetos: [], locale: "pt" };
         },

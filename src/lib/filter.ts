@@ -21,11 +21,7 @@ export function matchTask(t: Task, f: Filters): boolean {
   if (f.status && f.status !== "blocked" && t.status !== f.status) return false;
   if (!f.query) return true;
   const q = f.query.toLowerCase();
-  if (q.startsWith("tag:")) {
-    const tag = q.slice(4).trim();
-    return !!tag && (t.tags ?? []).some((x) => x.toLowerCase().includes(tag));
-  }
-  return (t.text + " " + (t.note || "") + " " + (t.tags ?? []).join(" ")).toLowerCase().includes(q);
+  return (t.text + " " + (t.note || "")).toLowerCase().includes(q);
 }
 
 const titleNotesMatch = (s: Section, query: string): boolean =>

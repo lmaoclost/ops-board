@@ -23,10 +23,6 @@ import { Button } from "@/components/ui/button";
 
 export default function Home() {
   const projetos = useBoard((s) => s.projetos);
-  const templates = useBoard((s) => s.templates);
-  const saveTemplate = useBoard((s) => s.saveTemplate);
-  const insertTemplate = useBoard((s) => s.insertTemplate);
-  const deleteTemplate = useBoard((s) => s.deleteTemplate);
   const addProject = useBoard((s) => s.addProject);
   const renameProject = useBoard((s) => s.renameProject);
   const deleteProject = useBoard((s) => s.deleteProject);
@@ -246,7 +242,6 @@ const notifiedRef = useRef(false);
       <main className="mx-auto max-w-5xl px-4 py-6">
         <Board
           projetos={boardProjetos}
-          templates={templates}
           filters={filters}
           onNewProject={() => setNewProjectOpen(true)}
           onClearFilters={clear}
@@ -279,13 +274,6 @@ const notifiedRef = useRef(false);
             onUpdate: (pid, sid, tid, patch) => editTask(pid, sid, tid, patch),
             onMoveTask: (pid, sid, tid, toPid, toSid, index) =>
               moveTask({ pid, sid, tid }, { pid: toPid, sid: toSid }, index),
-            onSaveTemplate: (pid, sid, tid) => {
-              const sec = projetos.find((p) => p.id === pid)?.sections.find((s) => s.id === sid);
-              const task = sec?.tasks.find((t) => t.id === tid);
-              if (task) saveTemplate(task);
-            },
-            onInsertTemplate: (pid, sid, tpl) => insertTemplate(pid, sid, tpl),
-            onDeleteTemplate: (id) => deleteTemplate(id),
           }}
         />
       </main>

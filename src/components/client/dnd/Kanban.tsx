@@ -1,10 +1,8 @@
 import { useRef, useState } from "react";
-import { SaveIcon } from "lucide-react";
 import { useDraggable, useDroppable } from "@dnd-kit/core";
 import { CSS } from "@dnd-kit/utilities";
 import { sortTasks } from "@/lib/filter";
 import { flatTasks, type FlatTask } from "@/lib/flat";
-import { blockedBy } from "@/lib/deps";
 import { useT } from "@/hooks/useT";
 import { isDueSoon, isOverdue, fmtDate } from "@/lib/date";
 import { PRIO_CLS, PRIO_KEYS, STATUS_ORDER, type AddTaskInput, type Project, type Status, type Task, type TaskPatch } from "@/lib/types";
@@ -17,7 +15,6 @@ interface KanbanProps {
   onEditTask: (pid: string, sid: string, tid: string, patch: TaskPatch) => void;
   onDeleteTask: (pid: string, sid: string, tid: string) => void;
   onAddTask: (pid: string, sid: string, input: AddTaskInput) => void;
-  onSaveTemplateTask: (pid: string, sid: string, tid: string) => void;
 }
 
 function KanbanTask({
@@ -26,16 +23,12 @@ function KanbanTask({
   onUpdate,
   onDelete,
   onSubs,
-  onSaveTemplate,
-  blockedByText,
 }: {
   item: FlatTask;
   onEdit: () => void;
   onUpdate: (patch: TaskPatch) => void;
   onDelete: () => void;
   onSubs: () => void;
-  onSaveTemplate: () => void;
-  blockedByText?: string;
 }) {
   const { t } = useT();
   const { attributes, listeners, setNodeRef, transform, isDragging } = useDraggable({ id: `task:${item.task.id}` });
@@ -120,18 +113,6 @@ function KanbanTask({
           type="button"
           onClick={(e) => {
             e.stopPropagation();
-            onSaveTemplate();
-          }}
-          title={t("salvar como template")}
-          aria-label={t("salvar como template")}
-          className="shrink-0 rounded px-1 text-xs leading-none text-[var(--dimmer)] opacity-0 transition-opacity group-hover:opacity-100 focus-visible:opacity-100 hover:text-[var(--text)]"
-        >
-          <SaveIcon className="h-3 w-3" />
-        </button>
-        <button
-          type="button"
-          onClick={(e) => {
-            e.stopPropagation();
             onDelete();
           }}
           title="excluir"
@@ -147,22 +128,9 @@ function KanbanTask({
             ↻ {t(item.task.repeat)}
           </span>
         )}
-        {(item.task.tags ?? []).map((tag) => (
-          <span
-            key={tag}
-            className="rounded border border-[var(--line-soft)] bg-[var(--field)] px-1 py-0.5 text-[9px] text-[var(--dim)]"
-          >
-            #{tag}
-          </span>
-        ))}
         {item.task.blocked && (
           <span className="text-[10px] font-bold uppercase tracking-[0.08em] text-[var(--gave)]" title={t("bloqueada")}>
             ⛔ bloqueada
-          </span>
-        )}
-        {blockedByText && (
-          <span className="text-[10px] font-bold text-[var(--gave)]" title={t("bloqueada por X").replace("X", blockedByText)}>
-            ⛓ {t("bloqueada por X").replace("X", blockedByText)}
           </span>
         )}
         {item.task.due &&
@@ -190,8 +158,6 @@ function DroppableCol({
   onUpdate,
   onDelete,
   onSubs,
-  onSaveTemplate,
-  blockedByTextOf,
   onCreate,
   empty,
 }: {
@@ -201,8 +167,6 @@ function DroppableCol({
   onUpdate: (item: FlatTask, patch: TaskPatch) => void;
   onDelete: (item: FlatTask) => void;
   onSubs: (item: FlatTask) => void;
-  onSaveTemplate: (item: FlatTask) => void;
-  blockedByTextOf: (item: FlatTask) => string | undefined;
   onCreate: () => void;
   empty: boolean;
 }) {
@@ -236,8 +200,6 @@ function DroppableCol({
             onUpdate={(patch) => onUpdate(item, patch)}
             onDelete={() => onDelete(item)}
             onSubs={() => onSubs(item)}
-            onSaveTemplate={() => onSaveTemplate(item)}
-            blockedByText={blockedByTextOf(item)}
           />
         ))}
       </div>
@@ -257,7 +219,7 @@ const emptyTask: Task = {
   subs: [],
 };
 
-export function Kanban({ projetos, prioSort, onEditTask, onDeleteTask, onAddTask, onSaveTemplateTask }: KanbanProps) {
+export function Kanban({ projetos, prioSort, onEditTask, onDeleteTask, onAddTask }: KanbanProps) {
   const { t } = useT();
   const [editing, setEditing] = useState<FlatTask | null>(null);
   const [creating, setCreating] = useState<Status | null>(null);
@@ -274,7 +236,6 @@ export function Kanban({ projetos, prioSort, onEditTask, onDeleteTask, onAddTask
 
   const available = projetos.filter((p) => !p.archived);
   const tasks = sortTasks(flatTasks(projetos), !!prioSort, (i) => i.task.prio);
-  const projectTasks = flatTasks(projetos).map((i) => i.task);
   const grouped = STATUS_ORDER.map((s) => ({ status: s, items: tasks.filter((t) => t.task.status === s) }));
 
   return (
@@ -292,8 +253,6 @@ export function Kanban({ projetos, prioSort, onEditTask, onDeleteTask, onAddTask
             }}
             onUpdate={(item, patch) => onEditTask(item.pid, item.sid, item.task.id, patch)}
             onDelete={(item) => onDeleteTask(item.pid, item.sid, item.task.id)}
-            onSaveTemplate={(item) => onSaveTemplateTask(item.pid, item.sid, item.task.id)}
-            blockedByTextOf={(item) => blockedBy(item.task, projectTasks)?.text}
             onCreate={() => {
               if (available.length) setCreating(status);
             }}
@@ -304,7 +263,6 @@ export function Kanban({ projetos, prioSort, onEditTask, onDeleteTask, onAddTask
       {editing && (
         <TaskEditModal
           task={editing.task}
-          tasks={projectTasks}
           focusSubs={focusSubs}
           onSubmit={(patch) => {
             onEditTask(editing.pid, editing.sid, editing.task.id, patch);
