@@ -16,7 +16,7 @@ interface TopbarProps {
   isDark: boolean;
   onQueryChange: (q: string) => void;
   onClearQuery: () => void;
-  onToggleView: () => void;
+  onViewChange: (v: View) => void;
   onToggleTheme: () => void;
   onNewProject: () => void;
   onExport: () => void;
@@ -35,7 +35,7 @@ export function Topbar({
   isDark,
   onQueryChange,
   onClearQuery,
-  onToggleView,
+  onViewChange,
   onToggleTheme,
   onNewProject,
   onExport,
@@ -107,16 +107,21 @@ export function Topbar({
             >
               {locale === "pt" ? "EN" : "PT"}
             </Button>
-            <Button
-              type="button"
-              variant="ghost"
-              size="xs"
-              onClick={onToggleView}
-              className="text-[var(--muted-text)] hover:text-[var(--text)]"
-              title={t("alternar lista/kanban (k)")}
-            >
-              {view === "list" ? t("kanban") : t("lista")}
-            </Button>
+            <div className="flex items-center gap-0.5 rounded-md border border-[var(--line-soft)] p-0.5">
+              {(["list", "kanban", "agenda"] as View[]).map((v) => (
+                <Button
+                  key={v}
+                  type="button"
+                  variant="ghost"
+                  size="xs"
+                  onClick={() => onViewChange(v)}
+                  aria-pressed={view === v}
+                  className={`text-[var(--muted-text)] hover:text-[var(--text)] ${view === v ? "bg-[var(--field)] text-[var(--text)]" : ""}`}
+                >
+                  {v === "list" ? t("lista") : v === "kanban" ? t("kanban") : t("agenda")}
+                </Button>
+              ))}
+            </div>
             <Button
               type="button"
               variant="ghost"

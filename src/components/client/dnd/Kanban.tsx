@@ -2,19 +2,12 @@ import { useRef, useState } from "react";
 import { useDraggable, useDroppable } from "@dnd-kit/core";
 import { CSS } from "@dnd-kit/utilities";
 import { sortTasks } from "@/lib/filter";
+import { flatTasks, type FlatTask } from "@/lib/flat";
 import { useT } from "@/hooks/useT";
 import { isDueSoon, isOverdue, fmtDate } from "@/lib/date";
 import { PRIO_CLS, PRIO_KEYS, STATUS_ORDER, type AddTaskInput, type Project, type Status, type Task, type TaskPatch } from "@/lib/types";
 import { TaskEditModal } from "@/components/client/board/TaskEditModal";
 import { NEXT_PRIO } from "@/components/client/board/TaskRow";
-
-interface FlatTask {
-  task: Project["sections"][number]["tasks"][number];
-  pid: string;
-  ptitle: string;
-  sid: string;
-  stitle: string;
-}
 
 interface KanbanProps {
   projetos: Project[];
@@ -22,12 +15,6 @@ interface KanbanProps {
   onEditTask: (pid: string, sid: string, tid: string, patch: TaskPatch) => void;
   onDeleteTask: (pid: string, sid: string, tid: string) => void;
   onAddTask: (pid: string, sid: string, input: AddTaskInput) => void;
-}
-
-function flatTasks(projetos: Project[]): FlatTask[] {
-  return projetos.flatMap((p) =>
-    p.sections.flatMap((s) => s.tasks.map((task) => ({ task, pid: p.id, ptitle: p.title, sid: s.id, stitle: s.title }))),
-  );
 }
 
 function KanbanTask({

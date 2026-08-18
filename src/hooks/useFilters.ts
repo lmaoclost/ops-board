@@ -16,8 +16,12 @@ export function useFilters(initial: Filters = defaultFilters) {
     setFilters((f) => ({ ...f, prioSort: !f.prioSort }));
   }, []);
 
+  const setView = useCallback((view: View) => {
+    setFilters((f) => ({ ...f, view }));
+  }, []);
+
   const toggleView = useCallback(() => {
-    setFilters((f) => ({ ...f, view: (f.view === "list" ? "kanban" : "list") as View }));
+    setFilters((f) => ({ ...f, view: f.view === "kanban" ? "list" : "kanban" }));
   }, []);
 
   const toggleArchived = useCallback(() => {
@@ -28,5 +32,5 @@ export function useFilters(initial: Filters = defaultFilters) {
     setFilters((f) => ({ ...f, query: "", status: null, archived: false }));
   }, []);
 
-  return { filters, setQuery, toggleStatus, togglePrioSort, toggleView, toggleArchived, clear };
+  return { filters, setQuery, toggleStatus, togglePrioSort, setView, toggleView, toggleArchived, clear };
 }

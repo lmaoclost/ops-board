@@ -6,6 +6,7 @@ import { resolveDrop, smartCollision } from "@/lib/dnd";
 import type { AddTaskInput, Project, Status, TaskPatch } from "@/lib/types";
 import { ProjectCard } from "./ProjectCard";
 import { Kanban } from "@/components/client/dnd/Kanban";
+import { Agenda } from "@/components/client/agenda/Agenda";
 
 export interface BoardProjectActions {
   onAddSection: (pid: string, title: string) => void;
@@ -139,6 +140,14 @@ export function Board({ projetos, filters, onNewProject, onClearFilters, project
         onEditTask={(pid, sid, tid, patch) => taskActions.onEdit(pid, sid, tid, patch)}
         onDeleteTask={(pid, sid, tid) => taskActions.onDelete(pid, sid, tid)}
         onAddTask={(pid, sid, input) => sectionActions.onAddTaskFull(pid, sid, input)}
+      />
+    );
+  } else if (filters.view === "agenda") {
+    content = (
+      <Agenda
+        projetos={filtered}
+        onToggle={(pid, sid, tid) => taskActions.onToggle(pid, sid, tid)}
+        onEditTask={(pid, sid, tid, patch) => taskActions.onEdit(pid, sid, tid, patch)}
       />
     );
   } else {
