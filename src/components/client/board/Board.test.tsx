@@ -18,6 +18,7 @@ const projeto: Project = {
 
 const base = (over: Partial<BoardProps> = {}): BoardProps => ({
   projetos: [projeto],
+  templates: [],
   filters: defaultFilters,
   onNewProject: vi.fn(),
   onClearFilters: vi.fn(),
@@ -45,6 +46,9 @@ const base = (over: Partial<BoardProps> = {}): BoardProps => ({
     onPurge: vi.fn(),
     onMoveTask: vi.fn(),
     onUpdate: vi.fn(),
+    onSaveTemplate: vi.fn(),
+    onInsertTemplate: vi.fn(),
+    onDeleteTemplate: vi.fn(),
   },
   ...over,
 });

@@ -22,6 +22,7 @@ const base = (over: Partial<TaskRowProps["task"]> = {}): TaskRowProps => ({
   onEdit: vi.fn(),
   onDelete: vi.fn(),
   onUpdate: vi.fn(),
+  onSaveTemplate: vi.fn(),
 });
 
 const sub = (over: Partial<SubTask> & { id: string }): SubTask => ({

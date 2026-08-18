@@ -1,4 +1,5 @@
 import { useRef, useState } from "react";
+import { SaveIcon } from "lucide-react";
 import { useDraggable, useDroppable } from "@dnd-kit/core";
 import { CSS } from "@dnd-kit/utilities";
 import { sortTasks } from "@/lib/filter";
@@ -15,6 +16,7 @@ interface KanbanProps {
   onEditTask: (pid: string, sid: string, tid: string, patch: TaskPatch) => void;
   onDeleteTask: (pid: string, sid: string, tid: string) => void;
   onAddTask: (pid: string, sid: string, input: AddTaskInput) => void;
+  onSaveTemplateTask: (pid: string, sid: string, tid: string) => void;
 }
 
 function KanbanTask({
@@ -23,12 +25,14 @@ function KanbanTask({
   onUpdate,
   onDelete,
   onSubs,
+  onSaveTemplate,
 }: {
   item: FlatTask;
   onEdit: () => void;
   onUpdate: (patch: TaskPatch) => void;
   onDelete: () => void;
   onSubs: () => void;
+  onSaveTemplate: () => void;
 }) {
   const { t } = useT();
   const { attributes, listeners, setNodeRef, transform, isDragging } = useDraggable({ id: `task:${item.task.id}` });
@@ -113,6 +117,18 @@ function KanbanTask({
           type="button"
           onClick={(e) => {
             e.stopPropagation();
+            onSaveTemplate();
+          }}
+          title={t("salvar como template")}
+          aria-label={t("salvar como template")}
+          className="shrink-0 rounded px-1 text-xs leading-none text-[var(--dimmer)] opacity-0 transition-opacity group-hover:opacity-100 focus-visible:opacity-100 hover:text-[var(--text)]"
+        >
+          <SaveIcon className="h-3 w-3" />
+        </button>
+        <button
+          type="button"
+          onClick={(e) => {
+            e.stopPropagation();
             onDelete();
           }}
           title="excluir"
@@ -166,6 +182,7 @@ function DroppableCol({
   onUpdate,
   onDelete,
   onSubs,
+  onSaveTemplate,
   onCreate,
   empty,
 }: {
@@ -175,6 +192,7 @@ function DroppableCol({
   onUpdate: (item: FlatTask, patch: TaskPatch) => void;
   onDelete: (item: FlatTask) => void;
   onSubs: (item: FlatTask) => void;
+  onSaveTemplate: (item: FlatTask) => void;
   onCreate: () => void;
   empty: boolean;
 }) {
@@ -208,6 +226,7 @@ function DroppableCol({
             onUpdate={(patch) => onUpdate(item, patch)}
             onDelete={() => onDelete(item)}
             onSubs={() => onSubs(item)}
+            onSaveTemplate={() => onSaveTemplate(item)}
           />
         ))}
       </div>
@@ -227,7 +246,7 @@ const emptyTask: Task = {
   subs: [],
 };
 
-export function Kanban({ projetos, prioSort, onEditTask, onDeleteTask, onAddTask }: KanbanProps) {
+export function Kanban({ projetos, prioSort, onEditTask, onDeleteTask, onAddTask, onSaveTemplateTask }: KanbanProps) {
   const { t } = useT();
   const [editing, setEditing] = useState<FlatTask | null>(null);
   const [creating, setCreating] = useState<Status | null>(null);
@@ -261,6 +280,7 @@ export function Kanban({ projetos, prioSort, onEditTask, onDeleteTask, onAddTask
             }}
             onUpdate={(item, patch) => onEditTask(item.pid, item.sid, item.task.id, patch)}
             onDelete={(item) => onDeleteTask(item.pid, item.sid, item.task.id)}
+            onSaveTemplate={(item) => onSaveTemplateTask(item.pid, item.sid, item.task.id)}
             onCreate={() => {
               if (available.length) setCreating(status);
             }}

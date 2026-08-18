@@ -3,7 +3,7 @@ import { useMemo } from "react";
 import { useT } from "@/hooks/useT";
 import { isFiltering, prioSort, projMatches, type Filters } from "@/lib/filter";
 import { resolveDrop, smartCollision } from "@/lib/dnd";
-import type { AddTaskInput, Project, Status, TaskPatch } from "@/lib/types";
+import type { AddTaskInput, Project, Status, TaskPatch, TaskTemplate } from "@/lib/types";
 import { ProjectCard } from "./ProjectCard";
 import { Kanban } from "@/components/client/dnd/Kanban";
 import { Agenda } from "@/components/client/agenda/Agenda";
@@ -35,6 +35,9 @@ export interface BoardTaskActions {
   onPurge: (pid: string, sid: string, tid: string) => void;
   onUpdate: (pid: string, sid: string, tid: string, patch: TaskPatch) => void;
   onMoveTask: (pid: string, sid: string, tid: string, toPid: string, toSid: string, index: number) => void;
+  onSaveTemplate: (pid: string, sid: string, tid: string) => void;
+  onInsertTemplate: (pid: string, sid: string, tpl: TaskTemplate) => void;
+  onDeleteTemplate: (id: string) => void;
 }
 
 export interface SectionLevelActions {
@@ -51,10 +54,12 @@ export interface TaskLevelActions {
   onEdit: (sid: string, tid: string, patch: TaskPatch) => void;
   onDelete: (sid: string, tid: string) => void;
   onUpdate: (sid: string, tid: string, patch: TaskPatch) => void;
+  onSaveTemplate: (sid: string, tid: string) => void;
 }
 
 export interface BoardProps {
   projetos: Project[];
+  templates: TaskTemplate[];
   filters: Filters;
   onNewProject: () => void;
   onClearFilters: () => void;
@@ -63,7 +68,7 @@ export interface BoardProps {
   taskActions: BoardTaskActions;
 }
 
-export function Board({ projetos, filters, onNewProject, onClearFilters, projectActions, sectionActions, taskActions }: BoardProps) {
+export function Board({ projetos, templates, filters, onNewProject, onClearFilters, projectActions, sectionActions, taskActions }: BoardProps) {
   const { t } = useT();
   const sensors = useSensors(
     useSensor(PointerSensor, { activationConstraint: { distance: 6 } }),
@@ -85,6 +90,7 @@ export function Board({ projetos, filters, onNewProject, onClearFilters, project
       onEdit: (sid: string, tid: string, patch: TaskPatch) => taskActions.onEdit(pid, sid, tid, patch),
       onDelete: (sid: string, tid: string) => taskActions.onDelete(pid, sid, tid),
       onUpdate: (sid: string, tid: string, patch: TaskPatch) => taskActions.onUpdate(pid, sid, tid, patch),
+      onSaveTemplate: (sid: string, tid: string) => taskActions.onSaveTemplate(pid, sid, tid),
     },
   });
 
@@ -142,6 +148,7 @@ export function Board({ projetos, filters, onNewProject, onClearFilters, project
         onEditTask={(pid, sid, tid, patch) => taskActions.onEdit(pid, sid, tid, patch)}
         onDeleteTask={(pid, sid, tid) => taskActions.onDelete(pid, sid, tid)}
         onAddTask={(pid, sid, input) => sectionActions.onAddTaskFull(pid, sid, input)}
+        onSaveTemplateTask={(pid, sid, tid) => taskActions.onSaveTemplate(pid, sid, tid)}
       />
     );
   } else if (filters.view === "agenda") {
@@ -168,6 +175,9 @@ export function Board({ projetos, filters, onNewProject, onClearFilters, project
             key={p.id}
             project={p}
             collectActions={collectActions}
+            templates={templates}
+            onInsertTemplate={(sid, tpl) => taskActions.onInsertTemplate(p.id, sid, tpl)}
+            onDeleteTemplate={(id) => taskActions.onDeleteTemplate(id)}
             onAddSection={(title) => projectActions.onAddSection(p.id, title)}
             onRename={(id, title, blocked, due) => projectActions.onRename(id, title, blocked, due)}
             onDelete={(id) => projectActions.onDelete(id)}
