@@ -12,9 +12,10 @@ interface SortableTaskItemProps {
   onDelete: () => void;
   onUpdate: (patch: TaskPatch) => void;
   onSaveTemplate: () => void;
+  blockedByText?: string;
 }
 
-export function SortableTaskItem({ task, onToggle, onPrioCycle, onStatusChange, onEdit, onDelete, onUpdate, onSaveTemplate }: SortableTaskItemProps) {
+export function SortableTaskItem({ task, onToggle, onPrioCycle, onStatusChange, onEdit, onDelete, onUpdate, onSaveTemplate, blockedByText }: SortableTaskItemProps) {
   const { attributes, listeners, setNodeRef, transform, transition, isDragging } = useSortable({
     id: `task:${task.id}`,
     disabled: false,
@@ -37,6 +38,7 @@ export function SortableTaskItem({ task, onToggle, onPrioCycle, onStatusChange, 
         onDelete={onDelete}
         onUpdate={onUpdate}
         onSaveTemplate={onSaveTemplate}
+        blockedByText={blockedByText}
       />
     </div>
   );

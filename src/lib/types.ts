@@ -26,6 +26,7 @@ export interface Task {
   repeat?: Repeat;
   tags?: string[];
   deletedAt?: string | null;
+  dependsOn?: string[];
 }
 
 export interface Section {
@@ -57,6 +58,7 @@ export interface TaskPatch {
   repeat?: Repeat | null;
   tags?: string[];
   deletedAt?: string | null;
+  dependsOn?: string[];
 }
 
 export interface AddTaskInput {
@@ -69,6 +71,7 @@ export interface AddTaskInput {
   subs?: SubTask[];
   repeat?: Repeat;
   tags?: string[];
+  dependsOn?: string[];
 }
 
 /** Template de tarefa: snapshot atemporal (sem vencimento/status). */

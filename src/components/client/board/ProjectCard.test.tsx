@@ -32,6 +32,7 @@ const base = (over: Partial<ProjectCardProps> = {}): ProjectCardProps => ({
     },
   }),
   templates: [],
+  projectTasks: [],
   onInsertTemplate: vi.fn(),
   onDeleteTemplate: vi.fn(),
   onAddSection: vi.fn(),

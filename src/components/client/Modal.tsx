@@ -73,7 +73,7 @@ export function Modal({ title, fields, submitLabel = "salvar", onSubmit, onCance
             onSubmit(values);
           }}
         >
-          <div className="flex flex-col gap-3 px-4 py-4">
+          <div className="flex max-h-[70vh] flex-col gap-3 overflow-y-auto px-4 py-4">
             {topChildren}
             {fields.map((f, i) => (
               <div key={f.key}>

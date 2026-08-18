@@ -14,6 +14,7 @@ import {
 import { Input } from "@/components/ui/input";
 import { sortTasks, visibleTasks, type Filters } from "@/lib/filter";
 import type { TaskPatch, Task, TaskTemplate } from "@/lib/types";
+import { blockedBy } from "@/lib/deps";
 import { SortableTaskItem } from "@/components/client/dnd/SortableTaskItem";
 import { TaskEditModal } from "@/components/client/board/TaskEditModal";
 
@@ -43,12 +44,13 @@ export interface SectionProps {
   onInsertTemplate: (tpl: TaskTemplate) => void;
   onDeleteTemplate: (id: string) => void;
   templates: TaskTemplate[];
+  projectTasks: Task[];
   taskActions: SectionTaskActions;
   prioSort?: boolean;
   filters?: Filters;
 }
 
-export function Section({ projectId, section, onToggleSection, onAddTask, onRename, onDelete, onInsertTemplate, onDeleteTemplate, templates, taskActions, prioSort, filters }: SectionProps) {
+export function Section({ projectId, section, onToggleSection, onAddTask, onRename, onDelete, onInsertTemplate, onDeleteTemplate, templates, projectTasks, taskActions, prioSort, filters }: SectionProps) {
   const { t } = useT();
   const [draft, setDraft] = useState("");
   const [editingId, setEditingId] = useState<string | null>(null);
@@ -150,6 +152,7 @@ export function Section({ projectId, section, onToggleSection, onAddTask, onRena
                   onDelete={() => taskActions.onDelete(t.id)}
                   onUpdate={(patch) => taskActions.onUpdate(t.id, patch)}
                   onSaveTemplate={() => taskActions.onSaveTemplate(t.id)}
+                  blockedByText={blockedBy(t, projectTasks)?.text}
                 />
               ))}
             </SortableContext>
@@ -236,6 +239,7 @@ export function Section({ projectId, section, onToggleSection, onAddTask, onRena
       {editing && (
         <TaskEditModal
           task={editing}
+          tasks={projectTasks}
           onSubmit={(patch) => {
             taskActions.onEdit(editing.id, patch);
             setEditingId(null);

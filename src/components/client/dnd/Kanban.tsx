@@ -4,6 +4,7 @@ import { useDraggable, useDroppable } from "@dnd-kit/core";
 import { CSS } from "@dnd-kit/utilities";
 import { sortTasks } from "@/lib/filter";
 import { flatTasks, type FlatTask } from "@/lib/flat";
+import { blockedBy } from "@/lib/deps";
 import { useT } from "@/hooks/useT";
 import { isDueSoon, isOverdue, fmtDate } from "@/lib/date";
 import { PRIO_CLS, PRIO_KEYS, STATUS_ORDER, type AddTaskInput, type Project, type Status, type Task, type TaskPatch } from "@/lib/types";
@@ -26,6 +27,7 @@ function KanbanTask({
   onDelete,
   onSubs,
   onSaveTemplate,
+  blockedByText,
 }: {
   item: FlatTask;
   onEdit: () => void;
@@ -33,6 +35,7 @@ function KanbanTask({
   onDelete: () => void;
   onSubs: () => void;
   onSaveTemplate: () => void;
+  blockedByText?: string;
 }) {
   const { t } = useT();
   const { attributes, listeners, setNodeRef, transform, isDragging } = useDraggable({ id: `task:${item.task.id}` });
@@ -157,6 +160,11 @@ function KanbanTask({
             ⛔ bloqueada
           </span>
         )}
+        {blockedByText && (
+          <span className="text-[10px] font-bold text-[var(--gave)]" title={t("bloqueada por X").replace("X", blockedByText)}>
+            ⛓ {t("bloqueada por X").replace("X", blockedByText)}
+          </span>
+        )}
         {item.task.due &&
           (overdue ? (
             <span className="text-[10px] font-bold uppercase text-[var(--gave)]" title={`vencimento ${item.task.due}`}>
@@ -183,6 +191,7 @@ function DroppableCol({
   onDelete,
   onSubs,
   onSaveTemplate,
+  blockedByTextOf,
   onCreate,
   empty,
 }: {
@@ -193,6 +202,7 @@ function DroppableCol({
   onDelete: (item: FlatTask) => void;
   onSubs: (item: FlatTask) => void;
   onSaveTemplate: (item: FlatTask) => void;
+  blockedByTextOf: (item: FlatTask) => string | undefined;
   onCreate: () => void;
   empty: boolean;
 }) {
@@ -227,6 +237,7 @@ function DroppableCol({
             onDelete={() => onDelete(item)}
             onSubs={() => onSubs(item)}
             onSaveTemplate={() => onSaveTemplate(item)}
+            blockedByText={blockedByTextOf(item)}
           />
         ))}
       </div>
@@ -263,6 +274,7 @@ export function Kanban({ projetos, prioSort, onEditTask, onDeleteTask, onAddTask
 
   const available = projetos.filter((p) => !p.archived);
   const tasks = sortTasks(flatTasks(projetos), !!prioSort, (i) => i.task.prio);
+  const projectTasks = flatTasks(projetos).map((i) => i.task);
   const grouped = STATUS_ORDER.map((s) => ({ status: s, items: tasks.filter((t) => t.task.status === s) }));
 
   return (
@@ -281,6 +293,7 @@ export function Kanban({ projetos, prioSort, onEditTask, onDeleteTask, onAddTask
             onUpdate={(item, patch) => onEditTask(item.pid, item.sid, item.task.id, patch)}
             onDelete={(item) => onDeleteTask(item.pid, item.sid, item.task.id)}
             onSaveTemplate={(item) => onSaveTemplateTask(item.pid, item.sid, item.task.id)}
+            blockedByTextOf={(item) => blockedBy(item.task, projectTasks)?.text}
             onCreate={() => {
               if (available.length) setCreating(status);
             }}
@@ -291,6 +304,7 @@ export function Kanban({ projetos, prioSort, onEditTask, onDeleteTask, onAddTask
       {editing && (
         <TaskEditModal
           task={editing.task}
+          tasks={projectTasks}
           focusSubs={focusSubs}
           onSubmit={(patch) => {
             onEditTask(editing.pid, editing.sid, editing.task.id, patch);

@@ -3,6 +3,7 @@ import { useMemo } from "react";
 import { useT } from "@/hooks/useT";
 import { isFiltering, prioSort, projMatches, type Filters } from "@/lib/filter";
 import { resolveDrop, smartCollision } from "@/lib/dnd";
+import { flatTasks } from "@/lib/flat";
 import type { AddTaskInput, Project, Status, TaskPatch, TaskTemplate } from "@/lib/types";
 import { ProjectCard } from "./ProjectCard";
 import { Kanban } from "@/components/client/dnd/Kanban";
@@ -176,6 +177,7 @@ export function Board({ projetos, templates, filters, onNewProject, onClearFilte
             project={p}
             collectActions={collectActions}
             templates={templates}
+            projectTasks={flatTasks([p]).map((f) => f.task)}
             onInsertTemplate={(sid, tpl) => taskActions.onInsertTemplate(p.id, sid, tpl)}
             onDeleteTemplate={(id) => taskActions.onDeleteTemplate(id)}
             onAddSection={(title) => projectActions.onAddSection(p.id, title)}

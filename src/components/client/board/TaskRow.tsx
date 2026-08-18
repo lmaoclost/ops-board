@@ -26,6 +26,7 @@ export interface TaskRowProps {
   onDelete: () => void;
   onUpdate: (patch: TaskPatch) => void;
   onSaveTemplate: () => void;
+  blockedByText?: string;
 }
 
 export const NEXT_PRIO: Record<Prio, Prio> = { 1: 2, 2: 3, 3: 1 };
@@ -190,7 +191,7 @@ function SubRow({
   );
 }
 
-export function TaskRow({ task, onToggle, onPrioCycle, onStatusChange, onEdit, onDelete, onUpdate, onSaveTemplate }: TaskRowProps) {
+export function TaskRow({ task, onToggle, onPrioCycle, onStatusChange, onEdit, onDelete, onUpdate, onSaveTemplate, blockedByText }: TaskRowProps) {
   const { t, status } = useT();
   const [addingSub, setAddingSub] = useState(false);
   const [subDraft, setSubDraft] = useState("");
@@ -279,6 +280,11 @@ export function TaskRow({ task, onToggle, onPrioCycle, onStatusChange, onEdit, o
         {task.blocked && (
           <Badge variant="destructive" className="rounded-[4px] px-1.5 text-[11px] font-bold uppercase tracking-[0.08em]">
             bloqueada
+          </Badge>
+        )}
+        {blockedByText && (
+          <Badge variant="outline" className="rounded-[4px] px-1.5 text-[11px] font-bold" title={t("bloqueada por X").replace("X", blockedByText)}>
+            ⛓ {t("bloqueada por X").replace("X", blockedByText)}
           </Badge>
         )}
         <Tooltip>
