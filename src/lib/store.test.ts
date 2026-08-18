@@ -559,6 +559,17 @@ describe("locale", () => {
   });
 });
 
+describe("dependências", () => {
+  it("editTask aplica e limpa dependsOn", () => {
+    localStorage.clear();
+    const store = createBoardStore([seedProjeto()]);
+    store.getState().editTask("p1", "s1", "t1", { dependsOn: ["t2"] });
+    expect(store.getState().projetos[0].sections[0].tasks[0].dependsOn).toEqual(["t2"]);
+    store.getState().editTask("p1", "s1", "t1", { dependsOn: [] });
+    expect(store.getState().projetos[0].sections[0].tasks[0].dependsOn).toEqual([]);
+  });
+});
+
 describe("templates", () => {
   beforeEach(() => localStorage.clear());
 

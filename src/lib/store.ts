@@ -221,6 +221,7 @@ export function createBoardStore(initial: Project[] = []) {
                                   subs: input.subs ? reconcileSubs(input.subs) : [],
                                   repeat: input.repeat,
                                   tags: input.tags,
+                                  dependsOn: input.dependsOn,
                                 },
                               ],
                             }
@@ -265,6 +266,7 @@ export function createBoardStore(initial: Project[] = []) {
                                         repeat: patch.repeat !== undefined ? (patch.repeat ?? undefined) : t.repeat,
                                         tags: patch.tags ?? t.tags,
                                         deletedAt: patch.deletedAt !== undefined ? patch.deletedAt : t.deletedAt,
+                                        dependsOn: patch.dependsOn ?? t.dependsOn,
                                       };
                                     })()
                                   : t,

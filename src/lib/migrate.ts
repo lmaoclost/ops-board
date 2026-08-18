@@ -36,6 +36,7 @@ function normTask(t: UnknownRecord | undefined): Task {
     repeat,
     tags: Array.isArray(t?.tags) ? t.tags.map((x) => String(x)).filter(Boolean) : undefined,
     deletedAt: t?.deletedAt ? String(t.deletedAt) : undefined,
+    dependsOn: Array.isArray(t?.dependsOn) ? t.dependsOn.map((x) => String(x)).filter(Boolean) : undefined,
   };
 }
 

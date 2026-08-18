@@ -20,6 +20,7 @@ const base = (over: Partial<SectionProps> = {}): SectionProps => ({
   onRename: vi.fn(),
   onDelete: vi.fn(),
   templates: [],
+  projectTasks: [],
   onInsertTemplate: vi.fn(),
   onDeleteTemplate: vi.fn(),
   taskActions: {
