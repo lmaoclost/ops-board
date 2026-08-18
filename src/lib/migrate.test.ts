@@ -158,7 +158,35 @@ describe("migrateLegacy", () => {
   });
 
   it("mantém versão de schema estável e exportada", () => {
-    expect(SCHEMA_VERSION).toBe(6);
+    expect(SCHEMA_VERSION).toBe(7);
+  });
+
+  it("normaliza repeat/tags/deletedAt do schema v7", () => {
+    const out = migrateLegacy({
+      projetos: [
+        {
+          id: "p1",
+          title: "P",
+          sections: [
+            {
+              id: "s1",
+              title: "S",
+              tasks: [
+                { id: "t1", text: "recorrente", status: "todo", repeat: "daily", tags: ["dev", ""], deletedAt: "2026-08-18T10:00:00.000Z" },
+                { id: "t2", text: "simples", status: "todo", repeat: "hourly" as string, tags: "dev", deletedAt: "" },
+              ],
+            },
+          ],
+        },
+      ],
+    })!;
+    const [t1, t2] = out.projetos[0].sections[0].tasks;
+    expect(t1.repeat).toBe("daily");
+    expect(t1.tags).toEqual(["dev"]);
+    expect(t1.deletedAt).toBe("2026-08-18T10:00:00.000Z");
+    expect(t2.repeat).toBeUndefined();
+    expect(t2.tags).toBeUndefined();
+    expect(t2.deletedAt).toBeUndefined();
   });
 });
 

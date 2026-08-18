@@ -39,6 +39,7 @@ export default function Home() {
   const addTaskFull = useBoard((s) => s.addTaskFull);
   const editTask = useBoard((s) => s.editTask);
   const deleteTask = useBoard((s) => s.deleteTask);
+  const purgeTask = useBoard((s) => s.purgeTask);
   const setTaskStatus = useBoard((s) => s.setTaskStatus);
   const setTaskPrio = useBoard((s) => s.setTaskPrio);
   const cycleTaskPrio = useBoard((s) => s.cycleTaskPrio);
@@ -269,6 +270,7 @@ const notifiedRef = useRef(false);
             onStatusChange: handleStatusChange,
             onEdit: (pid, sid, tid, patch) => editTask(pid, sid, tid, patch),
             onDelete: (pid, sid, tid) => deleteTask(pid, sid, tid),
+            onPurge: (pid, sid, tid) => purgeTask(pid, sid, tid),
             onUpdate: (pid, sid, tid, patch) => editTask(pid, sid, tid, patch),
             onMoveTask: (pid, sid, tid, toPid, toSid, index) =>
               moveTask({ pid, sid, tid }, { pid: toPid, sid: toSid }, index),

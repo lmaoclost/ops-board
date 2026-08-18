@@ -182,7 +182,7 @@ test("migra localStorage v1 → v6 no carregamento (sub legada v5 migrada)", asy
   await expect(page.getByRole("checkbox", { name: "sub-tarefa sub antiga" })).toHaveAttribute("aria-checked", "true");
 
   const stored = await page.evaluate(() => JSON.parse(localStorage.getItem("opsboard.v1") ?? "{}"));
-  expect(stored.version).toBe(6);
+  expect(stored.version).toBe(7);
   expect(stored.state.projetos[0].sections[0].tasks[0]).toMatchObject({ text: "tarefa antiga", prio: 3, doneAt: null });
   expect(stored.state.projetos[0].sections[0].tasks[0].subs[0]).toMatchObject({
     id: "s1",

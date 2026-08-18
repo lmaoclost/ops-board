@@ -1,5 +1,6 @@
 export type Status = "todo" | "doing" | "waiting" | "done";
 export type Prio = 1 | 2 | 3;
+export type Repeat = "daily" | "weekly" | "monthly";
 
 export interface SubTask {
   id: string;
@@ -22,6 +23,9 @@ export interface Task {
   due: string;
   doneAt: string | null;
   subs: SubTask[];
+  repeat?: Repeat;
+  tags?: string[];
+  deletedAt?: string | null;
 }
 
 export interface Section {
@@ -50,6 +54,9 @@ export interface TaskPatch {
   prio?: Prio;
   due?: string;
   subs?: SubTask[];
+  repeat?: Repeat | null;
+  tags?: string[];
+  deletedAt?: string | null;
 }
 
 export interface AddTaskInput {
@@ -60,6 +67,8 @@ export interface AddTaskInput {
   prio?: Prio;
   due?: string;
   subs?: SubTask[];
+  repeat?: Repeat;
+  tags?: string[];
 }
 
 export const STATUS_ORDER: Status[] = ["todo", "doing", "waiting", "done"];
@@ -80,3 +89,4 @@ export const PRIO_CLS: Record<Prio, string> = {
 
 export const STATUSES: readonly Status[] = STATUS_ORDER;
 export const PRIOS: readonly Prio[] = [1, 2, 3];
+export const REPEATS: readonly Repeat[] = ["daily", "weekly", "monthly"];

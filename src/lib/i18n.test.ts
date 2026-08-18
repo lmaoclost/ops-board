@@ -24,7 +24,7 @@ describe("i18n", () => {
 
   it("nenhum valor pt é igual ao en (tradução real, não stub)", () => {
     const same = T_KEYS.filter((k) => pt(k) === en(k));
-    expect(same.sort()).toEqual(["P3 — normal", "agenda", "app_name", "status", "stuck", "total"]);
+    expect(same.sort()).toEqual(["P3 — normal", "agenda", "app_name", "status", "stuck", "tags", "total"]);
   });
 
   it("statusLabel mapeia todos os status", () => {

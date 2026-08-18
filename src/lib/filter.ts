@@ -1,6 +1,6 @@
 import type { Prio, Project, Section, Status, Task } from "./types";
 
-export type View = "list" | "kanban" | "agenda";
+export type View = "list" | "kanban" | "agenda" | "lixeira";
 export type StatusFilter = Status | "blocked" | null;
 
 export interface Filters {
@@ -16,11 +16,16 @@ export const defaultFilters: Filters = { query: "", status: null, prioSort: fals
 export const isFiltering = (f: Filters): boolean => !!f.query || !!f.status;
 
 export function matchTask(t: Task, f: Filters): boolean {
+  if (t.deletedAt) return false;
   if (f.status === "blocked" && !t.blocked) return false;
   if (f.status && f.status !== "blocked" && t.status !== f.status) return false;
   if (!f.query) return true;
   const q = f.query.toLowerCase();
-  return (t.text + " " + (t.note || "")).toLowerCase().includes(q);
+  if (q.startsWith("tag:")) {
+    const tag = q.slice(4).trim();
+    return !!tag && (t.tags ?? []).some((x) => x.toLowerCase().includes(tag));
+  }
+  return (t.text + " " + (t.note || "") + " " + (t.tags ?? []).join(" ")).toLowerCase().includes(q);
 }
 
 const titleNotesMatch = (s: Section, query: string): boolean =>
@@ -32,9 +37,10 @@ export function sectMatches(s: Section, f: Filters): boolean {
   return !!f.query && titleNotesMatch(s, f.query);
 }
 
-/** Tarefas visíveis sob filtros: com query/status ativos, só as que casam. */
+/** Tarefas visíveis: nunca inclui lixeira; com query/status ativos, só as que casam. */
 export function visibleTasks(tasks: Task[], f: Filters): Task[] {
-  return isFiltering(f) ? tasks.filter((t) => matchTask(t, f)) : tasks;
+  const alive = tasks.filter((t) => !t.deletedAt);
+  return isFiltering(f) ? alive.filter((t) => matchTask(t, f)) : alive;
 }
 
 /** Projeto visível: título casa a query ou alguma seção visível. */

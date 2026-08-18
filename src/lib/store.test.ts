@@ -189,9 +189,42 @@ describe("board store", () => {
     expect(out[0].blocked).toBe(true);
   });
 
-  it("exclui tarefa", () => {
+  it("exclui tarefa para a lixeira (soft delete)", () => {
     store.getState().deleteTask("p1", "s1", "t1");
+    const t = store.getState().projetos[0].sections[0].tasks[0];
+    expect(t.id).toBe("t1");
+    expect(t.deletedAt).toBeTruthy();
+  });
+
+  it("restaura tarefa da lixeira e purge remove de vez", () => {
+    store.getState().deleteTask("p1", "s1", "t1");
+    store.getState().restoreTask("p1", "s1", "t1");
+    expect(store.getState().projetos[0].sections[0].tasks[0].deletedAt).toBeNull();
+
+    store.getState().deleteTask("p1", "s1", "t1");
+    store.getState().purgeTask("p1", "s1", "t1");
     expect(store.getState().projetos[0].sections[0].tasks.map((t) => t.id)).toEqual(["t2"]);
+  });
+
+  it("toggleTask em tarefa recorrente re-agenda em vez de concluir", () => {
+    store.getState().editTask("p1", "s1", "t1", { repeat: "daily", due: "2020-01-01" });
+    store.getState().toggleTask("p1", "s1", "t1");
+    const t = store.getState().projetos[0].sections[0].tasks[0];
+    expect(t.status).toBe("todo");
+    expect(t.doneAt).toBeNull();
+    expect(t.due > "2020-01-01").toBe(true);
+  });
+
+  it("setTaskStatus done em tarefa recorrente re-agenda; toggle volta ao normal sem repeat", () => {
+    store.getState().editTask("p1", "s1", "t1", { repeat: "weekly", due: "" });
+    store.getState().setTaskStatus("p1", "s1", "t1", "done");
+    const t = store.getState().projetos[0].sections[0].tasks[0];
+    expect(t.status).toBe("todo");
+    expect(t.repeat).toBe("weekly");
+
+    store.getState().editTask("p1", "s1", "t1", { repeat: null });
+    store.getState().setTaskStatus("p1", "s1", "t1", "done");
+    expect(store.getState().projetos[0].sections[0].tasks[0].status).toBe("done");
   });
 
   it("grava doneAt ao concluir e limpa ao reabrir", () => {
@@ -283,13 +316,14 @@ describe("board store", () => {
 
   it("deleteTask é desfeita restaurando a tarefa", () => {
     store.getState().deleteTask("p1", "s1", "t1");
-    expect(store.getState().projetos[0].sections[0].tasks.map((t) => t.id)).toEqual(["t2"]);
+    expect(store.getState().projetos[0].sections[0].tasks[0].deletedAt).toBeTruthy();
     expect(store.getState().canUndo).toBe(true);
 
     store.getState().undo();
     const t = store.getState().projetos[0].sections[0].tasks[0];
     expect(t.id).toBe("t1");
     expect(t.text).toBe("tarefa 1");
+    expect(t.deletedAt).toBeFalsy();
     expect(store.getState().canUndo).toBe(false);
   });
 

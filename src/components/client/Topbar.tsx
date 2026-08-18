@@ -108,7 +108,7 @@ export function Topbar({
               {locale === "pt" ? "EN" : "PT"}
             </Button>
             <div className="flex items-center gap-0.5 rounded-md border border-[var(--line-soft)] p-0.5">
-              {(["list", "kanban", "agenda"] as View[]).map((v) => (
+              {(["list", "kanban", "agenda", "lixeira"] as View[]).map((v) => (
                 <Button
                   key={v}
                   type="button"
@@ -118,7 +118,7 @@ export function Topbar({
                   aria-pressed={view === v}
                   className={`text-[var(--muted-text)] hover:text-[var(--text)] ${view === v ? "bg-[var(--field)] text-[var(--text)]" : ""}`}
                 >
-                  {v === "list" ? t("lista") : v === "kanban" ? t("kanban") : t("agenda")}
+                  {v === "list" ? t("lista") : v === "kanban" ? t("kanban") : v === "agenda" ? t("agenda") : t("lixeira")}
                 </Button>
               ))}
             </div>

@@ -7,6 +7,7 @@ import type { AddTaskInput, Project, Status, TaskPatch } from "@/lib/types";
 import { ProjectCard } from "./ProjectCard";
 import { Kanban } from "@/components/client/dnd/Kanban";
 import { Agenda } from "@/components/client/agenda/Agenda";
+import { Trash } from "@/components/client/trash/Trash";
 
 export interface BoardProjectActions {
   onAddSection: (pid: string, title: string) => void;
@@ -31,6 +32,7 @@ export interface BoardTaskActions {
   onStatusChange: (pid: string, sid: string, tid: string, status: Status) => void;
   onEdit: (pid: string, sid: string, tid: string, patch: TaskPatch) => void;
   onDelete: (pid: string, sid: string, tid: string) => void;
+  onPurge: (pid: string, sid: string, tid: string) => void;
   onUpdate: (pid: string, sid: string, tid: string, patch: TaskPatch) => void;
   onMoveTask: (pid: string, sid: string, tid: string, toPid: string, toSid: string, index: number) => void;
 }
@@ -148,6 +150,14 @@ export function Board({ projetos, filters, onNewProject, onClearFilters, project
         projetos={filtered}
         onToggle={(pid, sid, tid) => taskActions.onToggle(pid, sid, tid)}
         onEditTask={(pid, sid, tid, patch) => taskActions.onEdit(pid, sid, tid, patch)}
+      />
+    );
+  } else if (filters.view === "lixeira") {
+    content = (
+      <Trash
+        projetos={filtered}
+        onRestore={(pid, sid, tid) => taskActions.onUpdate(pid, sid, tid, { deletedAt: null })}
+        onPurge={(pid, sid, tid) => taskActions.onPurge(pid, sid, tid)}
       />
     );
   } else {

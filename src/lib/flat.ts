@@ -14,9 +14,11 @@ export interface AgendaGroups {
   upcoming: FlatTask[];
 }
 
-export function flatTasks(projetos: Project[]): FlatTask[] {
+export function flatTasks(projetos: Project[], deleted = false): FlatTask[] {
   return projetos.flatMap((p) =>
-    p.sections.flatMap((s) => s.tasks.map((task) => ({ task, pid: p.id, ptitle: p.title, sid: s.id, stitle: s.title }))),
+    p.sections.flatMap((s) =>
+      s.tasks.filter((task) => (deleted ? !!task.deletedAt : !task.deletedAt)).map((task) => ({ task, pid: p.id, ptitle: p.title, sid: s.id, stitle: s.title })),
+    ),
   );
 }
 

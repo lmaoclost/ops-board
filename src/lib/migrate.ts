@@ -1,6 +1,6 @@
-import { PRIOS, STATUSES, type Prio, type Project, type Section, type Status, type SubTask, type Task } from "./types";
+import { PRIOS, REPEATS, STATUSES, type Prio, type Project, type Repeat, type Section, type Status, type SubTask, type Task } from "./types";
 
-export const SCHEMA_VERSION = 6;
+export const SCHEMA_VERSION = 7;
 
 type UnknownRecord = Record<string, unknown>;
 
@@ -22,6 +22,7 @@ function normSub(s: UnknownRecord | undefined): SubTask {
 function normTask(t: UnknownRecord | undefined): Task {
   const status = STATUSES.includes(t?.status as Status) ? (t!.status as Status) : "todo";
   const prio = PRIOS.includes(t?.prio as Prio) ? (t!.prio as Prio) : 3;
+  const repeat = REPEATS.includes(t?.repeat as Repeat) ? (t!.repeat as Repeat) : undefined;
   return {
     id: String(t?.id ?? ""),
     text: String(t?.text ?? ""),
@@ -32,6 +33,9 @@ function normTask(t: UnknownRecord | undefined): Task {
     due: String(t?.due ?? ""),
     doneAt: t?.doneAt ? String(t.doneAt) : null,
     subs: Array.isArray(t?.subs) ? t.subs.map((s) => normSub(s as UnknownRecord)) : [],
+    repeat,
+    tags: Array.isArray(t?.tags) ? t.tags.map((x) => String(x)).filter(Boolean) : undefined,
+    deletedAt: t?.deletedAt ? String(t.deletedAt) : undefined,
   };
 }
 
