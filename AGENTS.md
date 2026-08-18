@@ -27,7 +27,8 @@ OpsBoard — visualizador de projetos e tarefas. Next.js 16.3 (App Router, break
 
 ## Arquitetura
 - `src/lib/` — lógica pura testável (store zustand único `store.ts`, migrate, filter, dnd, i18n, io/import-export); componentes ficam em `src/components/client/` (`board/`, `dnd/`)
-- `src/lib/store.ts` — estado único, persist `localStorage` key `"opsboard.v1"`, `partialize` controla o que persiste; mutações têm **undo (Ctrl+Z)**; `SCHEMA_VERSION = 6` em `migrate.ts` (e2e `export-import.spec.ts` depende do valor — mudar schema exige atualizar o spec)
+- `src/lib/store.ts` — estado único, persist `localStorage` key `"opsboard.v1"`, `partialize` controla o que persiste; mutações têm **undo (Ctrl+Z)**; `SCHEMA_VERSION = 7` em `migrate.ts` (e2e `export-import.spec.ts` depende do valor — mudar schema exige atualizar o spec)
+- **Lixeira TTL 7 dias**: `purgeExpired()` em `migrate.ts` remove tarefas com `deletedAt >= 7d` na reidratação — aplicado via opção **`merge`** do zustand persist (o `migrate` só roda quando a versão do schema muda; o `merge` roda sempre)
 - `src/lib/subtasks.ts` — helpers recursivos imutáveis `mapSubs/removeSub/addSub/makeSub` (subs são `SubTask` completas: prio/due/status/note/blocked + `subs` aninhadas, recursão ilimitada)
 - `store.ts` `reconcileSubs()` — regra recursiva: sub com filhas = todas `done` ? `done` : `todo`; pai idem (via `editTask`); `addTaskFull(pid, sid, input)` = criação completa em 1 commit de undo (status done seta `doneAt`)
 - Componentes UI (Modal, Tooltip, Select, DropdownMenu…) são wrappers próprios de base-ui em `src/components/client/`; testids/aria-labels em **pt-BR** são contrato com e2e (`task-row`, `stat-total`, `combobox name="status"`)
@@ -37,7 +38,7 @@ OpsBoard — visualizador de projetos e tarefas. Next.js 16.3 (App Router, break
 ## i18n
 - Padrão **pt-BR**; toggle EN no header; locale persistido no store
 - Dicionário em `src/lib/i18n.ts` — chave nova entra nos blocos **pt E en**; `useT()` retorna `{ t, status }` (status = rótulos de status traduzidos)
-- Teste de paridade pt/en aceita exceções onde pt==en: `["P3 — normal", "app_name", "stuck", "total", "status"]`
+- Teste de paridade pt/en aceita exceções onde pt==en: `["P3 — normal", "agenda", "app_name", "status", "stuck", "total"]`
 
 ## LGPD / segurança
 - Regra eslint `no-restricted-syntax` bloqueia emails/CPFs/telefones BR literais no código — fixtures e e2e usam dados fictícios
