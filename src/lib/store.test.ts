@@ -1,6 +1,6 @@
 import { beforeEach, describe, expect, it, vi } from "vitest";
 import { createBoardStore, reconcileSubs, setStorageErrorHandler } from "./store";
-import type { Project } from "./types";
+import type { Project, TaskTemplate } from "./types";
 
 const seedProjeto = (): Project => ({
   id: "p1",
@@ -556,6 +556,64 @@ describe("locale", () => {
     const store = createBoardStore();
     store.getState().setLocale("en");
     expect(store.getState().locale).toBe("en");
+  });
+});
+
+describe("templates", () => {
+  beforeEach(() => localStorage.clear());
+
+  const seed = () => {
+    const store = createBoardStore([seedProjeto()]);
+    const t = store.getState().projetos[0].sections[0].tasks[0];
+    return { store, t };
+  };
+
+  it("saveTemplate guarda snapshot atemporal (sem due/status) e substitui por texto igual", () => {
+    const { store, t } = seed();
+    store.getState().saveTemplate({ ...t, due: "2026-08-01", status: "done" });
+    store.getState().saveTemplate({ ...t, prio: 1, note: "v2" });
+    const [tpl] = store.getState().templates;
+    expect(store.getState().templates).toHaveLength(1);
+    expect(tpl.text).toBe("tarefa 1");
+    expect(tpl.prio).toBe(1);
+    expect(tpl.note).toBe("v2");
+    expect(tpl.subs).toEqual(t.subs);
+    expect(tpl).not.toHaveProperty("due");
+    expect(tpl).not.toHaveProperty("status");
+  });
+
+  it("insertTemplate cria tarefa todo com subs/prio/repeat/tags e undo desfaz", () => {
+    const { store } = seed();
+    const tpl: TaskTemplate = {
+      id: "x",
+      text: "preflight",
+      prio: 1,
+      note: "check",
+      subs: [{ id: "a", text: "sub", note: "", prio: 3, due: "", status: "done", blocked: false, subs: [] }],
+      tags: ["dev"],
+      repeat: "daily",
+    };
+    store.getState().insertTemplate("p1", "s1", tpl);
+    const created = store.getState().projetos[0].sections[0].tasks.at(-1)!;
+    expect(created.text).toBe("preflight");
+    expect(created.status).toBe("todo");
+    expect(created.prio).toBe(1);
+    expect(created.note).toBe("check");
+    expect(created.subs[0].status).toBe("done");
+    expect(created.tags).toEqual(["dev"]);
+    expect(created.repeat).toBe("daily");
+expect(created.due).toBe("");
+    expect(store.getState().canUndo).toBe(true);
+    store.getState().undo();
+    expect(store.getState().projetos[0].sections[0].tasks.map((t) => t.text)).toEqual(["tarefa 1", "tarefa 2"]);
+  });
+
+  it("deleteTemplate remove da lista", () => {
+    const { store, t } = seed();
+    store.getState().saveTemplate(t);
+    const id = store.getState().templates[0].id;
+    store.getState().deleteTemplate(id);
+    expect(store.getState().templates).toHaveLength(0);
   });
 });
 

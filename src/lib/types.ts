@@ -71,6 +71,17 @@ export interface AddTaskInput {
   tags?: string[];
 }
 
+/** Template de tarefa: snapshot atemporal (sem vencimento/status). */
+export interface TaskTemplate {
+  id: string;
+  text: string;
+  prio: Prio;
+  note?: string;
+  subs: SubTask[];
+  tags?: string[];
+  repeat?: Repeat;
+}
+
 export const STATUS_ORDER: Status[] = ["todo", "doing", "waiting", "done"];
 
 export const STATUS_LABEL: Record<Status, string> = {

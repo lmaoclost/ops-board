@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { CircleSlashIcon } from "lucide-react";
+import { CircleSlashIcon, SaveIcon } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { useT } from "@/hooks/useT";
 import { Button } from "@/components/ui/button";
@@ -25,6 +25,7 @@ export interface TaskRowProps {
   onEdit: () => void;
   onDelete: () => void;
   onUpdate: (patch: TaskPatch) => void;
+  onSaveTemplate: () => void;
 }
 
 export const NEXT_PRIO: Record<Prio, Prio> = { 1: 2, 2: 3, 3: 1 };
@@ -189,7 +190,7 @@ function SubRow({
   );
 }
 
-export function TaskRow({ task, onToggle, onPrioCycle, onStatusChange, onEdit, onDelete, onUpdate }: TaskRowProps) {
+export function TaskRow({ task, onToggle, onPrioCycle, onStatusChange, onEdit, onDelete, onUpdate, onSaveTemplate }: TaskRowProps) {
   const { t, status } = useT();
   const [addingSub, setAddingSub] = useState(false);
   const [subDraft, setSubDraft] = useState("");
@@ -343,6 +344,17 @@ export function TaskRow({ task, onToggle, onPrioCycle, onStatusChange, onEdit, o
         </Button>
         <Button type="button" variant="ghost" size="icon-xs" onClick={onEdit} title={t("editar")} aria-label={t("editar")}>
           ✎
+        </Button>
+        <Button
+          type="button"
+          variant="ghost"
+          size="icon-xs"
+          onClick={onSaveTemplate}
+          title={t("salvar como template")}
+          aria-label={t("salvar como template")}
+          className="text-[var(--dimmer)] opacity-0 transition-opacity group-hover:opacity-100 focus-visible:opacity-100 hover:text-[var(--text)]"
+        >
+          <SaveIcon />
         </Button>
         <Button
           type="button"

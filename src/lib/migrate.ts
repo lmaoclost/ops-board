@@ -1,4 +1,4 @@
-import { PRIOS, REPEATS, STATUSES, type Prio, type Project, type Repeat, type Section, type Status, type SubTask, type Task } from "./types";
+import { PRIOS, REPEATS, STATUSES, type Prio, type Project, type Repeat, type Section, type Status, type SubTask, type Task, type TaskTemplate } from "./types";
 
 export const SCHEMA_VERSION = 7;
 
@@ -63,17 +63,39 @@ export function normProject(p: UnknownRecord | undefined): Project {
   };
 }
 
+export function normTemplate(t: UnknownRecord | undefined): TaskTemplate {
+  const prio = PRIOS.includes(t?.prio as Prio) ? (t!.prio as Prio) : 3;
+  const repeat = REPEATS.includes(t?.repeat as Repeat) ? (t!.repeat as Repeat) : undefined;
+  return {
+    id: String(t?.id ?? ""),
+    text: String(t?.text ?? ""),
+    prio,
+    note: t?.note ? String(t.note) : undefined,
+    subs: Array.isArray(t?.subs) ? t.subs.map((s) => normSub(s as UnknownRecord)) : [],
+    tags: Array.isArray(t?.tags) ? t.tags.map((x) => String(x)).filter(Boolean) : undefined,
+    repeat,
+  };
+}
+
 /** Normaliza e valida estado; lança se não for { projetos: [...] }. */
-export function normalizeState(state: unknown): { projetos: Project[] } {
+export function normalizeState(state: unknown): { projetos: Project[]; templates: TaskTemplate[] } {
   const projetos = (state as UnknownRecord | null)?.projetos;
   if (!Array.isArray(projetos)) throw new Error("estado inválido");
-  return { projetos: projetos.map((p) => normProject(p as UnknownRecord)) };
+  const raw = state as UnknownRecord;
+  return {
+    projetos: projetos.map((p) => normProject(p as UnknownRecord)),
+    templates: Array.isArray(raw.templates) ? raw.templates.map((t) => normTemplate(t as UnknownRecord)) : [],
+  };
 }
 
 /** Migra formato legado (localStorage opsboard.v1 sem versão). Null se vazio/inválido. */
-export function migrateLegacy(raw: unknown): { projetos: Project[] } | null {
+export function migrateLegacy(raw: unknown): { projetos: Project[]; templates: TaskTemplate[] } | null {
   if (!raw || typeof raw !== "object" || !Array.isArray((raw as UnknownRecord).projetos)) return null;
   const projetos = (raw as UnknownRecord).projetos as UnknownRecord[];
   if (projetos.length === 0) return null;
-  return { projetos: projetos.map((p) => normProject(p)) };
+  const r = raw as UnknownRecord;
+  return {
+    projetos: projetos.map((p) => normProject(p)),
+    templates: Array.isArray(r.templates) ? r.templates.map((t) => normTemplate(t as UnknownRecord)) : [],
+  };
 }
