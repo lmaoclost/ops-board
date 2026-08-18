@@ -49,7 +49,7 @@ export default function Home() {
   const canUndo = useBoard((s) => s.canUndo);
   const [confirmClearOpen, setConfirmClearOpen] = useState(false);
   const [confirmImportOpen, setConfirmImportOpen] = useState(false);
-  const { filters, setQuery, toggleStatus, togglePrioSort, toggleView, toggleArchived, clear } = useFilters();
+  const { filters, setQuery, toggleStatus, togglePrioSort, setView, toggleView, toggleArchived, clear } = useFilters();
   const { resolvedTheme, setTheme } = useTheme();
   const isDark = resolvedTheme !== "light";
   const toggleTheme = () => setTheme(isDark ? "light" : "dark");
@@ -178,7 +178,7 @@ export default function Home() {
         isDark={isDark}
         onQueryChange={setQuery}
         onClearQuery={() => setQuery("")}
-        onToggleView={toggleView}
+        onViewChange={setView}
         onToggleTheme={toggleTheme}
         onNewProject={() => setNewProjectOpen(true)}
         onExport={handleExport}

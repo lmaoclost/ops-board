@@ -1,6 +1,6 @@
 import type { Prio, Project, Section, Status, Task } from "./types";
 
-export type View = "list" | "kanban";
+export type View = "list" | "kanban" | "agenda";
 export type StatusFilter = Status | "blocked" | null;
 
 export interface Filters {

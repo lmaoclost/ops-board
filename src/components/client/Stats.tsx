@@ -1,10 +1,11 @@
 import { useT } from "@/hooks/useT";
 import type { BoardStats } from "@/lib/selectors";
+import type { View } from "@/lib/filter";
 
 
 interface StatsProps {
   stats: BoardStats;
-  view: "list" | "kanban";
+  view: View;
 }
 
 const fmtPct = (done: number, total: number) => (total ? Math.round((done / total) * 100) : 0);
@@ -17,7 +18,9 @@ export function Stats({ stats, view }: StatsProps) {
   const hint =
     view === "kanban"
       ? t("kanban: arraste cartão entre colunas p/ mudar status")
-      : t("lista: arraste tarefas entre seções/projetos p/ mover");
+      : view === "agenda"
+        ? t("agenda: clique numa tarefa p/ editar")
+        : t("lista: arraste tarefas entre seções/projetos p/ mover");
 
   return (
     <div className="text-[11px] leading-[26px] text-[var(--muted-text)] flex flex-wrap items-center gap-x-4 gap-y-1" role="status">
