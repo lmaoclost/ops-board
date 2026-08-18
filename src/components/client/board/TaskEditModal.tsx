@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { Modal } from "@/components/client/Modal";
 import { Label } from "@/components/ui/label";
 import { useT } from "@/hooks/useT";
@@ -17,16 +17,31 @@ export interface TaskEditModalProps {
   isSub?: boolean;
   status?: Status;
   projetos?: Project[];
+  focusSubs?: boolean;
   onSubmit: (patch: TaskPatch, pid?: string) => void;
   onCancel: () => void;
 }
 
-export function TaskEditModal({ task, isSub, status, projetos, onSubmit, onCancel }: TaskEditModalProps) {
+export function TaskEditModal({ task, isSub, status, projetos, focusSubs, onSubmit, onCancel }: TaskEditModalProps) {
   const { t, status: statusLabel } = useT();
   const isCreate = status !== undefined;
   const [subs, setSubs] = useState<SubTask[]>(task?.subs ?? []);
   const [newSub, setNewSub] = useState("");
   const [pid, setPid] = useState<string | null>(projetos?.[0]?.id ?? null);
+  const subsRef = useRef<HTMLDivElement | null>(null);
+
+  useEffect(() => {
+    if (!focusSubs) return;
+    const el = subsRef.current;
+    const scrollId = window.setTimeout(() => {
+      subsRef.current?.scrollIntoView?.({ block: "center", behavior: "smooth" });
+    }, 50);
+    const clearId = window.setTimeout(() => el?.removeAttribute("data-focus"), 1600);
+    return () => {
+      window.clearTimeout(scrollId);
+      window.clearTimeout(clearId);
+    };
+  }, [focusSubs]);
 
   const addSub = () => {
     const text = newSub.trim();
@@ -109,7 +124,12 @@ export function TaskEditModal({ task, isSub, status, projetos, onSubmit, onCance
       onSubmit={submit}
       onCancel={onCancel}
     >
-      <div className="rounded-md border border-[var(--line)] bg-[var(--panel)] p-2.5">
+      <div
+        ref={subsRef}
+        data-testid="subs-section"
+        data-focus={focusSubs ? "" : undefined}
+        className="rounded-md border border-[var(--line)] bg-[var(--panel)] p-2.5"
+      >
         <Label className="mb-1.5 block text-[11px] font-semibold uppercase tracking-wider text-[var(--muted-text)]">
           sub-tarefas
         </Label>

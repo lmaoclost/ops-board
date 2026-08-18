@@ -217,3 +217,25 @@ test("kanban: prio cicla no badge do card", async ({ page }) => {
   await expect(card.getByText("P1", { exact: true })).toBeVisible();
   await expect(page.getByRole("dialog", { name: "editar tarefa" })).toHaveCount(0);
 });
+
+test("kanban: contador de subs abre o modal focado na seção de sub-tarefas", async ({ page }) => {
+  await page.goto("/");
+  await createProject(page, "app");
+  await addTask(page, "com sub");
+
+  const row = page.getByTestId("task-row").filter({ hasText: "com sub" });
+  await row.getByRole("button", { name: "editar", exact: true }).click();
+  await page.getByRole("textbox", { name: "nova sub-tarefa" }).fill("x");
+  await page.getByRole("textbox", { name: "nova sub-tarefa" }).press("Enter");
+  await page.getByRole("button", { name: "salvar" }).click();
+
+  await page.getByRole("button", { name: "kanban" }).click();
+  const card = page.getByTestId("kanban-task").filter({ hasText: "com sub" });
+  await card.getByRole("button", { name: "sub-tarefas 0/1" }).click();
+  const dialog = page.getByRole("dialog", { name: "editar tarefa" });
+  await expect(dialog).toBeVisible();
+  await expect(page.getByTestId("subs-section")).toBeInViewport();
+  await page.getByRole("checkbox", { name: "sub-tarefa x" }).click();
+  await page.getByRole("button", { name: "salvar" }).click();
+  await expect(card.getByRole("button", { name: "sub-tarefas 1/1" })).toBeVisible();
+});
