@@ -1,4 +1,4 @@
-import { useRef, useState } from "react";
+import { useMemo, useRef, useState } from "react";
 import { useDraggable, useDroppable } from "@dnd-kit/core";
 import { CSS } from "@dnd-kit/utilities";
 import { sortTasks } from "@/lib/filter";
@@ -224,6 +224,14 @@ export function Kanban({ projetos, prioSort, onEditTask, onDeleteTask, onAddTask
   const [editing, setEditing] = useState<FlatTask | null>(null);
   const [creating, setCreating] = useState<Status | null>(null);
   const [focusSubs, setFocusSubs] = useState(false);
+  const grouped = useMemo(
+    () =>
+      STATUS_ORDER.map((s) => ({
+        status: s,
+        items: sortTasks(flatTasks(projetos), !!prioSort, (i) => i.task.prio).filter((t) => t.task.status === s),
+      })),
+    [projetos, prioSort],
+  );
 
   if (!projetos.length) {
     return (
@@ -235,8 +243,6 @@ export function Kanban({ projetos, prioSort, onEditTask, onDeleteTask, onAddTask
   }
 
   const available = projetos.filter((p) => !p.archived);
-  const tasks = sortTasks(flatTasks(projetos), !!prioSort, (i) => i.task.prio);
-  const grouped = STATUS_ORDER.map((s) => ({ status: s, items: tasks.filter((t) => t.task.status === s) }));
 
   return (
     <>
