@@ -1,3 +1,4 @@
+import { useMemo } from "react";
 import { useT } from "@/hooks/useT";
 import { flatTasks } from "@/lib/flat";
 import type { Project } from "@/lib/types";
@@ -10,8 +11,12 @@ interface TrashProps {
 
 export function Trash({ projetos, onRestore, onPurge }: TrashProps) {
   const { t } = useT();
-  const items = flatTasks(projetos, true).toSorted((a, b) =>
-    (b.task.deletedAt ?? "").localeCompare(a.task.deletedAt ?? ""),
+  const items = useMemo(
+    () =>
+      flatTasks(projetos, true).toSorted((a, b) =>
+        (b.task.deletedAt ?? "").localeCompare(a.task.deletedAt ?? ""),
+      ),
+    [projetos],
   );
 
   if (!items.length) {
