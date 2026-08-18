@@ -63,17 +63,6 @@ describe("matchTask", () => {
     ).toBe(false);
   });
 
-  it("tag: filtra por tag ignorando maiúsculas", () => {
-    expect(matchTask(task({ tags: ["dev", "urgente"] }), { ...none, query: "tag:dev" })).toBe(true);
-    expect(matchTask(task({ tags: ["dev"] }), { ...none, query: "tag:URGENTE" })).toBe(false);
-    expect(matchTask(task({ tags: ["dev"] }), { ...none, query: "tag:" })).toBe(false);
-    expect(matchTask(task({ tags: ["dev"] }), { ...none, query: "tag:dev2" })).toBe(false);
-  });
-
-  it("tags entram na busca normal", () => {
-    expect(matchTask(task({ text: "x", tags: ["backend"] }), { ...none, query: "backend" })).toBe(true);
-  });
-
   it("tarefa na lixeira não casa nenhum filtro", () => {
     expect(matchTask(task({ deletedAt: "2026-08-18T10:00:00.000Z" }), none)).toBe(false);
     expect(matchTask(task({ deletedAt: "2026-08-18T10:00:00.000Z", text: "x" }), { ...none, query: "x" })).toBe(false);

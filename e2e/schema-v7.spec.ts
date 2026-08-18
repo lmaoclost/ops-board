@@ -47,24 +47,6 @@ test("recorrência diária: concluir re-agenda para amanhã em vez de concluir",
   await expect(page.getByText("próximos 7 dias", { exact: true })).toBeVisible();
 });
 
-test("tags: salva, mostra badge e tag: filtra na busca", async ({ page }) => {
-  await page.goto("/");
-  await createProject(page, "app");
-  await addTask(page, "deploy");
-  await addTask(page, "outra");
-  await openEdit(page, "deploy");
-  const dialog = page.getByRole("dialog", { name: "editar tarefa" });
-  await dialog.getByLabel("tags").fill("dev, urgente");
-  await page.getByRole("button", { name: "salvar" }).click();
-
-  await expect(page.getByText("#dev", { exact: true })).toBeVisible();
-  await expect(page.getByText("#urgente", { exact: true })).toBeVisible();
-
-  await page.getByLabel("buscar tarefas").fill("tag:dev");
-  await expect(page.getByText("deploy", { exact: true })).toBeVisible();
-  await expect(page.getByText("outra", { exact: true })).not.toBeVisible();
-});
-
 test("lixeira: excluir esconde, restaurar devolve, excluir definitivamente remove", async ({ page }) => {
   await page.goto("/");
   await createProject(page, "app");

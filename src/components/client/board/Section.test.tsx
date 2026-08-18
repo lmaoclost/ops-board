@@ -19,10 +19,6 @@ const base = (over: Partial<SectionProps> = {}): SectionProps => ({
   onAddTask: vi.fn(),
   onRename: vi.fn(),
   onDelete: vi.fn(),
-  templates: [],
-  projectTasks: [],
-  onInsertTemplate: vi.fn(),
-  onDeleteTemplate: vi.fn(),
   taskActions: {
     onToggle: vi.fn(),
     onPrioCycle: vi.fn(),
@@ -30,7 +26,6 @@ const base = (over: Partial<SectionProps> = {}): SectionProps => ({
     onEdit: vi.fn(),
     onDelete: vi.fn(),
     onUpdate: vi.fn(),
-    onSaveTemplate: vi.fn(),
   },
   ...over,
 });

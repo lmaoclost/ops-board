@@ -13,8 +13,7 @@ import {
 } from "@/components/ui/dropdown-menu";
 import { Input } from "@/components/ui/input";
 import { sortTasks, visibleTasks, type Filters } from "@/lib/filter";
-import type { TaskPatch, Task, TaskTemplate } from "@/lib/types";
-import { blockedBy } from "@/lib/deps";
+import type { TaskPatch, Task } from "@/lib/types";
 import { SortableTaskItem } from "@/components/client/dnd/SortableTaskItem";
 import { TaskEditModal } from "@/components/client/board/TaskEditModal";
 
@@ -25,7 +24,6 @@ export interface SectionTaskActions {
   onEdit: (tid: string, patch: TaskPatch) => void;
   onDelete: (tid: string) => void;
   onUpdate: (tid: string, patch: TaskPatch) => void;
-  onSaveTemplate: (tid: string) => void;
 }
 
 export interface SectionProps {
@@ -41,16 +39,12 @@ export interface SectionProps {
   onAddTask: (text: string) => void;
   onRename: (title: string) => void;
   onDelete: () => void;
-  onInsertTemplate: (tpl: TaskTemplate) => void;
-  onDeleteTemplate: (id: string) => void;
-  templates: TaskTemplate[];
-  projectTasks: Task[];
   taskActions: SectionTaskActions;
   prioSort?: boolean;
   filters?: Filters;
 }
 
-export function Section({ projectId, section, onToggleSection, onAddTask, onRename, onDelete, onInsertTemplate, onDeleteTemplate, templates, projectTasks, taskActions, prioSort, filters }: SectionProps) {
+export function Section({ projectId, section, onToggleSection, onAddTask, onRename, onDelete, taskActions, prioSort, filters }: SectionProps) {
   const { t } = useT();
   const [draft, setDraft] = useState("");
   const [editingId, setEditingId] = useState<string | null>(null);
@@ -151,8 +145,6 @@ export function Section({ projectId, section, onToggleSection, onAddTask, onRena
                   onEdit={() => setEditingId(t.id)}
                   onDelete={() => taskActions.onDelete(t.id)}
                   onUpdate={(patch) => taskActions.onUpdate(t.id, patch)}
-                  onSaveTemplate={() => taskActions.onSaveTemplate(t.id)}
-                  blockedByText={blockedBy(t, projectTasks)?.text}
                 />
               ))}
             </SortableContext>
@@ -182,46 +174,6 @@ export function Section({ projectId, section, onToggleSection, onAddTask, onRena
               spellCheck={false}
               aria-label={t("nova tarefa")}
             />
-            <DropdownMenu>
-              <DropdownMenuTrigger
-                render={
-                  <Button
-                    type="button"
-                    variant="ghost"
-                    size="icon-xs"
-                    title={t("inserir template")}
-                    aria-label={t("inserir template")}
-                    className="text-[var(--dimmer)]"
-                  >
-                    ⧉
-                  </Button>
-                }
-              />
-              <DropdownMenuContent align="end" className="max-h-64 overflow-y-auto bg-[var(--panel-2)] text-[var(--text)]">
-                {templates.length === 0 && (
-                  <DropdownMenuItem disabled className="text-xs text-[var(--dimmer)]">
-                    {t("nenhum template salvo")}
-                  </DropdownMenuItem>
-                )}
-                {templates.map((tpl) => (
-                  <DropdownMenuItem key={tpl.id} className="flex items-center justify-between gap-3 text-xs" onClick={() => onInsertTemplate(tpl)}>
-                    <span className="min-w-0 truncate">{tpl.text}</span>
-                    <button
-                      type="button"
-                      aria-label={`${t("excluir template")} ${tpl.text}`}
-                      title={t("excluir template")}
-                      onClick={(e) => {
-                        e.stopPropagation();
-                        onDeleteTemplate(tpl.id);
-                      }}
-                      className="shrink-0 text-[var(--dimmer)] hover:text-[var(--fired)]"
-                    >
-                      ×
-                    </button>
-                  </DropdownMenuItem>
-                ))}
-              </DropdownMenuContent>
-            </DropdownMenu>
           </div>
         </div>
       )}
@@ -239,7 +191,6 @@ export function Section({ projectId, section, onToggleSection, onAddTask, onRena
       {editing && (
         <TaskEditModal
           task={editing}
-          tasks={projectTasks}
           onSubmit={(patch) => {
             taskActions.onEdit(editing.id, patch);
             setEditingId(null);

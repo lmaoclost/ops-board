@@ -17,13 +17,12 @@ export interface TaskEditModalProps {
   isSub?: boolean;
   status?: Status;
   projetos?: Project[];
-  tasks?: Task[];
   focusSubs?: boolean;
   onSubmit: (patch: TaskPatch, pid?: string) => void;
   onCancel: () => void;
 }
 
-export function TaskEditModal({ task, isSub, status, projetos, tasks, focusSubs, onSubmit, onCancel }: TaskEditModalProps) {
+export function TaskEditModal({ task, isSub, status, projetos, focusSubs, onSubmit, onCancel }: TaskEditModalProps) {
   const { t, status: statusLabel } = useT();
   const isCreate = status !== undefined;
   const taskFields = (task as Task | undefined);
@@ -69,11 +68,6 @@ export function TaskEditModal({ task, isSub, status, projetos, tasks, focusSubs,
           ? {}
           : {
               repeat: v.repeat ? (v.repeat as Repeat) : null,
-              tags: String(v.tags ?? "")
-                .split(",")
-                .map((s) => s.trim())
-                .filter(Boolean),
-              dependsOn: v.dependsOn ? [String(v.dependsOn)] : [],
             }),
       },
       pid ?? undefined,
@@ -110,19 +104,6 @@ export function TaskEditModal({ task, isSub, status, projetos, tasks, focusSubs,
                   { value: "daily", label: t("diária") },
                   { value: "weekly", label: t("semanal") },
                   { value: "monthly", label: t("mensal") },
-                ],
-              },
-              { key: "tags", label: t("tags"), type: "text", value: (taskFields?.tags ?? []).join(", "), placeholder: t("separar por vírgula") },
-              {
-                key: "dependsOn",
-                label: t("depende de"),
-                type: "select",
-                value: taskFields?.dependsOn?.[0] ?? "",
-                options: [
-                  { value: "", label: t("sem dependência") },
-                  ...(tasks ?? [])
-                    .filter((x) => x.id !== task?.id)
-                    .map((x) => ({ value: x.id, label: x.text })),
                 ],
               },
             ] satisfies ModalField[])
