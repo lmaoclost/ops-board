@@ -260,6 +260,19 @@ export function TaskRow({ task, onToggle, onPrioCycle, onStatusChange, onEdit, o
                 dangerouslySetInnerHTML={{ __html: ` — ${linkify(task.note)}` }}
               />
             )}
+            {task.repeat && (
+              <span className="shrink-0 text-[10px] font-semibold text-[var(--dim)]" title={t("recorrência")}>
+                ↻ {t(task.repeat)}
+              </span>
+            )}
+            {(task.tags ?? []).map((tag) => (
+              <span
+                key={tag}
+                className="shrink-0 rounded border border-[var(--line-soft)] bg-[var(--field)] px-1 py-0.5 text-[10px] text-[var(--dim)]"
+              >
+                #{tag}
+              </span>
+            ))}
           </span>
         )}
         {task.blocked && (

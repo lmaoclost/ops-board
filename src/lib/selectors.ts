@@ -28,6 +28,7 @@ export function deriveStats(projetos: Project[]): BoardStats {
   for (const p of projetos) {
     for (const s of p.sections) {
       for (const t of s.tasks) {
+        if (t.deletedAt) continue;
         total++;
         byStatus[t.status]++;
         if (t.blocked) blocked++;
@@ -42,4 +43,4 @@ export function deriveStats(projetos: Project[]): BoardStats {
 }
 
 export const allTasks = (projetos: Project[]): Task[] =>
-  projetos.flatMap((p) => p.sections.flatMap((s) => s.tasks));
+  projetos.flatMap((p) => p.sections.flatMap((s) => s.tasks.filter((t) => !t.deletedAt)));

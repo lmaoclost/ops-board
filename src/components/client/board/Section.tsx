@@ -132,10 +132,10 @@ export function Section({ projectId, section, onToggleSection, onAddTask, onRena
             className={`flex flex-col gap-0.5 rounded-md ${isOver ? "outline outline-1 outline-[var(--fired)]/50" : ""}`}
           >
             <SortableContext
-              items={sortTasks(filters ? visibleTasks(section.tasks, filters) : section.tasks, !!prioSort, (t) => t.prio).map((t) => `task:${t.id}`)}
+              items={sortTasks(filters ? visibleTasks(section.tasks, filters) : section.tasks.filter((t) => !t.deletedAt), !!prioSort, (t) => t.prio).map((t) => `task:${t.id}`)}
               strategy={verticalListSortingStrategy}
             >
-              {sortTasks(filters ? visibleTasks(section.tasks, filters) : section.tasks, !!prioSort, (t) => t.prio).map((t) => (
+              {sortTasks(filters ? visibleTasks(section.tasks, filters) : section.tasks.filter((t) => !t.deletedAt), !!prioSort, (t) => t.prio).map((t) => (
                 <SortableTaskItem
                   key={t.id}
                   task={t}

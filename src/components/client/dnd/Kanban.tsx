@@ -123,6 +123,19 @@ function KanbanTask({
         </button>
       </div>
       <div className="mt-1 flex items-center gap-1.5">
+        {item.task.repeat && (
+          <span className="text-[10px] font-semibold text-[var(--dim)]" title={t("recorrência")}>
+            ↻ {t(item.task.repeat)}
+          </span>
+        )}
+        {(item.task.tags ?? []).map((tag) => (
+          <span
+            key={tag}
+            className="rounded border border-[var(--line-soft)] bg-[var(--field)] px-1 py-0.5 text-[9px] text-[var(--dim)]"
+          >
+            #{tag}
+          </span>
+        ))}
         {item.task.blocked && (
           <span className="text-[10px] font-bold uppercase tracking-[0.08em] text-[var(--gave)]" title={t("bloqueada")}>
             ⛔ bloqueada
@@ -279,7 +292,7 @@ export function Kanban({ projetos, prioSort, onEditTask, onDeleteTask, onAddTask
             const proj = projetos.find((p) => p.id === pid);
             const sid = proj?.sections[0]?.id;
             if (pid && sid && patch.text) {
-              onAddTask(pid, sid, { ...patch, text: patch.text, status: creating });
+              onAddTask(pid, sid, { ...patch, text: patch.text, status: creating, repeat: patch.repeat ?? undefined });
               setCreating(null);
             }
           }}

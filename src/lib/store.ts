@@ -2,7 +2,9 @@ import { create } from "zustand";
 import { createJSONStorage, persist } from "zustand/middleware";
 import { migrateLegacy, normalizeState, SCHEMA_VERSION } from "./migrate";
 import type { Locale } from "./i18n";
-import type { AddTaskInput, Prio, Project, Status, SubTask, TaskPatch } from "./types";
+import { nextDue } from "./repeat";
+import { todayISO } from "./date";
+import type { AddTaskInput, Prio, Project, Status, SubTask, Task, TaskPatch } from "./types";
 import { uid } from "./uid";
 
 let storageErrorHandler: (() => void) | null = null;
@@ -42,6 +44,8 @@ interface BoardStore {
   addTaskFull: (pid: string, sid: string, input: AddTaskInput) => void;
   editTask: (pid: string, sid: string, tid: string, patch: TaskPatch) => void;
   deleteTask: (pid: string, sid: string, tid: string) => void;
+  restoreTask: (pid: string, sid: string, tid: string) => void;
+  purgeTask: (pid: string, sid: string, tid: string) => void;
   setTaskStatus: (pid: string, sid: string, tid: string, status: Status) => void;
   setTaskPrio: (pid: string, sid: string, tid: string, prio: Prio) => void;
   cycleTaskPrio: (pid: string, sid: string, tid: string) => void;
@@ -61,6 +65,10 @@ const findSection = (projetos: Project[], pid: string, sid: string) =>
   findProject(projetos, pid)?.sections.find((s) => s.id === sid);
 const findTask = (projetos: Project[], pid: string, sid: string, tid: string) =>
   findSection(projetos, pid, sid)?.tasks.find((t) => t.id === tid);
+
+/** Tarefa recorrente concluída: volta p/ todo com próxima due (nunca vencida). */
+const applyRepeat = (t: Task): Task =>
+  t.repeat ? { ...t, status: "todo", due: nextDue(t.repeat, t.due, todayISO()), doneAt: null } : t;
 
 export function reconcileSubs(subs: SubTask[]): SubTask[] {
   return subs.map((s) => {
@@ -206,6 +214,8 @@ export function createBoardStore(initial: Project[] = []) {
                                   due: input.due ?? "",
                                   doneAt: input.status === "done" ? new Date().toISOString() : null,
                                   subs: input.subs ? reconcileSubs(input.subs) : [],
+                                  repeat: input.repeat,
+                                  tags: input.tags,
                                 },
                               ],
                             }
@@ -247,6 +257,9 @@ export function createBoardStore(initial: Project[] = []) {
                                         due: patch.due ?? t.due,
                                         subs,
                                         status,
+                                        repeat: patch.repeat !== undefined ? (patch.repeat ?? undefined) : t.repeat,
+                                        tags: patch.tags ?? t.tags,
+                                        deletedAt: patch.deletedAt !== undefined ? patch.deletedAt : t.deletedAt,
                                       };
                                     })()
                                   : t,
@@ -261,6 +274,42 @@ export function createBoardStore(initial: Project[] = []) {
           ),
 
         deleteTask: (pid, sid, tid) =>
+          commit(() =>
+            set((s) => ({
+              projetos: s.projetos.map((p) =>
+                p.id === pid
+                  ? {
+                      ...p,
+                      sections: p.sections.map((sec) =>
+                        sec.id === sid
+                          ? { ...sec, tasks: sec.tasks.map((t) => (t.id === tid ? { ...t, deletedAt: new Date().toISOString() } : t)) }
+                          : sec,
+                      ),
+                    }
+                  : p,
+              ),
+            })),
+          ),
+
+        restoreTask: (pid, sid, tid) =>
+          commit(() =>
+            set((s) => ({
+              projetos: s.projetos.map((p) =>
+                p.id === pid
+                  ? {
+                      ...p,
+                      sections: p.sections.map((sec) =>
+                        sec.id === sid
+                          ? { ...sec, tasks: sec.tasks.map((t) => (t.id === tid ? { ...t, deletedAt: null } : t)) }
+                          : sec,
+                      ),
+                    }
+                  : p,
+              ),
+            })),
+          ),
+
+        purgeTask: (pid, sid, tid) =>
           commit(() =>
             set((s) => ({
               projetos: s.projetos.map((p) =>
@@ -283,6 +332,7 @@ export function createBoardStore(initial: Project[] = []) {
               if (!t) return s;
               const wasDone = t.status === "done";
               const doneAt = status === "done" && !wasDone ? new Date().toISOString() : status !== "done" && wasDone ? null : t.doneAt;
+              const repeated = status === "done" && !wasDone && t.repeat ? applyRepeat(t) : null;
               return {
                 projetos: s.projetos.map((p) =>
                   p.id === pid
@@ -290,7 +340,7 @@ export function createBoardStore(initial: Project[] = []) {
                         ...p,
                         sections: p.sections.map((sec) =>
                           sec.id === sid
-                            ? { ...sec, tasks: sec.tasks.map((x) => (x.id === tid ? { ...x, status, doneAt } : x)) }
+                            ? { ...sec, tasks: sec.tasks.map((x) => (x.id === tid ? (repeated ?? { ...x, status, doneAt }) : x)) }
                             : sec,
                         ),
                       }
@@ -347,6 +397,7 @@ export function createBoardStore(initial: Project[] = []) {
               const t = findTask(s.projetos, pid, sid, tid);
               if (!t) return s;
               const status: Status = t.status === "done" ? "todo" : "done";
+              const repeated = status === "done" && t.repeat ? applyRepeat(t) : null;
               const doneAt = status === "done" ? new Date().toISOString() : null;
               return {
                 projetos: s.projetos.map((p) =>
@@ -355,7 +406,7 @@ export function createBoardStore(initial: Project[] = []) {
                         ...p,
                         sections: p.sections.map((sec) =>
                           sec.id === sid
-                            ? { ...sec, tasks: sec.tasks.map((x) => (x.id === tid ? { ...x, status, doneAt } : x)) }
+                            ? { ...sec, tasks: sec.tasks.map((x) => (x.id === tid ? (repeated ?? { ...x, status, doneAt }) : x)) }
                             : sec,
                         ),
                       }

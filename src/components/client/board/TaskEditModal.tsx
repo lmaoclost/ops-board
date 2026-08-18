@@ -1,9 +1,9 @@
 import { useEffect, useRef, useState } from "react";
-import { Modal } from "@/components/client/Modal";
+import { Modal, type ModalField } from "@/components/client/Modal";
 import { Label } from "@/components/ui/label";
 import { useT } from "@/hooks/useT";
 import { makeSub } from "@/lib/subtasks";
-import type { Project, Status, SubTask, Task, TaskPatch } from "@/lib/types";
+import type { Project, Repeat, Status, SubTask, Task, TaskPatch } from "@/lib/types";
 import {
   Select,
   SelectContent,
@@ -25,6 +25,7 @@ export interface TaskEditModalProps {
 export function TaskEditModal({ task, isSub, status, projetos, focusSubs, onSubmit, onCancel }: TaskEditModalProps) {
   const { t, status: statusLabel } = useT();
   const isCreate = status !== undefined;
+  const taskFields = (task as Task | undefined);
   const [subs, setSubs] = useState<SubTask[]>(task?.subs ?? []);
   const [newSub, setNewSub] = useState("");
   const [pid, setPid] = useState<string | null>(projetos?.[0]?.id ?? null);
@@ -63,6 +64,15 @@ export function TaskEditModal({ task, isSub, status, projetos, focusSubs, onSubm
         prio: (Number(v.prio) || 3) as Task["prio"],
         due: String(v.due ?? ""),
         subs,
+        ...(isSub
+          ? {}
+          : {
+              repeat: v.repeat ? (v.repeat as Repeat) : null,
+              tags: String(v.tags ?? "")
+                .split(",")
+                .map((s) => s.trim())
+                .filter(Boolean),
+            }),
       },
       pid ?? undefined,
     );
@@ -86,6 +96,23 @@ export function TaskEditModal({ task, isSub, status, projetos, focusSubs, onSubm
           ],
         },
         { key: "due", label: t("vencimento"), type: "date", value: task?.due ?? "" },
+        ...(!isSub
+          ? ([
+              {
+                key: "repeat",
+                label: t("recorrência"),
+                type: "select",
+                value: taskFields?.repeat ?? "",
+                options: [
+                  { value: "", label: t("não repete") },
+                  { value: "daily", label: t("diária") },
+                  { value: "weekly", label: t("semanal") },
+                  { value: "monthly", label: t("mensal") },
+                ],
+              },
+              { key: "tags", label: t("tags"), type: "text", value: (taskFields?.tags ?? []).join(", "), placeholder: t("separar por vírgula") },
+            ] satisfies ModalField[])
+          : []),
         { key: "note", label: t("nota"), type: "textarea", value: task?.note ?? "", placeholder: t("detalhe opcional…") },
         { key: "blocked", label: t("marcar como bloqueada / stuck"), type: "checkbox", value: task?.blocked ?? false },
       ]}
