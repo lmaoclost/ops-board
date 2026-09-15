@@ -127,7 +127,7 @@ export interface StatusDropPatch {
   doneAt?: string | null;
 }
 
-export function applyStatusDrop(status: Status, wasDone = false, currentDoneAt: string | null = null): StatusDropPatch {
+export function applyStatusDrop(status: Status, wasDone = false): StatusDropPatch {
   const transitioningToDone = status === "done" && !wasDone;
   const transitioningFromDone = status !== "done" && wasDone;
   const patch: StatusDropPatch = { status };

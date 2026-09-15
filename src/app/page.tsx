@@ -44,7 +44,6 @@ export default function Home() {
   const deleteTask = useBoard((s) => s.deleteTask);
   const purgeTask = useBoard((s) => s.purgeTask);
   const setTaskStatus = useBoard((s) => s.setTaskStatus);
-  const setTaskPrio = useBoard((s) => s.setTaskPrio);
   const cycleTaskPrio = useBoard((s) => s.cycleTaskPrio);
   const toggleTask = useBoard((s) => s.toggleTask);
   const toggleSection = useBoard((s) => s.toggleSection);

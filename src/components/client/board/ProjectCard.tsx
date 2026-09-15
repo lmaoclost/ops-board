@@ -27,19 +27,6 @@ import {
 import type { SectionLevelActions, TaskLevelActions } from "./Board";
 import type { Filters } from "@/lib/filter";
 
-export interface ProjectActions {
-  onAddSection: (title: string, notes?: string) => void;
-  onRename: (
-    id: string,
-    title: string,
-    blocked: boolean,
-    due?: string,
-    note?: string,
-    blockedReason?: string,
-  ) => void;
-  onDelete: (id: string) => void;
-}
-
 export interface ProjectCardProps {
   project: Project;
   collectActions: (projectId: string) => {

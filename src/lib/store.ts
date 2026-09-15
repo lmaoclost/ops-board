@@ -50,7 +50,6 @@ interface BoardStore {
   restoreTask: (pid: string, sid: string, tid: string) => void;
   purgeTask: (pid: string, sid: string, tid: string) => void;
   setTaskStatus: (pid: string, sid: string, tid: string, status: Status) => void;
-  setTaskPrio: (pid: string, sid: string, tid: string, prio: Prio) => void;
   cycleTaskPrio: (pid: string, sid: string, tid: string) => void;
   toggleTask: (pid: string, sid: string, tid: string) => void;
   toggleSection: (pid: string, sid: string) => void;
@@ -400,24 +399,6 @@ export function createBoardStore(initial: Project[] = []) {
                 ),
               };
             }),
-          ),
-
-        setTaskPrio: (pid, sid, tid, prio) =>
-          commit(() =>
-            set((s) => ({
-              projetos: s.projetos.map((p) =>
-                p.id === pid
-                  ? {
-                      ...p,
-                      sections: p.sections.map((sec) =>
-                        sec.id === sid
-                          ? { ...sec, tasks: sec.tasks.map((t) => (t.id === tid ? { ...t, prio } : t)) }
-                          : sec,
-                      ),
-                    }
-                  : p,
-              ),
-            })),
           ),
 
         cycleTaskPrio: (pid, sid, tid) =>

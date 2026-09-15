@@ -112,7 +112,7 @@ describe("board store", () => {
   });
 
   it("cicla prioridade da tarefa em 1→2→3→4→5→1", () => {
-    store.getState().setTaskPrio("p1", "s1", "t1", 1);
+    store.getState().editTask("p1", "s1", "t1", { prio: 1 });
     for (const expected of [2, 3, 4, 5, 1]) {
       store.getState().cycleTaskPrio("p1", "s1", "t1");
       expect(store.getState().projetos[0].sections[0].tasks[0].prio).toBe(expected);
@@ -313,12 +313,12 @@ describe("board store", () => {
   });
 
   it("muda prioridade ciclicamente", () => {
-    store.getState().setTaskPrio("p1", "s1", "t1", 2);
+    store.getState().editTask("p1", "s1", "t1", { prio: 2 });
     expect(store.getState().projetos[0].sections[0].tasks[0].prio).toBe(2);
   });
 
   it("cicla prioridade 5→1 (volta ao topo)", () => {
-    store.getState().setTaskPrio("p1", "s1", "t1", 5);
+    store.getState().editTask("p1", "s1", "t1", { prio: 5 });
     store.getState().cycleTaskPrio("p1", "s1", "t1");
     expect(store.getState().projetos[0].sections[0].tasks[0].prio).toBe(1);
   });

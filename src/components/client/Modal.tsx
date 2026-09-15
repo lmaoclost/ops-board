@@ -1,4 +1,4 @@
-import { useId, useState, type ReactNode } from "react";
+import { useState, type ReactNode } from "react";
 import { useT } from "@/hooks/useT";
 import {
   Dialog,
@@ -39,7 +39,6 @@ interface ModalProps {
 
 export function Modal({ title, fields, submitLabel = "salvar", onSubmit, onCancel, onFieldChange, children, topChildren }: ModalProps) {
   const { t } = useT();
-  const titleId = useId();
   const [checks, setChecks] = useState<Record<string, boolean>>(() =>
     Object.fromEntries(fields.filter((f) => f.type === "checkbox").map((f) => [f.key, Boolean(f.value)])),
   );
