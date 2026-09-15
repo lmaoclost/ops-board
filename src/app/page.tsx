@@ -257,11 +257,7 @@ const notifiedRef = useRef(false);
               setProjectPrio(id, ((p.prio % 5) + 1) as Prio);
             },
             onToggleCollapse: (id) => toggleProjectCollapsed(id),
-            onMoveProject: (pid, overPid) => {
-              const all = useBoard.getState().projetos;
-              const index = all.findIndex((p) => p.id === overPid);
-              if (index !== -1) moveProject(pid, index);
-            },
+            onMoveProject: (pid, overPid) => moveProject(pid, overPid),
           }}
           sectionActions={{
             onToggle: (pid, sid) => toggleSection(pid, sid),

@@ -40,7 +40,7 @@ interface BoardStore {
   addSection: (pid: string, input: AddSectionInput) => void;
   editSection: (pid: string, sid: string, patch: SectionPatch) => void;
   moveSection: (pid: string, sid: string, index: number) => void;
-  moveProject: (pid: string, index: number) => void;
+  moveProject: (pid: string, overPid: string) => void;
   deleteSection: (pid: string, sid: string) => void;
   addTask: (pid: string, sid: string, text: string) => void;
   addTaskFull: (pid: string, sid: string, input: AddTaskInput) => void;
@@ -218,14 +218,15 @@ export function createBoardStore(initial: Project[] = []) {
             })),
           ),
 
-        moveProject: (pid, index) =>
+        moveProject: (pid, overPid) =>
           commit(() =>
             set((s) => {
               const from = s.projetos.findIndex((p) => p.id === pid);
-              if (from === -1) return s;
+              const index = s.projetos.findIndex((p) => p.id === overPid);
+              if (from === -1 || index === -1) return s;
               const next = [...s.projetos];
               const [moved] = next.splice(from, 1);
-              next.splice(Math.max(0, Math.min(index, next.length)), 0, moved);
+              next.splice(index, 0, moved);
               return { projetos: next };
             }),
           ),

@@ -90,13 +90,20 @@ describe("board store", () => {
     expect(store.getState().projetos[0].blockedReason).toBe("aguardando cliente");
   });
 
-  it("moveProject reordena projetos", () => {
+  it("moveProject reordena projetos pelo alvo", () => {
     store.getState().addProject({ title: "B" });
     store.getState().addProject({ title: "C" });
-    store.getState().moveProject("p1", 2);
+    const ids = Object.fromEntries(store.getState().projetos.map((p) => [p.title, p.id]));
+    store.getState().moveProject(ids["Projeto A"], ids["C"]);
     expect(store.getState().projetos.map((p) => p.title)).toEqual(["B", "C", "Projeto A"]);
-    store.getState().moveProject("p1", 0);
+    store.getState().moveProject(ids["Projeto A"], ids["B"]);
     expect(store.getState().projetos.map((p) => p.title)).toEqual(["Projeto A", "B", "C"]);
+  });
+
+  it("moveProject ignora ids inexistentes", () => {
+    store.getState().moveProject("fantasma", "p1");
+    store.getState().moveProject("p1", "fantasma");
+    expect(store.getState().projetos.map((p) => p.id)).toEqual(["p1"]);
   });
 
   it("editSection atualiza notas da seção", () => {
