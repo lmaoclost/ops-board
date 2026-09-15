@@ -4,7 +4,7 @@ import { migrateLegacy, normalizeState, purgeExpired, SCHEMA_VERSION } from "./m
 import type { Locale } from "./i18n";
 import { nextDue } from "./repeat";
 import { todayISO } from "./date";
-import type { AddTaskInput, Prio, Project, Status, SubTask, Task, TaskPatch } from "./types";
+import type { AddProjectInput, AddSectionInput, AddTaskInput, Prio, Project, ProjectPatch, SectionPatch, Status, SubTask, Task, TaskPatch } from "./types";
 import { uid } from "./uid";
 
 let storageErrorHandler: (() => void) | null = null;
@@ -31,14 +31,16 @@ interface BoardStore {
   setLocale: (locale: Locale) => void;
   canUndo: boolean;
   undo: () => void;
-  addProject: (title: string) => void;
-  renameProject: (id: string, title: string, blocked: boolean, due?: string) => void;
+  addProject: (input: AddProjectInput) => void;
+  editProject: (id: string, patch: ProjectPatch) => void;
   deleteProject: (id: string) => void;
   toggleProjectArchive: (id: string) => void;
   setProjectPrio: (id: string, prio: Prio) => void;
   toggleProjectCollapsed: (id: string) => void;
-  addSection: (pid: string, title: string) => void;
-  renameSection: (pid: string, sid: string, title: string) => void;
+  addSection: (pid: string, input: AddSectionInput) => void;
+  editSection: (pid: string, sid: string, patch: SectionPatch) => void;
+  moveSection: (pid: string, sid: string, index: number) => void;
+  moveProject: (pid: string, overPid: string) => void;
   deleteSection: (pid: string, sid: string) => void;
   addTask: (pid: string, sid: string, text: string) => void;
   addTaskFull: (pid: string, sid: string, input: AddTaskInput) => void;
@@ -47,7 +49,6 @@ interface BoardStore {
   restoreTask: (pid: string, sid: string, tid: string) => void;
   purgeTask: (pid: string, sid: string, tid: string) => void;
   setTaskStatus: (pid: string, sid: string, tid: string, status: Status) => void;
-  setTaskPrio: (pid: string, sid: string, tid: string, prio: Prio) => void;
   cycleTaskPrio: (pid: string, sid: string, tid: string) => void;
   toggleTask: (pid: string, sid: string, tid: string) => void;
   toggleSection: (pid: string, sid: string) => void;
@@ -106,7 +107,7 @@ export function createBoardStore(initial: Project[] = []) {
           set({ canUndo: undoStack.length > 0 });
         },
 
-        addProject: (title) =>
+        addProject: ({ title, note, due }) =>
           commit(() =>
             set((s) => ({
               projetos: [
@@ -114,10 +115,12 @@ export function createBoardStore(initial: Project[] = []) {
                 {
                   id: uid(),
                   title,
+                  note: note ?? "",
                   blocked: false,
+                  blockedReason: "",
                   archived: false,
-                  prio: 3,
-                  due: "",
+                  prio: 5,
+                  due: due ?? "",
                   collapsed: false,
                   sections: [{ id: uid(), title: "geral", tasks: [], notes: "", collapsed: false }],
                 },
@@ -125,11 +128,20 @@ export function createBoardStore(initial: Project[] = []) {
             })),
           ),
 
-        renameProject: (id, title, blocked, due) =>
+        editProject: (id, patch) =>
           commit(() =>
             set((s) => ({
               projetos: s.projetos.map((p) =>
-                p.id === id ? { ...p, title, blocked, ...(due !== undefined ? { due } : {}) } : p,
+                p.id === id
+                  ? {
+                      ...p,
+                      title: patch.title,
+                      blocked: patch.blocked,
+                      ...(patch.due !== undefined ? { due: patch.due } : {}),
+                      ...(patch.note !== undefined ? { note: patch.note } : {}),
+                      ...(patch.blockedReason !== undefined ? { blockedReason: patch.blockedReason } : {}),
+                    }
+                  : p,
               ),
             })),
           ),
@@ -158,26 +170,65 @@ export function createBoardStore(initial: Project[] = []) {
             })),
           ),
 
-        addSection: (pid, title) =>
+        addSection: (pid, { title, notes }) =>
           commit(() =>
             set((s) => ({
               projetos: s.projetos.map((p) =>
                 p.id === pid
-                  ? { ...p, sections: [...p.sections, { id: uid(), title, tasks: [], notes: "", collapsed: false }] }
+                  ? { ...p, sections: [...p.sections, { id: uid(), title, tasks: [], notes: notes ?? "", collapsed: false }] }
                   : p,
               ),
             })),
           ),
 
-        renameSection: (pid, sid, title) =>
+        editSection: (pid, sid, patch) =>
           commit(() =>
             set((s) => ({
               projetos: s.projetos.map((p) =>
                 p.id === pid
-                  ? { ...p, sections: p.sections.map((sec) => (sec.id === sid ? { ...sec, title } : sec)) }
+                  ? {
+                      ...p,
+                      sections: p.sections.map((sec) =>
+                        sec.id === sid
+                          ? {
+                              ...sec,
+                              ...(patch.title !== undefined ? { title: patch.title } : {}),
+                              ...(patch.notes !== undefined ? { notes: patch.notes } : {}),
+                            }
+                          : sec,
+                      ),
+                    }
                   : p,
               ),
             })),
+          ),
+
+        moveSection: (pid, sid, index) =>
+          commit(() =>
+            set((s) => ({
+              projetos: s.projetos.map((p) => {
+                if (p.id !== pid) return p;
+                const from = p.sections.findIndex((sec) => sec.id === sid);
+                if (from === -1) return p;
+                const next = [...p.sections];
+                const [moved] = next.splice(from, 1);
+                next.splice(Math.max(0, Math.min(index, next.length)), 0, moved);
+                return { ...p, sections: next };
+              }),
+            })),
+          ),
+
+        moveProject: (pid, overPid) =>
+          commit(() =>
+            set((s) => {
+              const from = s.projetos.findIndex((p) => p.id === pid);
+              const index = s.projetos.findIndex((p) => p.id === overPid);
+              if (from === -1 || index === -1) return s;
+              const next = [...s.projetos];
+              const [moved] = next.splice(from, 1);
+              next.splice(index, 0, moved);
+              return { projetos: next };
+            }),
           ),
 
         deleteSection: (pid, sid) =>
@@ -210,7 +261,8 @@ export function createBoardStore(initial: Project[] = []) {
                                   status: input.status,
                                   note: input.note ?? "",
                                   blocked: input.blocked ?? false,
-                                  prio: input.prio ?? 3,
+                                  blockedReason: input.blockedReason ?? "",
+                                  prio: input.prio ?? 5,
                                   due: input.due ?? "",
                                   doneAt: input.status === "done" ? new Date().toISOString() : null,
                                   subs: input.subs ? reconcileSubs(input.subs) : [],
@@ -252,6 +304,7 @@ export function createBoardStore(initial: Project[] = []) {
                                         text: patch.text ?? t.text,
                                         note: patch.note ?? t.note,
                                         blocked: patch.blocked ?? t.blocked,
+                                        blockedReason: patch.blockedReason ?? t.blockedReason,
                                         prio: patch.prio ?? t.prio,
                                         due: patch.due ?? t.due,
                                         subs,
@@ -348,30 +401,12 @@ export function createBoardStore(initial: Project[] = []) {
             }),
           ),
 
-        setTaskPrio: (pid, sid, tid, prio) =>
-          commit(() =>
-            set((s) => ({
-              projetos: s.projetos.map((p) =>
-                p.id === pid
-                  ? {
-                      ...p,
-                      sections: p.sections.map((sec) =>
-                        sec.id === sid
-                          ? { ...sec, tasks: sec.tasks.map((t) => (t.id === tid ? { ...t, prio } : t)) }
-                          : sec,
-                      ),
-                    }
-                  : p,
-              ),
-            })),
-          ),
-
         cycleTaskPrio: (pid, sid, tid) =>
           commit(() =>
             set((s) => {
               const t = findTask(s.projetos, pid, sid, tid);
               if (!t) return s;
-              const next = (t.prio % 3) + 1 as Prio;
+              const next = ((t.prio % 5) + 1) as Prio;
               return {
                 projetos: s.projetos.map((p) =>
                   p.id === pid

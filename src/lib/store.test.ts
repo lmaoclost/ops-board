@@ -5,12 +5,12 @@ import type { Project } from "./types";
 const seedProjeto = (): Project => ({
   id: "p1",
   title: "Projeto A",
-  blocked: false,
+    note: "", blocked: false, blockedReason: "",
   archived: false, prio: 3, due: "", collapsed: false,
   sections: [
     { id: "s1", title: "geral", notes: "", collapsed: false, tasks: [
-      { id: "t1", text: "tarefa 1", status: "todo" as const, note: "", blocked: false, prio: 3, due: "", doneAt: null, subs: [] },
-      { id: "t2", text: "tarefa 2", status: "done" as const, note: "", blocked: false, prio: 3, due: "", doneAt: "2026-01-01T10:00:00.000Z", subs: [] },
+      { id: "t1", text: "tarefa 1", status: "todo" as const, note: "", blocked: false, blockedReason: "", prio: 3, due: "", doneAt: null, subs: [] },
+      { id: "t2", text: "tarefa 2", status: "done" as const, note: "", blocked: false, blockedReason: "", prio: 3, due: "", doneAt: "2026-01-01T10:00:00.000Z", subs: [] },
     ] },
   ],
 });
@@ -24,7 +24,7 @@ describe("board store", () => {
   });
 
   it("adiciona projeto com seção geral vazia", () => {
-    store.getState().addProject("Novo");
+    store.getState().addProject({ title: "Novo" });
     const p = store.getState().projetos.at(-1)!;
     expect(p.title).toBe("Novo");
     expect(p.sections).toHaveLength(1);
@@ -32,20 +32,20 @@ describe("board store", () => {
     expect(p.sections[0].tasks).toEqual([]);
   });
 
-  it("renomeia e marca projeto como bloqueado", () => {
-    store.getState().renameProject("p1", "Renomeado", true);
+  it("edita e marca projeto como bloqueado", () => {
+    store.getState().editProject("p1", { title: "Renomeado", blocked: true });
     const p = store.getState().projetos[0];
     expect(p.title).toBe("Renomeado");
     expect(p.blocked).toBe(true);
   });
 
-  it("renameProject sem due preserva o vencimento atual", () => {
+  it("editProject sem due preserva o vencimento atual", () => {
     store.getState().setProjectPrio("p1", 1);
-    store.getState().renameProject("p1", "X", false);
+    store.getState().editProject("p1", { title: "X", blocked: false });
     expect(store.getState().projetos[0].due).toBe("");
-    store.getState().renameProject("p1", "Y", false, "2026-09-01");
+    store.getState().editProject("p1", { title: "Y", blocked: false, due: "2026-09-01" });
     expect(store.getState().projetos[0].due).toBe("2026-09-01");
-    store.getState().renameProject("p1", "Z", false);
+    store.getState().editProject("p1", { title: "Z", blocked: false });
     expect(store.getState().projetos[0].due).toBe("2026-09-01");
   });
 
@@ -66,13 +66,87 @@ describe("board store", () => {
     expect(store.getState().projetos[0].collapsed).toBe(false);
   });
 
-  it("adiciona, renomeia e exclui seção", () => {
-    store.getState().addSection("p1", "dev");
+  it("addProject aceita nota opcional (default vazia)", () => {
+    store.getState().addProject({ title: "Com nota", note: "contexto do projeto" });
+    expect(store.getState().projetos.at(-1)!.note).toBe("contexto do projeto");
+    store.getState().addProject({ title: "Sem nota" });
+    expect(store.getState().projetos.at(-1)!.note).toBe("");
+  });
+
+  it("addProject aceita vencimento opcional (default vazio)", () => {
+    store.getState().addProject({ title: "Com due", note: "nota", due: "2026-10-01" });
+    expect(store.getState().projetos.at(-1)!.due).toBe("2026-10-01");
+    store.getState().addProject({ title: "Sem due" });
+    expect(store.getState().projetos.at(-1)!.due).toBe("");
+  });
+
+  it("editProject atualiza nota e motivo do bloqueio", () => {
+    store.getState().editProject("p1", { title: "Renomeado", blocked: true, note: "nota nova", blockedReason: "aguardando cliente" });
+    const p = store.getState().projetos[0];
+    expect(p.note).toBe("nota nova");
+    expect(p.blockedReason).toBe("aguardando cliente");
+    store.getState().editProject("p1", { title: "Outro", blocked: false });
+    expect(store.getState().projetos[0].note).toBe("nota nova");
+    expect(store.getState().projetos[0].blockedReason).toBe("aguardando cliente");
+  });
+
+  it("moveProject reordena projetos pelo alvo", () => {
+    store.getState().addProject({ title: "B" });
+    store.getState().addProject({ title: "C" });
+    const ids = Object.fromEntries(store.getState().projetos.map((p) => [p.title, p.id]));
+    store.getState().moveProject(ids["Projeto A"], ids["C"]);
+    expect(store.getState().projetos.map((p) => p.title)).toEqual(["B", "C", "Projeto A"]);
+    store.getState().moveProject(ids["Projeto A"], ids["B"]);
+    expect(store.getState().projetos.map((p) => p.title)).toEqual(["Projeto A", "B", "C"]);
+  });
+
+  it("moveProject ignora ids inexistentes", () => {
+    store.getState().moveProject("fantasma", "p1");
+    store.getState().moveProject("p1", "fantasma");
+    expect(store.getState().projetos.map((p) => p.id)).toEqual(["p1"]);
+  });
+
+  it("editSection atualiza notas da seção", () => {
+    store.getState().editSection("p1", "s1", { notes: "foco da sprint" });
+    expect(store.getState().projetos[0].sections[0].notes).toBe("foco da sprint");
+  });
+
+  it("moveSection reordena seções do projeto", () => {
+    store.getState().addSection("p1", { title: "dev" });
+    store.getState().moveSection("p1", "s1", 1);
+    const titles = store.getState().projetos[0].sections.map((s) => s.title);
+    expect(titles).toEqual(["dev", "geral"]);
+  });
+
+  it("cicla prioridade da tarefa em 1→2→3→4→5→1", () => {
+    store.getState().editTask("p1", "s1", "t1", { prio: 1 });
+    for (const expected of [2, 3, 4, 5, 1]) {
+      store.getState().cycleTaskPrio("p1", "s1", "t1");
+      expect(store.getState().projetos[0].sections[0].tasks[0].prio).toBe(expected);
+    }
+  });
+
+  it("addTaskFull usa prio 5 por padrão e guarda motivo do bloqueio", () => {
+    store.getState().addTaskFull("p1", "s1", { text: "x", status: "todo", blocked: true, blockedReason: "sem acesso" });
+    const t = store.getState().projetos[0].sections[0].tasks.at(-1)!;
+    expect(t.prio).toBe(5);
+    expect(t.blockedReason).toBe("sem acesso");
+  });
+
+  it("adiciona, edita e exclui seção", () => {
+    store.getState().addSection("p1", { title: "dev" });
     expect(store.getState().projetos[0].sections.map((s) => s.title)).toEqual(["geral", "dev"]);
-    store.getState().renameSection("p1", "s1", "geral 2");
+    store.getState().editSection("p1", "s1", { title: "geral 2" });
     expect(store.getState().projetos[0].sections[0].title).toBe("geral 2");
     store.getState().deleteSection("p1", "s1");
     expect(store.getState().projetos[0].sections.map((s) => s.title)).toEqual(["dev"]);
+  });
+
+  it("addSection aceita nota opcional (default vazia)", () => {
+    store.getState().addSection("p1", { title: "com nota", notes: "foco" });
+    expect(store.getState().projetos[0].sections.at(-1)!.notes).toBe("foco");
+    store.getState().addSection("p1", { title: "sem nota" });
+    expect(store.getState().projetos[0].sections.at(-1)!.notes).toBe("");
   });
 
   it("adiciona tarefa nova em todo", () => {
@@ -89,8 +163,8 @@ describe("board store", () => {
       note: "obs",
       prio: 1,
       due: "2026-03-01",
-      blocked: true,
-      subs: [{ id: "a", text: "sub", note: "", prio: 3, due: "", status: "todo", blocked: false, subs: [] }],
+      blocked: true, blockedReason: "",
+      subs: [{ id: "a", text: "sub", note: "", prio: 3, due: "", status: "todo", blocked: false, blockedReason: "", subs: [] }],
     });
     const t = store.getState().projetos[0].sections[0].tasks.at(-1)!;
     expect(t.text).toBe("kanban");
@@ -127,8 +201,8 @@ describe("board store", () => {
   });
 
   it("subs: todas done tornam a tarefa pai done; parcial mantém todo", () => {
-    const subA = { id: "a", text: "sub a", note: "", prio: 3 as const, due: "", status: "todo" as const, blocked: false, subs: [] };
-    const subB = { id: "b", text: "sub b", note: "", prio: 3 as const, due: "", status: "todo" as const, blocked: false, subs: [] };
+    const subA = { id: "a", text: "sub a", note: "", prio: 3 as const, due: "", status: "todo" as const, blocked: false, blockedReason: "", subs: [] };
+    const subB = { id: "b", text: "sub b", note: "", prio: 3 as const, due: "", status: "todo" as const, blocked: false, blockedReason: "", subs: [] };
     store.getState().editTask("p1", "s1", "t1", { subs: [subA, subB] });
     store.getState().editTask("p1", "s1", "t1", { subs: [{ ...subA, status: "done" }, subB] });
     expect(store.getState().projetos[0].sections[0].tasks[0].status).toBe("todo");
@@ -137,8 +211,8 @@ describe("board store", () => {
   });
 
   it("subs: desmarcar uma sub em tarefa done volta o pai para todo", () => {
-    const subA = { id: "a", text: "sub a", note: "", prio: 3 as const, due: "", status: "done" as const, blocked: false, subs: [] };
-    const subB = { id: "b", text: "sub b", note: "", prio: 3 as const, due: "", status: "done" as const, blocked: false, subs: [] };
+    const subA = { id: "a", text: "sub a", note: "", prio: 3 as const, due: "", status: "done" as const, blocked: false, blockedReason: "", subs: [] };
+    const subB = { id: "b", text: "sub b", note: "", prio: 3 as const, due: "", status: "done" as const, blocked: false, blockedReason: "", subs: [] };
     store.getState().editTask("p1", "s1", "t1", { subs: [subA, subB] });
     expect(store.getState().projetos[0].sections[0].tasks[0].status).toBe("done");
     store.getState().editTask("p1", "s1", "t1", { subs: [{ ...subA, status: "todo" }, subB] });
@@ -146,9 +220,9 @@ describe("board store", () => {
   });
 
   it("reconcilia sub com subs próprias: só done quando todas as filhas são done", () => {
-    const filha1 = { id: "x", text: "x", note: "", prio: 3 as const, due: "", status: "todo" as const, blocked: false, subs: [] };
-    const filha2 = { id: "y", text: "y", note: "", prio: 3 as const, due: "", status: "todo" as const, blocked: false, subs: [] };
-    const subA = { id: "a", text: "sub a", note: "", prio: 3 as const, due: "", status: "todo" as const, blocked: false, subs: [filha1, filha2] };
+    const filha1 = { id: "x", text: "x", note: "", prio: 3 as const, due: "", status: "todo" as const, blocked: false, blockedReason: "", subs: [] };
+    const filha2 = { id: "y", text: "y", note: "", prio: 3 as const, due: "", status: "todo" as const, blocked: false, blockedReason: "", subs: [] };
+    const subA = { id: "a", text: "sub a", note: "", prio: 3 as const, due: "", status: "todo" as const, blocked: false, blockedReason: "", subs: [filha1, filha2] };
     store.getState().editTask("p1", "s1", "t1", { subs: [subA] });
 
     store.getState().editTask("p1", "s1", "t1", {
@@ -167,8 +241,8 @@ describe("board store", () => {
   });
 
   it("reconcilia recursivamente: desmarcar neta volta sub e pai para todo", () => {
-    const neta = { id: "x", text: "x", note: "", prio: 3 as const, due: "", status: "done" as const, blocked: false, subs: [] };
-    const subA = { id: "a", text: "sub a", note: "", prio: 3 as const, due: "", status: "todo" as const, blocked: false, subs: [neta] };
+    const neta = { id: "x", text: "x", note: "", prio: 3 as const, due: "", status: "done" as const, blocked: false, blockedReason: "", subs: [] };
+    const subA = { id: "a", text: "sub a", note: "", prio: 3 as const, due: "", status: "todo" as const, blocked: false, blockedReason: "", subs: [neta] };
     store.getState().editTask("p1", "s1", "t1", { subs: [subA] });
     expect(store.getState().projetos[0].sections[0].tasks[0].status).toBe("done");
 
@@ -182,7 +256,7 @@ describe("board store", () => {
 
   it("reconcileSubs preserva status manual de sub sem filhas", () => {
     const out = reconcileSubs([
-      { id: "a", text: "a", note: "", prio: 2 as const, due: "", status: "doing" as const, blocked: true, subs: [] },
+      { id: "a", text: "a", note: "", prio: 2 as const, due: "", status: "doing" as const, blocked: true, blockedReason: "", subs: [] },
     ]);
     expect(out[0].status).toBe("doing");
     expect(out[0].prio).toBe(2);
@@ -246,16 +320,12 @@ describe("board store", () => {
   });
 
   it("muda prioridade ciclicamente", () => {
-    store.getState().setTaskPrio("p1", "s1", "t1", 2);
+    store.getState().editTask("p1", "s1", "t1", { prio: 2 });
     expect(store.getState().projetos[0].sections[0].tasks[0].prio).toBe(2);
   });
 
-  it("cicla prioridade 1→2→3→1", () => {
-    store.getState().setTaskPrio("p1", "s1", "t1", 1);
-    store.getState().cycleTaskPrio("p1", "s1", "t1");
-    expect(store.getState().projetos[0].sections[0].tasks[0].prio).toBe(2);
-    store.getState().cycleTaskPrio("p1", "s1", "t1");
-    expect(store.getState().projetos[0].sections[0].tasks[0].prio).toBe(3);
+  it("cicla prioridade 5→1 (volta ao topo)", () => {
+    store.getState().editTask("p1", "s1", "t1", { prio: 5 });
     store.getState().cycleTaskPrio("p1", "s1", "t1");
     expect(store.getState().projetos[0].sections[0].tasks[0].prio).toBe(1);
   });
@@ -296,13 +366,13 @@ describe("board store", () => {
   });
 
   it("importState substitui estado", () => {
-    const novo: Project[] = [{ id: "x", title: "Importado", blocked: false, archived: false, prio: 3, due: "", collapsed: false, sections: [] }];
+    const novo: Project[] = [{ id: "x", title: "Importado", note: "", blocked: false, blockedReason: "", archived: false, prio: 3, due: "", collapsed: false, sections: [] }];
     store.getState().importState(novo);
     expect(store.getState().projetos).toEqual(novo);
   });
 
   it("toggleProjectArchive arquiva e desarquiva", () => {
-    store.getState().addProject("A");
+    store.getState().addProject({ title: "A" });
     const pid = store.getState().projetos[0].id;
     store.getState().toggleProjectArchive(pid);
     expect(store.getState().projetos[0].archived).toBe(true);
@@ -328,7 +398,7 @@ describe("board store", () => {
   });
 
   it("addProject é desfeito removendo o projeto", () => {
-    store.getState().addProject("Novo");
+    store.getState().addProject({ title: "Novo" });
     expect(store.getState().projetos).toHaveLength(2);
     store.getState().undo();
     expect(store.getState().projetos).toHaveLength(1);
@@ -336,7 +406,7 @@ describe("board store", () => {
   });
 
   it("addSection e addTask são desfeitas", () => {
-    store.getState().addSection("p1", "dev");
+    store.getState().addSection("p1", { title: "dev" });
     store.getState().addTask("p1", "s1", "nova");
     store.getState().undo();
     expect(store.getState().projetos[0].sections[0].tasks.map((t) => t.text)).toEqual(["tarefa 1", "tarefa 2"]);
@@ -344,8 +414,8 @@ describe("board store", () => {
     expect(store.getState().projetos[0].sections.map((s) => s.title)).toEqual(["geral"]);
   });
 
-  it("renameProject é desfeita restaurando título e bloqueio", () => {
-    store.getState().renameProject("p1", "Renomeado", true);
+  it("editProject é desfeita restaurando título e bloqueio", () => {
+    store.getState().editProject("p1", { title: "Renomeado", blocked: true });
     store.getState().undo();
     const p = store.getState().projetos[0];
     expect(p.title).toBe("Projeto A");
@@ -390,7 +460,7 @@ describe("board store", () => {
 
   it("importState é desfeita restaurando os projetos anteriores", () => {
     const antes = store.getState().projetos;
-    store.getState().importState([{ id: "x", title: "Importado", blocked: false, archived: false, prio: 3 as const, due: "", collapsed: false, sections: [] }]);
+    store.getState().importState([{ id: "x", title: "Importado", note: "", blocked: false, blockedReason: "", archived: false, prio: 3 as const, due: "", collapsed: false, sections: [] }]);
     store.getState().undo();
     expect(store.getState().projetos).toEqual(antes);
   });
@@ -435,8 +505,8 @@ describe("board store", () => {
   });
 
   it("undo em sequência desfaz passo a passo", () => {
-    store.getState().addProject("A");
-    store.getState().addProject("B");
+    store.getState().addProject({ title: "A" });
+    store.getState().addProject({ title: "B" });
     expect(store.getState().projetos).toHaveLength(3);
     store.getState().undo();
     expect(store.getState().projetos).toHaveLength(2);
@@ -447,7 +517,7 @@ describe("board store", () => {
   });
 
   it("stack limita a 50 passos (os mais recentes)", () => {
-    for (let i = 0; i < 60; i++) store.getState().addProject(`p${i}`);
+    for (let i = 0; i < 60; i++) store.getState().addProject({ title: `p${i}` });
     expect(store.getState().projetos).toHaveLength(61);
     for (let i = 0; i < 55; i++) store.getState().undo();
     expect(store.getState().canUndo).toBe(false);
@@ -457,7 +527,7 @@ describe("board store", () => {
   it("canUndo não é persistido", () => {
     localStorage.clear();
     const s = createBoardStore();
-    s.getState().addProject("X");
+    s.getState().addProject({ title: "X" });
     s.getState().undo();
     const stored = JSON.parse(localStorage.getItem("opsboard.v1")!);
     expect(stored.state).not.toHaveProperty("canUndo");
@@ -473,7 +543,7 @@ describe("persistência", () => {
     localStorage.setItem(
       "opsboard.v1",
       JSON.stringify({
-        state: { projetos: [{ id: "p1", title: "P", blocked: false, sections: [{ id: "s1", title: "geral", notes: "", collapsed: false, tasks: [{ id: "t1", text: "x", status: "todo", note: "", blocked: false, prio: 3, due: "", doneAt: null, subs: [] }] }] }] },
+        state: { projetos: [{ id: "p1", title: "P", blocked: false, blockedReason: "", sections: [{ id: "s1", title: "geral", notes: "", collapsed: false, tasks: [{ id: "t1", text: "x", status: "todo", note: "", blocked: false, blockedReason: "", prio: 3, due: "", doneAt: null, subs: [] }] }] }] },
         version: 2,
       }),
     );
@@ -491,7 +561,7 @@ describe("persistência", () => {
             {
               id: "p1",
               title: "P",
-              blocked: false,
+                            note: "", blocked: false, blockedReason: "",
               archived: false,
               prio: 3,
               due: "",
@@ -503,9 +573,9 @@ describe("persistência", () => {
                   notes: "",
                   collapsed: false,
                   tasks: [
-                    { id: "t1", text: "velha", status: "todo", note: "", blocked: false, prio: 3, due: "", doneAt: null, subs: [], deletedAt: "2020-01-01T00:00:00.000Z" },
-                    { id: "t2", text: "recente", status: "todo", note: "", blocked: false, prio: 3, due: "", doneAt: null, subs: [], deletedAt: new Date(Date.now() - 3 * 24 * 60 * 60 * 1000).toISOString() },
-                    { id: "t3", text: "ativa", status: "todo", note: "", blocked: false, prio: 3, due: "", doneAt: null, subs: [] },
+                    { id: "t1", text: "velha", status: "todo", note: "", blocked: false, blockedReason: "", prio: 3, due: "", doneAt: null, subs: [], deletedAt: "2020-01-01T00:00:00.000Z" },
+                    { id: "t2", text: "recente", status: "todo", note: "", blocked: false, blockedReason: "", prio: 3, due: "", doneAt: null, subs: [], deletedAt: new Date(Date.now() - 3 * 24 * 60 * 60 * 1000).toISOString() },
+                    { id: "t3", text: "ativa", status: "todo", note: "", blocked: false, blockedReason: "", prio: 3, due: "", doneAt: null, subs: [] },
                   ],
                 },
               ],
@@ -531,7 +601,7 @@ describe("persistência", () => {
             {
               id: "p1",
               title: "P",
-              blocked: false,
+                            note: "", blocked: false, blockedReason: "",
               sections: [
                 {
                   id: "s1",
@@ -550,8 +620,9 @@ describe("persistência", () => {
     const t = s.getState().projetos[0].sections[0].tasks[0];
     expect(t.text).toBe("x");
     expect(t.status).toBe("todo");
-    expect(t.prio).toBe(3);
+    expect(t.prio).toBe(5);
     expect(t.blocked).toBe(true);
+    expect(t.blockedReason).toBe("");
     expect(t.due).toBe("5");
     expect(t.note).toBe("42");
     expect(t.doneAt).toBe("2026-01-01T00:00:00.000Z");
@@ -561,7 +632,7 @@ describe("persistência", () => {
     localStorage.setItem(
       "opsboard.v1",
       JSON.stringify({
-        state: { projetos: [{ id: "p1", title: "P", blocked: false, sections: [] }] },
+        state: { projetos: [{ id: "p1", title: "P", blocked: false, blockedReason: "", sections: [] }] },
         version: 2,
       }),
     );

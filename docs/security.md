@@ -19,12 +19,12 @@
 
 ## Verificação prática (Playwright probe)
 
-- **Headers reais** (`/` e `/privacidade`): CSP `default-src 'self'` com `frame-ancestors 'none'` e `object-src 'none'`; `Strict-Transport-Security: max-age=63072000; includeSubDomains`; `X-Content-Type-Options: nosniff`; `X-Frame-Options: DENY`; `Referrer-Policy: no-referrer`; `Permissions-Policy` desliga câmera/mic/geo/pagamento/usb; sem `X-Powered-By`.
+- **Headers reais** (`/` e `/privacy`): CSP `default-src 'self'` com `frame-ancestors 'none'` e `object-src 'none'`; `script-src`/`connect-src` liberam `https://va.vercel-scripts.com` (beacons de métricas, só disparam com consentimento); `'unsafe-eval'` só em development (React dev); `Strict-Transport-Security: max-age=63072000; includeSubDomains`; `X-Content-Type-Options: nosniff`; `X-Frame-Options: DENY`; `Referrer-Policy: no-referrer`; `Permissions-Policy` desliga câmera/mic/geo/pagamento/usb; sem `X-Powered-By`.
 - **CSP runtime**: zero violações e zero erros de console no fluxo principal (`e2e/security.spec.ts`).
 - **XSS persistido (tamper no localStorage)**: título e tarefa com `<img onerror>` / `<svg onload>` renderizam inertes; `window.__xss` nunca dispara (`e2e/xss.spec.ts` + probe manual).
 - **Integridade do estado (tamper)**: `opsboard.v1` corrompido ou com `version` desconhecido não derruba o app — migração zera/ignora e segue (ver `src/lib/store.ts`).
-- **Rede**: 100% same-origin (`e2e/minimize.spec.ts`); nada é enviado a terceiros.
-- **Import de backup**: arquivos gigantes (>2 MB), estruturas inválidas, IDs duplicados e prioridades fora de 1–3 são rejeitados com mensagem clara (`src/lib/io.ts`).
+- **Rede**: 100% same-origin sem consentimento (`e2e/minimize.spec.ts`); com opt-in, beacons para `va.vercel-scripts.com` (métricas anonimizadas, sem conteúdo de tarefas).
+- **Import de backup**: arquivos gigantes (>2 MB), estruturas inválidas, IDs duplicados e prioridades fora de 1–5 são rejeitados com mensagem clara (`src/lib/io.ts`).
 
 ## Notas e limites
 

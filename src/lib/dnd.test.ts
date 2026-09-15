@@ -5,7 +5,7 @@ import type { Project } from "./types";
 const projeto = (over: Partial<Project> = {}): Project => ({
   id: "p1",
   title: "P",
-  blocked: false, archived: false, prio: 3, due: "", collapsed: false,
+    note: "", blocked: false, blockedReason: "", archived: false, prio: 3, due: "", collapsed: false,
   sections: [
     {
       id: "s1",
@@ -13,9 +13,9 @@ const projeto = (over: Partial<Project> = {}): Project => ({
       notes: "",
       collapsed: false,
       tasks: [
-        { id: "t1", text: "a", status: "todo", note: "", blocked: false, prio: 3, due: "", doneAt: null, subs: [] },
-        { id: "t2", text: "b", status: "todo", note: "", blocked: false, prio: 3, due: "", doneAt: null, subs: [] },
-        { id: "t3", text: "c", status: "doing", note: "", blocked: false, prio: 3, due: "", doneAt: null, subs: [] },
+        { id: "t1", text: "a", status: "todo", note: "", blocked: false, blockedReason: "", prio: 3, due: "", doneAt: null, subs: [] },
+        { id: "t2", text: "b", status: "todo", note: "", blocked: false, blockedReason: "", prio: 3, due: "", doneAt: null, subs: [] },
+        { id: "t3", text: "c", status: "doing", note: "", blocked: false, blockedReason: "", prio: 3, due: "", doneAt: null, subs: [] },
       ],
     },
     { id: "s2", title: "dev", notes: "", collapsed: false, tasks: [] },
@@ -83,6 +83,33 @@ describe("resolveDrop", () => {
     expect(r.kind).toBe("none");
   });
 
+  it("seção sobre outra seção reordena (secmove)", () => {
+    const r = resolveDrop({ projetos: [projeto()], active: "section:p1:s1", over: "section:p1:s2" });
+    expect(r.kind).toBe("secmove");
+    if (r.kind !== "secmove") return;
+    expect(r.pid).toBe("p1");
+    expect(r.sid).toBe("s1");
+    expect(r.index).toBe(1);
+  });
+
+  it("seção de projeto diferente retorna none", () => {
+    const r = resolveDrop({ projetos: [projeto()], active: "section:p1:s1", over: "section:outra:s9" });
+    expect(r.kind).toBe("none");
+  });
+
+  it("projeto sobre outro projeto reordena (projmove)", () => {
+    const r = resolveDrop({ projetos: [projeto(), projeto({ id: "p2" })], active: "project:p1", over: "project:p2" });
+    expect(r.kind).toBe("projmove");
+    if (r.kind !== "projmove") return;
+    expect(r.pid).toBe("p1");
+    expect(r.overPid).toBe("p2");
+  });
+
+  it("projeto sobre alvo inexistente retorna none", () => {
+    const r = resolveDrop({ projetos: [projeto()], active: "project:p1", over: "project:fantasma" });
+    expect(r.kind).toBe("none");
+  });
+
   it("retorna none para tarefa ativa inexistente", () => {
     const r = resolveDrop({ projetos: [projeto()], active: "task:fantasma", over: "task:t1" });
     expect(r.kind).toBe("none");
@@ -98,7 +125,7 @@ it("retorna none quando o alvo task não existe", () => {
       sections: [
         projeto().sections[0],
         { id: "s2", title: "dev", notes: "", collapsed: false, tasks: [
-          { id: "t4", text: "d", status: "todo", note: "", blocked: false, prio: 3, due: "", doneAt: null, subs: [] },
+          { id: "t4", text: "d", status: "todo", note: "", blocked: false, blockedReason: "", prio: 3, due: "", doneAt: null, subs: [] },
         ] },
       ],
     });

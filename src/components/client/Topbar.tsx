@@ -130,7 +130,7 @@ export function Topbar({
               className="text-[var(--muted-text)] hover:text-[var(--text)]"
               title={t("exportar JSON (backup)")}
             >
-              ↓exportar
+              ↓{t("exportar")}
             </Button>
             <Button
               type="button"
@@ -140,17 +140,17 @@ export function Topbar({
               className="text-[var(--muted-text)] hover:text-[var(--text)]"
               title={t("importar JSON")}
             >
-              ↑importar
+              ↑{t("importar")}
             </Button>
             <Link
-              href="/privacidade"
+              href="/privacy"
               className={buttonVariants({ variant: "ghost", size: "xs" }) + " text-[var(--muted-text)] hover:text-[var(--text)]"}
               title={t("política de privacidade")}
             >
               {t("privacidade")}
             </Link>
             <Button type="button" variant="default" size="sm" onClick={onNewProject}>
-              <span className="mr-1">+</span>projeto
+              <span className="mr-1">+</span>{t("projeto")}
             </Button>
           </div>
         </div>

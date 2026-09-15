@@ -33,7 +33,7 @@ export function Stats({ stats, view }: StatsProps) {
         <span data-testid="stat-pending" className="text-[var(--warn)]">{pendentes}</span>
       </span>
       <span>
-        <span className="text-[var(--dimmer)]">{t("concluída")}s</span>{" "}
+        <span className="text-[var(--dimmer)]">{t("concluídas")}</span>{" "}
         <span data-testid="stat-done" className="text-[var(--fired)]">{done}</span>{" "}
         <span className="text-[var(--dimmer)]">({pct}%)</span>
       </span>

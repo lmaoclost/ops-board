@@ -9,7 +9,7 @@ import type { Project } from "../../lib/types";
 const projeto = (tasks: Project["sections"][number]["tasks"]): Project => ({
   id: "p1",
   title: "A",
-  blocked: false, archived: false, prio: 3, due: "", collapsed: false,
+    note: "", blocked: false, blockedReason: "", archived: false, prio: 3, due: "", collapsed: false,
   sections: [{ id: "s1", title: "geral", tasks, notes: "", collapsed: false }],
 });
 
@@ -18,7 +18,7 @@ const task = (over: Partial<Project["sections"][number]["tasks"][number]> = {}):
   text: "x",
   status: "todo" as const,
   note: "",
-  blocked: false,
+  blocked: false, blockedReason: "",
   prio: 3,
   due: "",
   doneAt: null, subs: [],

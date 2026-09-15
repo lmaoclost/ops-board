@@ -118,7 +118,7 @@ test("Enter no ⋯ da seção não colapsa a seção", async ({ page }) => {
   await page.getByRole("button", { name: "ações da seção" }).focus();
   await page.keyboard.press("Enter");
 
-  await expect(page.getByRole("menuitem", { name: "renomear seção" })).toBeVisible();
+  await expect(page.getByRole("menuitem", { name: "editar seção" })).toBeVisible();
   await expect(page.getByLabel("nova tarefa")).toHaveCount(1);
 });
 
@@ -212,7 +212,7 @@ test("kanban: prio cicla no badge do card", async ({ page }) => {
 
   await page.getByRole("button", { name: "kanban" }).click();
   const card = page.getByTestId("kanban-task").filter({ hasText: "ciclar" });
-  await expect(card.getByText("P3", { exact: true })).toBeVisible();
+  await expect(card.getByText("P5", { exact: true })).toBeVisible();
   await card.getByRole("button", { name: "prioridade: clique pra mudar" }).click();
   await expect(card.getByText("P1", { exact: true })).toBeVisible();
   await expect(page.getByRole("dialog", { name: "editar tarefa" })).toHaveCount(0);

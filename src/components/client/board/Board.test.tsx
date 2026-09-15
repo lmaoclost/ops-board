@@ -8,10 +8,10 @@ import type { Project } from "@/lib/types";
 const projeto: Project = {
   id: "p1",
   title: "Alfa",
-  blocked: false, archived: false, prio: 3, due: "", collapsed: false,
+    note: "", blocked: false, blockedReason: "", archived: false, prio: 3, due: "", collapsed: false,
   sections: [
     { id: "s1", title: "geral", notes: "", collapsed: false, tasks: [
-      { id: "t1", text: "tarefa alfa", status: "todo", note: "", blocked: false, prio: 3, due: "", doneAt: null, subs: [] },
+      { id: "t1", text: "tarefa alfa", status: "todo", note: "", blocked: false, blockedReason: "", prio: 3, due: "", doneAt: null, subs: [] },
     ] },
   ],
 };
@@ -23,17 +23,19 @@ const base = (over: Partial<BoardProps> = {}): BoardProps => ({
   onClearFilters: vi.fn(),
   projectActions: {
     onAddSection: vi.fn(),
-    onRename: vi.fn(),
+    onEdit: vi.fn(),
     onDelete: vi.fn(),
     onToggleArchive: vi.fn(),
     onCyclePrio: vi.fn(),
     onToggleCollapse: vi.fn(),
+    onMoveProject: vi.fn(),
   },
   sectionActions: {
     onToggle: vi.fn(),
     onAddTask: vi.fn(),
     onAddTaskFull: vi.fn(),
-    onRename: vi.fn(),
+    onEdit: vi.fn(),
+    onMoveSection: vi.fn(),
     onDelete: vi.fn(),
   },
   taskActions: {

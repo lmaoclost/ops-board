@@ -25,7 +25,7 @@ test("política de privacidade acessível em 1 clique pelo topbar", async ({ pag
 
   await page.getByRole("link", { name: "privacidade" }).click();
 
-  await expect(page).toHaveURL(/\/privacidade/);
+  await expect(page).toHaveURL(/\/privacy/);
   await expect(page.getByRole("heading", { name: "Política de privacidade" })).toBeVisible();
   await expect(page.getByRole("heading", { name: "Base legal" })).toBeVisible();
   await expect(page.getByText("localStorage", { exact: false })).toBeVisible();
@@ -37,6 +37,34 @@ test("aviso oferece link direto para a política", async ({ page }) => {
   await page.goto("/");
   const dialog = page.getByRole("dialog", { name: "aviso de privacidade" });
   await dialog.getByRole("link", { name: "política completa" }).click();
-  await expect(page).toHaveURL(/\/privacidade/);
+  await expect(page).toHaveURL(/\/privacy/);
   await expect(page.getByRole("heading", { name: "Política de privacidade" })).toBeVisible();
+});
+test("aviso: aceitar métricas liga tracking; recusar desliga", async ({ page }) => {
+  await page.goto("/");
+  const dialog = page.getByRole("dialog", { name: "aviso de privacidade" });
+  await dialog.getByRole("button", { name: "aceitar métricas" }).click();
+  await expect(dialog).toBeHidden();
+  expect(await page.evaluate(() => localStorage.getItem("opsboard.metrics-v1"))).toBe("1");
+
+  await page.evaluate(() => localStorage.clear());
+  await page.reload();
+  const dialog2 = page.getByRole("dialog", { name: "aviso de privacidade" });
+  await dialog2.getByRole("button", { name: "só dados locais" }).click();
+  await expect(dialog2).toBeHidden();
+  expect(await page.evaluate(() => localStorage.getItem("opsboard.metrics-v1"))).toBe("0");
+});
+
+test("privacidade: seção 7 explica métricas e toggle revoga", async ({ page }) => {
+  await page.addInitScript(() => {
+    localStorage.setItem("opsboard.notice-v1", "1");
+    localStorage.setItem("opsboard.metrics-v1", "1");
+  });
+  await page.goto("/privacy");
+  await expect(page.getByRole("heading", { name: /Métricas de uso/ })).toBeVisible();
+  const toggle = page.getByRole("switch", { name: "métricas de uso" });
+  await expect(toggle).toBeChecked();
+  await toggle.click();
+  expect(await page.evaluate(() => localStorage.getItem("opsboard.metrics-v1"))).toBe("0");
+  await expect(toggle).not.toBeChecked();
 });

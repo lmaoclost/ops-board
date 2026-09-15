@@ -24,7 +24,7 @@ import { Button } from "@/components/ui/button";
 export default function Home() {
   const projetos = useBoard((s) => s.projetos);
   const addProject = useBoard((s) => s.addProject);
-  const renameProject = useBoard((s) => s.renameProject);
+  const editProject = useBoard((s) => s.editProject);
   const deleteProject = useBoard((s) => s.deleteProject);
   const toggleProjectArchive = useBoard((s) => s.toggleProjectArchive);
   const locale = useBoard((s) => s.locale);
@@ -33,7 +33,9 @@ export default function Home() {
   const setProjectPrio = useBoard((s) => s.setProjectPrio);
   const toggleProjectCollapsed = useBoard((s) => s.toggleProjectCollapsed);
   const addSection = useBoard((s) => s.addSection);
-  const renameSection = useBoard((s) => s.renameSection);
+  const editSection = useBoard((s) => s.editSection);
+  const moveSection = useBoard((s) => s.moveSection);
+  const moveProject = useBoard((s) => s.moveProject);
   const deleteSection = useBoard((s) => s.deleteSection);
   const addTask = useBoard((s) => s.addTask);
   const addTaskFull = useBoard((s) => s.addTaskFull);
@@ -41,7 +43,6 @@ export default function Home() {
   const deleteTask = useBoard((s) => s.deleteTask);
   const purgeTask = useBoard((s) => s.purgeTask);
   const setTaskStatus = useBoard((s) => s.setTaskStatus);
-  const setTaskPrio = useBoard((s) => s.setTaskPrio);
   const cycleTaskPrio = useBoard((s) => s.cycleTaskPrio);
   const toggleTask = useBoard((s) => s.toggleTask);
   const toggleSection = useBoard((s) => s.toggleSection);
@@ -246,22 +247,24 @@ const notifiedRef = useRef(false);
           onNewProject={() => setNewProjectOpen(true)}
           onClearFilters={clear}
           projectActions={{
-            onAddSection: (pid, title) => addSection(pid, title),
-            onRename: (id, title, blocked, due) => renameProject(id, title, blocked, due),
+            onAddSection: (pid, input) => addSection(pid, input),
+            onEdit: (id, patch) => editProject(id, patch),
             onDelete: (id) => deleteProject(id),
             onToggleArchive: handleToggleArchive,
             onCyclePrio: (id) => {
               const p = projetos.find((x) => x.id === id);
               if (!p) return;
-              setProjectPrio(id, (p.prio === 3 ? 1 : p.prio + 1) as Prio);
+              setProjectPrio(id, ((p.prio % 5) + 1) as Prio);
             },
             onToggleCollapse: (id) => toggleProjectCollapsed(id),
+            onMoveProject: (pid, overPid) => moveProject(pid, overPid),
           }}
           sectionActions={{
             onToggle: (pid, sid) => toggleSection(pid, sid),
             onAddTask: (pid, sid, text) => addTask(pid, sid, text),
             onAddTaskFull: (pid, sid, input) => addTaskFull(pid, sid, input),
-            onRename: (pid, sid, title) => renameSection(pid, sid, title),
+            onEdit: (pid, sid, patch) => editSection(pid, sid, patch),
+            onMoveSection: (pid, sid, index) => moveSection(pid, sid, index),
             onDelete: (pid, sid) => deleteSection(pid, sid),
           }}
           taskActions={{
@@ -372,11 +375,16 @@ const notifiedRef = useRef(false);
         <Modal
           title={t("novo projeto")}
           submitLabel={t("criar")}
-          fields={[{ key: "title", label: t("título") }]}
+          fields={[
+            { key: "title", label: t("título"), required: true },
+            { key: "due", label: t("vencimento"), type: "date", value: "" },
+            { key: "note", label: t("nota do projeto"), type: "textarea", value: "" },
+          ]}
           onSubmit={(v) => {
             setNewProjectOpen(false);
             const title = String(v.title).trim();
-            if (title) addProject(title);
+            if (title)
+              addProject({ title, note: String(v.note ?? "").trim(), due: String(v.due ?? "") });
           }}
           onCancel={() => setNewProjectOpen(false)}
         />

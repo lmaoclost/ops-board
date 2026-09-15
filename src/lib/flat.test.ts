@@ -7,7 +7,7 @@ const makeTask = (id: string, over: Partial<Task> = {}): Task => ({
   text: `tarefa ${id}`,
   status: "todo",
   note: "",
-  blocked: false,
+  blocked: false, blockedReason: "",
   prio: 3,
   due: "",
   doneAt: null,
@@ -18,7 +18,7 @@ const makeTask = (id: string, over: Partial<Task> = {}): Task => ({
 const makeProj = (id: string, tasks: Task[]): Project => ({
   id,
   title: `projeto ${id}`,
-  blocked: false,
+    note: "", blocked: false, blockedReason: "",
   due: "",
   prio: 3,
   archived: false,

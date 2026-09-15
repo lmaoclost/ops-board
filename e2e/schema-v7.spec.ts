@@ -53,6 +53,7 @@ test("lixeira: excluir esconde, restaurar devolve, excluir definitivamente remov
   await addTask(page, "descartável");
 
   await page.getByTestId("task-row").getByRole("button", { name: "excluir", exact: true }).click();
+  await page.getByRole("dialog", { name: "excluir tarefa?" }).getByRole("button", { name: "excluir" }).click();
   await expect(page.getByText("descartável", { exact: true })).not.toBeVisible();
 
   await page.getByRole("button", { name: "lixeira" }).click();
@@ -63,6 +64,7 @@ test("lixeira: excluir esconde, restaurar devolve, excluir definitivamente remov
   await expect(page.getByText("descartável", { exact: true })).toBeVisible();
 
   await page.getByTestId("task-row").getByRole("button", { name: "excluir", exact: true }).click();
+  await page.getByRole("dialog", { name: "excluir tarefa?" }).getByRole("button", { name: "excluir" }).click();
   await page.getByRole("button", { name: "lixeira" }).click();
   await page.getByLabel("excluir definitivamente descartável").click();
   await expect(page.getByText("lixeira vazia.")).toBeVisible();

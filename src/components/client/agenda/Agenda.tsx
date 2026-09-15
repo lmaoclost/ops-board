@@ -73,7 +73,7 @@ export function Agenda({ projetos, onToggle, onEditTask }: AgendaProps) {
                       {PRIO_KEYS[item.task.prio]}
                     </span>
                     {item.task.blocked && (
-                      <span className="shrink-0 text-[10px]" title={t("bloqueada")}>
+                      <span className="shrink-0 text-[10px]" title={item.task.blockedReason || t("bloqueada")}>
                         ⛔
                       </span>
                     )}

@@ -7,7 +7,7 @@ const task = (over: Partial<Task> = {}): Task => ({
   text: "Enviar relatório pro cliente",
   status: "todo",
   note: "",
-  blocked: false,
+  blocked: false, blockedReason: "",
   prio: 3,
   due: "",
   doneAt: null, subs: [],
@@ -26,7 +26,7 @@ const section = (over: Partial<Section> = {}): Section => ({
 const project = (over: Partial<Project> = {}): Project => ({
   id: "p1",
   title: "Projeto Alfa",
-  blocked: false, archived: false, prio: 3, due: "", collapsed: false,
+    note: "", blocked: false, blockedReason: "", archived: false, prio: 3, due: "", collapsed: false,
   sections: [section()],
   ...over,
 });

@@ -9,23 +9,24 @@ const sub = (id: string, subs: SubTask[] = []): SubTask => ({
   prio: 3,
   due: "",
   status: "todo",
-  blocked: false,
+  blocked: false, blockedReason: "",
   subs,
 });
 
 const tree = () => [sub("a", [sub("a1", [sub("a1x")]), sub("a2")]), sub("b")];
 
 describe("makeSub", () => {
-  it("cria sub com defaults (prio 3, todo, vazia)", () => {
+  it("cria sub com defaults (prio 5, todo, vazia)", () => {
     const s = makeSub("nova");
     expect(s).toEqual({
       id: expect.any(String),
       text: "nova",
       note: "",
-      prio: 3,
+      prio: 5,
       due: "",
       status: "todo",
       blocked: false,
+      blockedReason: "",
       subs: [],
     });
   });

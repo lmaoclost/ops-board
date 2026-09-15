@@ -5,8 +5,8 @@ const SEED = {
   projetos: [
     {
       id: "p1",
-      title: "alpha",
-      blocked: false,
+      title: "alpha", note: "",
+      blocked: false, blockedReason: "",
       archived: false,
       prio: 3,
       due: "",
@@ -17,14 +17,14 @@ const SEED = {
           title: "geral",
           notes: "notas do alpha",
           collapsed: false,
-          tasks: [{ id: "t1", text: "tarefa do alpha", status: "todo", note: "", blocked: false, prio: 3, due: "", doneAt: null, subs: [] }],
+          tasks: [{ id: "t1", text: "tarefa do alpha", status: "todo", note: "", blocked: false, blockedReason: "", prio: 3, due: "", doneAt: null, subs: [] }],
         },
       ],
     },
     {
       id: "p2",
-      title: "beta",
-      blocked: true,
+      title: "beta", note: "",
+      blocked: true, blockedReason: "",
       archived: false,
       prio: 3,
       due: "",
@@ -35,7 +35,7 @@ const SEED = {
           title: "geral",
           notes: "",
           collapsed: false,
-          tasks: [{ id: "t2", text: "tarefa do beta", status: "done", note: "feito", blocked: false, prio: 1, due: "2026-08-20", doneAt: "2026-08-14T10:00:00.000Z", subs: [] }],
+          tasks: [{ id: "t2", text: "tarefa do beta", status: "done", note: "feito", blocked: false, blockedReason: "", prio: 1, due: "2026-08-20", doneAt: "2026-08-14T10:00:00.000Z", subs: [] }],
         },
       ],
     },
@@ -97,6 +97,7 @@ test("apagar item individual não deixa resíduo no localStorage", async ({ page
     .getByRole("button", { name: "ações do projeto", exact: true })
     .click();
   await page.getByRole("menuitem", { name: "excluir projeto" }).click();
+  await page.getByRole("dialog", { name: "excluir projeto?" }).getByRole("button", { name: "excluir" }).click();
 
   await expect(page.getByRole("heading", { name: "alpha" })).toHaveCount(0);
   await expect(page.getByRole("heading", { name: "beta" })).toBeVisible();

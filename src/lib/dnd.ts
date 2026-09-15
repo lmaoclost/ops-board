@@ -42,6 +42,8 @@ export interface TaskRef {
 export type DropResult =
   | { kind: "move"; src: TaskRef; dest: { pid: string; sid: string }; index: number }
   | { kind: "status"; task: TaskRef; status: Status }
+  | { kind: "secmove"; pid: string; sid: string; index: number }
+  | { kind: "projmove"; pid: string; overPid: string }
   | { kind: "none" };
 
 export function findTaskRef(projetos: Project[], tid: string): TaskRef | null {
@@ -59,6 +61,27 @@ export function resolveDrop(args: {
   over: string;
 }): DropResult {
   const { projetos, active, over } = args;
+
+  if (active.startsWith("project:")) {
+    const pid = active.split(":")[1];
+    if (!over.startsWith("project:")) return { kind: "none" };
+    const overPid = over.split(":")[1];
+    if (projetos.every((p) => p.id !== pid) || projetos.every((p) => p.id !== overPid)) return { kind: "none" };
+    return { kind: "projmove", pid, overPid };
+  }
+
+  if (active.startsWith("section:")) {
+    const [, pid, sid] = active.split(":");
+    if (!over.startsWith("section:")) return { kind: "none" };
+    const [, overPid, overSid] = over.split(":");
+    if (pid !== overPid) return { kind: "none" };
+    const proj = projetos.find((p) => p.id === pid);
+    if (!proj) return { kind: "none" };
+    const index = proj.sections.findIndex((s) => s.id === overSid);
+    if (index === -1) return { kind: "none" };
+    return { kind: "secmove", pid, sid, index };
+  }
+
   const tid = active.replace(/^task:/, "");
   const src = findTaskRef(projetos, tid);
   if (!src) return { kind: "none" };
@@ -104,7 +127,7 @@ export interface StatusDropPatch {
   doneAt?: string | null;
 }
 
-export function applyStatusDrop(status: Status, wasDone = false, currentDoneAt: string | null = null): StatusDropPatch {
+export function applyStatusDrop(status: Status, wasDone = false): StatusDropPatch {
   const transitioningToDone = status === "done" && !wasDone;
   const transitioningFromDone = status !== "done" && wasDone;
   const patch: StatusDropPatch = { status };

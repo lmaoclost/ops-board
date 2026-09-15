@@ -117,6 +117,12 @@ body {
 
 /* ---------- animação ---------- */
 
+.modal-label[data-required]::after {
+  content: "*";
+  margin-left: 2px;
+  color: var(--gave);
+}
+
 .fade-in {
   animation: fade 180ms cubic-bezier(0.23, 1, 0.32, 1);
 }

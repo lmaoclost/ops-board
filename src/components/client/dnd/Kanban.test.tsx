@@ -7,7 +7,7 @@ import type { AddTaskInput, Project, TaskPatch } from "@/lib/types";
 const projeto = (over: Partial<Project> = {}): Project => ({
   id: "p1",
   title: "P",
-  blocked: false, archived: false, prio: 3, due: "", collapsed: false,
+    note: "", blocked: false, blockedReason: "", archived: false, prio: 3, due: "", collapsed: false,
   sections: [
     {
       id: "s1",
@@ -15,10 +15,10 @@ const projeto = (over: Partial<Project> = {}): Project => ({
       notes: "",
       collapsed: false,
       tasks: [
-        { id: "t1", text: "correr pra base", status: "todo", note: "", blocked: false, prio: 3, due: "", doneAt: null, subs: [] },
-        { id: "t2", text: "uprs", status: "doing", note: "", blocked: false, prio: 3, due: "", doneAt: null, subs: [] },
-        { id: "t3", text: "ctz", status: "done", note: "novo", blocked: false, prio: 3, due: "", doneAt: "2026-01-01T10:00:00.000Z", subs: [] },
-        { id: "t4", text: "oe", status: "waiting", note: "", blocked: false, prio: 3, due: "", doneAt: null, subs: [] },
+        { id: "t1", text: "correr pra base", status: "todo", note: "", blocked: false, blockedReason: "", prio: 3, due: "", doneAt: null, subs: [] },
+        { id: "t2", text: "uprs", status: "doing", note: "", blocked: false, blockedReason: "", prio: 3, due: "", doneAt: null, subs: [] },
+        { id: "t3", text: "ctz", status: "done", note: "novo", blocked: false, blockedReason: "", prio: 3, due: "", doneAt: "2026-01-01T10:00:00.000Z", subs: [] },
+        { id: "t4", text: "oe", status: "waiting", note: "", blocked: false, blockedReason: "", prio: 3, due: "", doneAt: null, subs: [] },
       ],
     },
   ],
@@ -124,8 +124,8 @@ it("clique no card abre o modal de edição e submit chama onEditTask", () => {
     renderKanban({
       projetos: [projeto({ sections: [{ ...projeto().sections[0], tasks: [
         { ...projeto().sections[0].tasks[0], subs: [
-          { id: "s1", text: "a", note: "", prio: 3, due: "", status: "done", blocked: false, subs: [] },
-          { id: "s2", text: "b", note: "", prio: 3, due: "", status: "todo", blocked: false, subs: [] },
+          { id: "s1", text: "a", note: "", prio: 3, due: "", status: "done", blocked: false, blockedReason: "", subs: [] },
+          { id: "s2", text: "b", note: "", prio: 3, due: "", status: "todo", blocked: false, blockedReason: "", subs: [] },
         ] },
       ] }] })],
     });
@@ -138,7 +138,7 @@ it("clique no card abre o modal de edição e submit chama onEditTask", () => {
       onEditTask,
       projetos: [projeto({ sections: [{ ...projeto().sections[0], tasks: [
         { ...projeto().sections[0].tasks[0], subs: [
-          { id: "s1", text: "a", note: "", prio: 3, due: "", status: "done", blocked: false, subs: [] },
+          { id: "s1", text: "a", note: "", prio: 3, due: "", status: "done", blocked: false, blockedReason: "", subs: [] },
         ] },
       ] }] })],
     });

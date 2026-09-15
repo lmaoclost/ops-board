@@ -25,8 +25,8 @@ compartilhamento com terceiros.
 | III — Correção | Editar projeto, seção e tarefa (texto, prioridade, status, vencimento, nota, bloqueio) | Ações de edição em cada item |
 | IV — Anonimização / bloqueio / eliminação | `apagar todos os dados` (com confirmação explícita) e exclusão individual por item | Rodapé do quadro + ações por item |
 | V — Portabilidade | Exportar JSON completo (100% do estado) e importar em outro navegador/dispositivo | `↓exportar` / `↑importar` |
-| VI — Informação sobre compartilhamento | Política de privacidade pública; zero compartilhamento | `/privacidade` |
-| VII — Revogação do consentimento | O consentimento é dado no aviso inicial (`opsboard.notice-v1`); apagar a chave + dados revoga | Aviso inicial + rodapé |
+| VI — Informação sobre compartilhamento | Política de privacidade pública; zero compartilhamento dos dados do quadro; métricas anonimizadas (Vercel) só com opt-in | `/privacy` (§7) |
+| VII — Revogação do consentimento | Aviso inicial (`opsboard.notice-v1`); métricas revogáveis pelo toggle na política (`opsboard.metrics-v1`) ou apagando os dados | Aviso inicial + `/privacy` + rodapé |
 
 ## 3. Decisões registradas
 
@@ -35,8 +35,7 @@ compartilhamento com terceiros.
 - **Art. 7º, inciso II (cumprimento de obrigação legal/técnica)**: o
   tratamento é estritamente local e necessário ao funcionamento da
   ferramenta; não há coleta nem transferência.
-- **Consentimento** (art. 7º, I): manifestado no primeiro acesso pelo aviso
-  de privacidade (`opsboard.notice-v1`); revogável apagando os dados.
+- **Consentimento** (art. 7º, I): métricas de uso aceitas/recusadas no próprio aviso (`opsboard.metrics-v1`); revogável a qualquer momento pelo toggle em `/privacy` (desliga o envio na hora).
 
 ### 3.2 Retenção (art. 15)
 

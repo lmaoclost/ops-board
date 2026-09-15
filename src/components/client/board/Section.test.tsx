@@ -11,13 +11,13 @@ const base = (over: Partial<SectionProps> = {}): SectionProps => ({
     notes: "nota longa",
     collapsed: false,
     tasks: [
-      { id: "t1", text: "feita", status: "done", note: "", blocked: false, prio: 3, due: "", doneAt: "2026-01-01T00:00:00.000Z", subs: [] },
-      { id: "t2", text: "pendente", status: "todo", note: "", blocked: false, prio: 3, due: "", doneAt: null, subs: [] },
+      { id: "t1", text: "feita", status: "done", note: "", blocked: false, blockedReason: "", prio: 3, due: "", doneAt: "2026-01-01T00:00:00.000Z", subs: [] },
+      { id: "t2", text: "pendente", status: "todo", note: "", blocked: false, blockedReason: "", prio: 3, due: "", doneAt: null, subs: [] },
     ],
   },
   onToggleSection: vi.fn(),
   onAddTask: vi.fn(),
-  onRename: vi.fn(),
+  onEdit: vi.fn(),
   onDelete: vi.fn(),
   taskActions: {
     onToggle: vi.fn(),
@@ -69,27 +69,46 @@ describe("Section", () => {
     expect(p.onAddTask).not.toHaveBeenCalled();
   });
 
-  it("renomeia seção via modal", async () => {
+  it("edita seção via modal único com título e nota", async () => {
     const p = base();
     render(<Section {...p} />);
     await openMenu("ações da seção");
-    await userEvent.click(await screen.findByRole("menuitem", { name: "renomear seção" }));
-    const input = await screen.findByLabelText("título");
-    await userEvent.clear(input);
-    await userEvent.type(input, "Sprint 12{Enter}");
-    expect(p.onRename).toHaveBeenCalledWith("Sprint 12");
+    await userEvent.click(await screen.findByRole("menuitem", { name: "editar seção" }));
+    const title = await screen.findByLabelText("título");
+    await userEvent.clear(title);
+    await userEvent.type(title, "Sprint 12");
+    const note = await screen.findByLabelText("nota", { exact: true });
+    await userEvent.clear(note);
+    await userEvent.type(note, "foco novo");
+    await userEvent.click(screen.getByRole("button", { name: "salvar" }));
+    expect(p.onEdit).toHaveBeenCalledWith({ title: "Sprint 12", notes: "foco novo" });
   });
 
-  it("renomear abre modal e excluir chama callback", async () => {
+  it("editar abre modal e excluir pede confirmação", async () => {
     const p = base();
     render(<Section {...p} />);
     await openMenu("ações da seção");
-    await userEvent.click(await screen.findByRole("menuitem", { name: "renomear seção" }));
+    await userEvent.click(await screen.findByRole("menuitem", { name: "editar seção" }));
     expect(await screen.findByLabelText("título")).toBeTruthy();
-    expect(p.onRename).not.toHaveBeenCalled();
+    expect(p.onEdit).not.toHaveBeenCalled();
     await userEvent.click(screen.getByTitle("fechar"));
     await openMenu("ações da seção");
     await userEvent.click(await screen.findByRole("menuitem", { name: "excluir seção" }));
+    expect(p.onDelete).not.toHaveBeenCalled();
+    await userEvent.click(await screen.findByRole("button", { name: "excluir" }));
     expect(p.onDelete).toHaveBeenCalledTimes(1);
+  });
+
+  it("menu ⋯ não tem mais itens separados de editar/nota", async () => {
+    render(<Section {...base()} />);
+    await openMenu("ações da seção");
+    expect(screen.queryByRole("menuitem", { name: "renomear seção" })).toBeNull();
+    expect(screen.queryByRole("menuitem", { name: "editar nota" })).toBeNull();
+    expect(screen.queryByRole("menuitem", { name: "adicionar nota" })).toBeNull();
+  });
+
+  it("grip de arrastar seção tem label acessível", () => {
+    render(<Section {...base()} />);
+    expect(screen.getByLabelText("arrastar seção p/ reordenar")).toBeTruthy();
   });
 });

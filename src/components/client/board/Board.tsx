@@ -1,28 +1,31 @@
 import { DndContext, PointerSensor, TouchSensor, useSensor, useSensors, type DragEndEvent } from "@dnd-kit/core";
+import { SortableContext, verticalListSortingStrategy } from "@dnd-kit/sortable";
 import { useMemo } from "react";
 import { useT } from "@/hooks/useT";
 import { isFiltering, prioSort, projMatches, type Filters } from "@/lib/filter";
 import { resolveDrop, smartCollision } from "@/lib/dnd";
-import type { AddTaskInput, Project, Status, TaskPatch } from "@/lib/types";
+import type { AddSectionInput, AddTaskInput, Project, ProjectPatch, SectionPatch, Status, TaskPatch } from "@/lib/types";
 import { ProjectCard } from "./ProjectCard";
 import { Kanban } from "@/components/client/dnd/Kanban";
 import { Agenda } from "@/components/client/agenda/Agenda";
 import { Trash } from "@/components/client/trash/Trash";
 
 export interface BoardProjectActions {
-  onAddSection: (pid: string, title: string) => void;
-  onRename: (id: string, title: string, blocked: boolean, due?: string) => void;
+  onAddSection: (pid: string, input: AddSectionInput) => void;
+  onEdit: (id: string, patch: ProjectPatch) => void;
   onDelete: (id: string) => void;
   onToggleArchive: (id: string) => void;
   onCyclePrio: (id: string) => void;
   onToggleCollapse: (id: string) => void;
+  onMoveProject: (pid: string, overPid: string) => void;
 }
 
 export interface BoardSectionActions {
   onToggle: (pid: string, sid: string) => void;
   onAddTask: (pid: string, sid: string, text: string) => void;
   onAddTaskFull: (pid: string, sid: string, input: AddTaskInput) => void;
-  onRename: (pid: string, sid: string, title: string) => void;
+  onEdit: (pid: string, sid: string, patch: SectionPatch) => void;
+  onMoveSection: (pid: string, sid: string, index: number) => void;
   onDelete: (pid: string, sid: string) => void;
 }
 
@@ -40,7 +43,7 @@ export interface BoardTaskActions {
 export interface SectionLevelActions {
   onToggle: (sid: string) => void;
   onAddTask: (sid: string, text: string) => void;
-  onRename: (sid: string, title: string) => void;
+  onEdit: (sid: string, patch: SectionPatch) => void;
   onDelete: (sid: string) => void;
 }
 
@@ -74,7 +77,7 @@ export function Board({ projetos, filters, onNewProject, onClearFilters, project
     sectionActions: {
       onToggle: (sid: string) => sectionActions.onToggle(pid, sid),
       onAddTask: (sid: string, text: string) => sectionActions.onAddTask(pid, sid, text),
-      onRename: (sid: string, title: string) => sectionActions.onRename(pid, sid, title),
+      onEdit: (sid: string, patch: SectionPatch) => sectionActions.onEdit(pid, sid, patch),
       onDelete: (sid: string) => sectionActions.onDelete(pid, sid),
     },
     taskActions: {
@@ -102,6 +105,10 @@ export function Board({ projetos, filters, onNewProject, onClearFilters, project
       taskActions.onMoveTask(drop.src.pid, drop.src.sid, drop.src.tid, drop.dest.pid, drop.dest.sid, drop.index);
     } else if (drop.kind === "status") {
       taskActions.onStatusChange(drop.task.pid, drop.task.sid, drop.task.tid, drop.status);
+    } else if (drop.kind === "secmove") {
+      sectionActions.onMoveSection(drop.pid, drop.sid, drop.index);
+    } else if (drop.kind === "projmove") {
+      projectActions.onMoveProject(drop.pid, drop.overPid);
     }
   };
 
@@ -163,13 +170,17 @@ export function Board({ projetos, filters, onNewProject, onClearFilters, project
   } else {
     content = (
       <div className="fade-in flex flex-col gap-4">
+        <SortableContext
+          items={filtered.map((p) => `project:${p.id}`)}
+          strategy={verticalListSortingStrategy}
+        >
         {filtered.map((p) => (
           <ProjectCard
             key={p.id}
             project={p}
             collectActions={collectActions}
-            onAddSection={(title) => projectActions.onAddSection(p.id, title)}
-            onRename={(id, title, blocked, due) => projectActions.onRename(id, title, blocked, due)}
+            onAddSection={(input) => projectActions.onAddSection(p.id, input)}
+            onEdit={(id, patch) => projectActions.onEdit(id, patch)}
             onDelete={(id) => projectActions.onDelete(id)}
             onToggleArchive={() => projectActions.onToggleArchive(p.id)}
             onCyclePrio={() => projectActions.onCyclePrio(p.id)}
@@ -178,6 +189,7 @@ export function Board({ projetos, filters, onNewProject, onClearFilters, project
             filters={filters}
           />
         ))}
+        </SortableContext>
       </div>
     );
   }

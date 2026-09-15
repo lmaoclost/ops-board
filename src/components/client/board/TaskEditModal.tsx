@@ -28,6 +28,7 @@ export function TaskEditModal({ task, isSub, status, projetos, focusSubs, onSubm
   const taskFields = (task as Task | undefined);
   const [subs, setSubs] = useState<SubTask[]>(task?.subs ?? []);
   const [newSub, setNewSub] = useState("");
+  const [blocked, setBlocked] = useState(task?.blocked ?? false);
   const [pid, setPid] = useState<string | null>(projetos?.[0]?.id ?? null);
   const subsRef = useRef<HTMLDivElement | null>(null);
 
@@ -61,7 +62,8 @@ export function TaskEditModal({ task, isSub, status, projetos, focusSubs, onSubm
         text: String(v.text).trim(),
         note: String(v.note).trim(),
         blocked: Boolean(v.blocked),
-        prio: (Number(v.prio) || 3) as Task["prio"],
+        blockedReason: String(v.blockedReason ?? "").trim(),
+        prio: (Number(v.prio) || 5) as Task["prio"],
         due: String(v.due ?? ""),
         subs,
         ...(isSub
@@ -79,16 +81,18 @@ export function TaskEditModal({ task, isSub, status, projetos, focusSubs, onSubm
       title={t(isCreate ? "nova tarefa" : isSub ? "editar sub-tarefa" : "editar tarefa")}
       submitLabel={t("salvar")}
       fields={[
-        { key: "text", label: t("tarefa"), value: task?.text ?? "" },
+        { key: "text", label: t("tarefa"), value: task?.text ?? "", required: true },
         {
           key: "prio",
           label: t("prioridade"),
           type: "select",
-          value: task?.prio ?? 3,
+          value: task?.prio ?? 5,
           options: [
             { value: 1, label: t("P1 — urgente") },
             { value: 2, label: t("P2 — em breve") },
             { value: 3, label: t("P3 — normal") },
+            { value: 4, label: t("P4 — baixa") },
+            { value: 5, label: t("P5 — mínima") },
           ],
         },
         { key: "due", label: t("vencimento"), type: "date", value: task?.due ?? "" },
@@ -110,7 +114,13 @@ export function TaskEditModal({ task, isSub, status, projetos, focusSubs, onSubm
           : []),
         { key: "note", label: t("nota"), type: "textarea", value: task?.note ?? "", placeholder: t("detalhe opcional…") },
         { key: "blocked", label: t("marcar como bloqueada / stuck"), type: "checkbox", value: task?.blocked ?? false },
+        ...(blocked
+          ? ([{ key: "blockedReason", label: t("motivo do bloqueio"), type: "textarea", value: task?.blockedReason ?? "" }] as const)
+          : []),
       ]}
+      onFieldChange={(key, value) => {
+        if (key === "blocked") setBlocked(Boolean(value));
+      }}
       topChildren={
         isCreate ? (
           <>
@@ -153,7 +163,7 @@ export function TaskEditModal({ task, isSub, status, projetos, focusSubs, onSubm
         className="rounded-md border border-[var(--line)] bg-[var(--panel)] p-2.5"
       >
         <Label className="mb-1.5 block text-[11px] font-semibold uppercase tracking-wider text-[var(--muted-text)]">
-          sub-tarefas
+          {t("sub-tarefas")}
         </Label>
         {subs.length > 0 && (
           <ul className="mb-2 flex flex-col gap-1">
@@ -196,9 +206,9 @@ export function TaskEditModal({ task, isSub, status, projetos, focusSubs, onSubm
                 addSub();
               }
             }}
-            placeholder="+ sub-tarefa"
-            aria-label="nova sub-tarefa"
-            className="input-line w-full"
+            placeholder={`+ ${t("nova sub-tarefa")}`}
+            aria-label={t("nova sub-tarefa")}
+            className="h-8 w-full rounded-lg border border-[var(--line)] bg-[var(--field)] px-2 text-xs text-[var(--text)] outline-none dark:bg-[var(--field)]"
           />
           <button
             type="button"
