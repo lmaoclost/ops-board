@@ -6,7 +6,7 @@ const projetos: Project[] = [
   {
     id: "p1",
     title: "A",
-    blocked: true,
+        note: "", blocked: true, blockedReason: "",
     archived: false,
     prio: 3,
     due: "",
@@ -18,15 +18,15 @@ const projetos: Project[] = [
         notes: "",
         collapsed: false,
         tasks: [
-          { id: "t1", text: "a", status: "todo", note: "", blocked: true, prio: 1, due: "", doneAt: null, subs: [] },
-          { id: "t2", text: "b", status: "doing", note: "", blocked: false, prio: 2, due: "", doneAt: null, subs: [] },
-          { id: "t3", text: "c", status: "done", note: "", blocked: false, prio: 3, due: "", doneAt: null, subs: [] },
+          { id: "t1", text: "a", status: "todo", note: "", blocked: true, blockedReason: "", prio: 1, due: "", doneAt: null, subs: [] },
+          { id: "t2", text: "b", status: "doing", note: "", blocked: false, blockedReason: "", prio: 2, due: "", doneAt: null, subs: [] },
+          { id: "t3", text: "c", status: "done", note: "", blocked: false, blockedReason: "", prio: 3, due: "", doneAt: null, subs: [] },
           {
             id: "t4",
             text: "d",
             status: "done",
             note: "",
-            blocked: false,
+            blocked: false, blockedReason: "",
             prio: 3,
             due: "",
             doneAt: new Date().toISOString(), subs: [],

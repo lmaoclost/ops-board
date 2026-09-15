@@ -11,7 +11,7 @@ import { Trash } from "@/components/client/trash/Trash";
 
 export interface BoardProjectActions {
   onAddSection: (pid: string, title: string) => void;
-  onRename: (id: string, title: string, blocked: boolean, due?: string) => void;
+  onRename: (id: string, title: string, blocked: boolean, due?: string, note?: string, blockedReason?: string) => void;
   onDelete: (id: string) => void;
   onToggleArchive: (id: string) => void;
   onCyclePrio: (id: string) => void;
@@ -23,6 +23,8 @@ export interface BoardSectionActions {
   onAddTask: (pid: string, sid: string, text: string) => void;
   onAddTaskFull: (pid: string, sid: string, input: AddTaskInput) => void;
   onRename: (pid: string, sid: string, title: string) => void;
+  onNotes: (pid: string, sid: string, notes: string) => void;
+  onMoveSection: (pid: string, sid: string, index: number) => void;
   onDelete: (pid: string, sid: string) => void;
 }
 
@@ -41,6 +43,7 @@ export interface SectionLevelActions {
   onToggle: (sid: string) => void;
   onAddTask: (sid: string, text: string) => void;
   onRename: (sid: string, title: string) => void;
+  onNotes: (sid: string, notes: string) => void;
   onDelete: (sid: string) => void;
 }
 
@@ -75,6 +78,7 @@ export function Board({ projetos, filters, onNewProject, onClearFilters, project
       onToggle: (sid: string) => sectionActions.onToggle(pid, sid),
       onAddTask: (sid: string, text: string) => sectionActions.onAddTask(pid, sid, text),
       onRename: (sid: string, title: string) => sectionActions.onRename(pid, sid, title),
+      onNotes: (sid: string, notes: string) => sectionActions.onNotes(pid, sid, notes),
       onDelete: (sid: string) => sectionActions.onDelete(pid, sid),
     },
     taskActions: {
@@ -102,6 +106,8 @@ export function Board({ projetos, filters, onNewProject, onClearFilters, project
       taskActions.onMoveTask(drop.src.pid, drop.src.sid, drop.src.tid, drop.dest.pid, drop.dest.sid, drop.index);
     } else if (drop.kind === "status") {
       taskActions.onStatusChange(drop.task.pid, drop.task.sid, drop.task.tid, drop.status);
+    } else if (drop.kind === "secmove") {
+      sectionActions.onMoveSection(drop.pid, drop.sid, drop.index);
     }
   };
 
@@ -169,7 +175,7 @@ export function Board({ projetos, filters, onNewProject, onClearFilters, project
             project={p}
             collectActions={collectActions}
             onAddSection={(title) => projectActions.onAddSection(p.id, title)}
-            onRename={(id, title, blocked, due) => projectActions.onRename(id, title, blocked, due)}
+            onRename={(id, title, blocked, due, note, blockedReason) => projectActions.onRename(id, title, blocked, due, note, blockedReason)}
             onDelete={(id) => projectActions.onDelete(id)}
             onToggleArchive={() => projectActions.onToggleArchive(p.id)}
             onCyclePrio={() => projectActions.onCyclePrio(p.id)}

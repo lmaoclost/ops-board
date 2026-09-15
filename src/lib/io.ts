@@ -20,7 +20,7 @@ const isTask = (t: unknown): boolean => {
     STATUSES.includes(o.status as Status) &&
     Number.isInteger(o.prio) &&
     (o.prio as number) >= 1 &&
-    (o.prio as number) <= 3 &&
+    (o.prio as number) <= 5 &&
     isNullableString(o.note) &&
     isNullableString(o.due) &&
     isNullableString(o.doneAt) &&

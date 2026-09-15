@@ -61,7 +61,8 @@ export function TaskEditModal({ task, isSub, status, projetos, focusSubs, onSubm
         text: String(v.text).trim(),
         note: String(v.note).trim(),
         blocked: Boolean(v.blocked),
-        prio: (Number(v.prio) || 3) as Task["prio"],
+        blockedReason: String(v.blockedReason ?? "").trim(),
+        prio: (Number(v.prio) || 5) as Task["prio"],
         due: String(v.due ?? ""),
         subs,
         ...(isSub
@@ -84,11 +85,13 @@ export function TaskEditModal({ task, isSub, status, projetos, focusSubs, onSubm
           key: "prio",
           label: t("prioridade"),
           type: "select",
-          value: task?.prio ?? 3,
+          value: task?.prio ?? 5,
           options: [
             { value: 1, label: t("P1 — urgente") },
             { value: 2, label: t("P2 — em breve") },
             { value: 3, label: t("P3 — normal") },
+            { value: 4, label: t("P4 — baixa") },
+            { value: 5, label: t("P5 — mínima") },
           ],
         },
         { key: "due", label: t("vencimento"), type: "date", value: task?.due ?? "" },
@@ -110,6 +113,7 @@ export function TaskEditModal({ task, isSub, status, projetos, focusSubs, onSubm
           : []),
         { key: "note", label: t("nota"), type: "textarea", value: task?.note ?? "", placeholder: t("detalhe opcional…") },
         { key: "blocked", label: t("marcar como bloqueada / stuck"), type: "checkbox", value: task?.blocked ?? false },
+        { key: "blockedReason", label: t("motivo do bloqueio (opcional)"), type: "textarea", value: task?.blockedReason ?? "" },
       ]}
       topChildren={
         isCreate ? (

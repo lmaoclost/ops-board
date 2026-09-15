@@ -1,7 +1,8 @@
 import { useState } from "react";
 import { useT } from "@/hooks/useT";
 import { useDroppable } from "@dnd-kit/core";
-import { SortableContext, verticalListSortingStrategy } from "@dnd-kit/sortable";
+import { SortableContext, verticalListSortingStrategy, useSortable } from "@dnd-kit/sortable";
+import { CSS } from "@dnd-kit/utilities";
 import { Modal } from "@/components/client/Modal";
 import { Button } from "@/components/ui/button";
 import {
@@ -38,19 +39,24 @@ export interface SectionProps {
   onToggleSection: () => void;
   onAddTask: (text: string) => void;
   onRename: (title: string) => void;
+  onNotes: (notes: string) => void;
   onDelete: () => void;
   taskActions: SectionTaskActions;
   prioSort?: boolean;
   filters?: Filters;
 }
 
-export function Section({ projectId, section, onToggleSection, onAddTask, onRename, onDelete, taskActions, prioSort, filters }: SectionProps) {
+export function Section({ projectId, section, onToggleSection, onAddTask, onRename, onNotes, onDelete, taskActions, prioSort, filters }: SectionProps) {
   const { t } = useT();
   const [draft, setDraft] = useState("");
   const [editingId, setEditingId] = useState<string | null>(null);
   const [renaming, setRenaming] = useState(false);
+  const [editingNotes, setEditingNotes] = useState(false);
   const { setNodeRef: setDropRef, isOver } = useDroppable({ id: `sec:${projectId}:${section.id}` });
   const { setNodeRef: setEndRef, isOver: isEndOver } = useDroppable({ id: `sec-end:${projectId}:${section.id}` });
+  const { attributes, listeners, setNodeRef, transform, transition, isDragging } = useSortable({
+    id: `section:${projectId}:${section.id}`,
+  });
 
   const open = !section.collapsed;
   const doneCount = section.tasks.filter((t) => t.status === "done").length;
@@ -62,9 +68,28 @@ export function Section({ projectId, section, onToggleSection, onAddTask, onRena
     if (String(v.title).trim()) onRename(String(v.title).trim());
   };
 
+  const submitNotes = (v: Record<string, string | boolean>) => {
+    setEditingNotes(false);
+    onNotes(String(v.notes ?? ""));
+  };
+
   return (
-    <div className="border-t border-dashed border-[var(--line-soft)] first:border-t-0">
+    <div
+      ref={setNodeRef}
+      style={{ transform: CSS.Transform.toString(transform), transition: isDragging ? "none" : transition }}
+      className={`border-t border-dashed border-[var(--line-soft)] first:border-t-0 ${isDragging ? "opacity-90 shadow-lg ring-2 ring-[var(--fired)]/70 z-10" : ""}`}
+    >
       <div className="flex w-full items-center gap-2 bg-[var(--panel-2)] px-3.5 py-2 hover:bg-[var(--panel-3)]">
+        <button
+          type="button"
+          aria-label={t("arrastar seção p/ reordenar")}
+          title={t("arrastar seção p/ reordenar")}
+          className="shrink-0 cursor-grab touch-none text-[11px] text-[var(--dimmer)] hover:text-[var(--text)] active:cursor-grabbing"
+          {...attributes}
+          {...listeners}
+        >
+          ⋮⋮
+        </button>
         <button
           type="button"
           onClick={onToggleSection}
@@ -103,6 +128,15 @@ export function Section({ projectId, section, onToggleSection, onAddTask, onRena
                 }}
               >
                 {t("renomear seção")}
+              </DropdownMenuItem>
+              <DropdownMenuItem
+                className="text-xs"
+                onClick={(e) => {
+                  e.stopPropagation();
+                  setEditingNotes(true);
+                }}
+              >
+                {section.notes ? t("editar nota") : t("adicionar nota")}
               </DropdownMenuItem>
               <DropdownMenuSeparator className="bg-[var(--line)]" />
               <DropdownMenuItem
@@ -185,6 +219,16 @@ export function Section({ projectId, section, onToggleSection, onAddTask, onRena
           fields={[{ key: "title", label: t("título"), value: section.title }]}
           onSubmit={submitRename}
           onCancel={() => setRenaming(false)}
+        />
+      )}
+
+      {editingNotes && (
+        <Modal
+          title={t("nota da seção")}
+          submitLabel={t("salvar")}
+          fields={[{ key: "notes", label: t("nota"), type: "textarea", value: section.notes }]}
+          onSubmit={submitNotes}
+          onCancel={() => setEditingNotes(false)}
         />
       )}
 

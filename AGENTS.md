@@ -27,7 +27,10 @@ OpsBoard — visualizador de projetos e tarefas. Next.js 16.3 (App Router, break
 
 ## Arquitetura
 - `src/lib/` — lógica pura testável (store zustand único `store.ts`, migrate, filter, dnd, i18n, io/import-export); componentes ficam em `src/components/client/` (`board/`, `dnd/`)
-- `src/lib/store.ts` — estado único, persist `localStorage` key `"opsboard.v1"`, `partialize` controla o que persiste; mutações têm **undo (Ctrl+Z)**; `SCHEMA_VERSION = 7` em `migrate.ts` (e2e `export-import.spec.ts` depende do valor — mudar schema exige atualizar o spec)
+- `src/lib/store.ts` — estado único, persist `localStorage` key `"opsboard.v1"`, `partialize` controla o que persiste; mutações têm **undo (Ctrl+Z)**; `SCHEMA_VERSION = 8` em `migrate.ts` (e2e `export-import.spec.ts` depende do valor — mudar schema exige atualizar o spec)
+- **Prioridade 1–5** (1 = máxima, default 5): `Prio` em `types.ts`; ciclos `(prio % 5)+1` (store + page); `TaskEditModal` options P1–P5; labels `P4 — baixa`/`P5 — mínima` em i18n
+- **Notas**: projeto tem `note` (modal criar + renomear, exibe sob header); seção edita via ⋯ (`setSectionNotes`)
+- **Bloqueio com motivo opcional**: `blockedReason` em Task/SubTask/Project; botão 1-clique e menu stuck abrem prompt (`por que foi bloqueado?`), salvar vazio = sem motivo; badge `title` exibe motivo
 - **Lixeira TTL 7 dias**: `purgeExpired()` em `migrate.ts` remove tarefas com `deletedAt >= 7d` na reidratação — aplicado via opção **`merge`** do zustand persist (o `migrate` só roda quando a versão do schema muda; o `merge` roda sempre)
 - `src/lib/subtasks.ts` — helpers recursivos imutáveis `mapSubs/removeSub/addSub/makeSub` (subs são `SubTask` completas: prio/due/status/note/blocked + `subs` aninhadas, recursão ilimitada)
 - `store.ts` `reconcileSubs()` — regra recursiva: sub com filhas = todas `done` ? `done` : `todo`; pai idem (via `editTask`); `addTaskFull(pid, sid, input)` = criação completa em 1 commit de undo (status done seta `doneAt`)
@@ -48,4 +51,5 @@ OpsBoard — visualizador de projetos e tarefas. Next.js 16.3 (App Router, break
 - dnd-kit: `SortableTaskItem` (useSortable) + droppables de seção (`sec:`, `sec-end:`) para mover entre seções/projetos
 - Drag na lista só reordena ao vivo se houver `SortableContext` + `verticalListSortingStrategy` por seção — sem ele o card só segue o cursor
 - **Kanban: NÃO usar `useSortable`** (congela collision: transform null, over null fora do contêiner) — draggable puro + droppable por card (`task:`) + coluna (`k:`) com `smartCollision` (lib/dnd.ts): o menor rect que contém o pointer vence, senão rectIntersection
+- **Seções: reorder com `useSortable` + `SortableContext` por projeto** (namespace `section:<pid>:<sid>`, grip `⋮⋮` com listeners só no grip p/ não quebrar toggle); `resolveDrop` retorna `secmove` → `moveSection` (store, com undo); testado em e2e com drag manual em steps (igual `dnd.spec.ts`, `dragTo` não ativa o sensor de 6px)
 - Guard de 6px no sensor (click vs drag)

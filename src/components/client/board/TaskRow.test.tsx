@@ -10,7 +10,7 @@ const base = (over: Partial<TaskRowProps["task"]> = {}): TaskRowProps => ({
     text: "Enviar relatório https://exemplo.com",
     status: "todo",
     note: "detalhe",
-    blocked: false,
+    blocked: false, blockedReason: "",
     prio: 1,
     due: "",
     doneAt: null, subs: [],
@@ -27,10 +27,10 @@ const base = (over: Partial<TaskRowProps["task"]> = {}): TaskRowProps => ({
 const sub = (over: Partial<SubTask> & { id: string }): SubTask => ({
   text: over.id,
   note: "",
-  prio: 3,
+  prio: 5,
   due: "",
   status: "todo",
-  blocked: false,
+  blocked: false, blockedReason: "",
   subs: [],
   ...over,
 });
@@ -84,7 +84,7 @@ describe("TaskRow", () => {
   });
 
   it("exibe tag bloqueada e tag vencida", () => {
-    render(<TaskRow {...base({ blocked: true, due: "2000-01-01" })} />);
+    render(<TaskRow {...base({ blocked: true, blockedReason: "", due: "2000-01-01" })} />);
     expect(screen.getByText(/bloqueada/)).toBeTruthy();
     expect(screen.getByText(/vencida/)).toBeTruthy();
   });
@@ -111,16 +111,28 @@ describe("TaskRow", () => {
     expect(p.onDelete).toHaveBeenCalledTimes(1);
   });
 
-  it("botão alterna bloqueio via onUpdate", async () => {
+  it("botão bloqueia via prompt de motivo e desbloqueia direto", async () => {
     const p = base();
     render(<TaskRow {...p} />);
     await userEvent.click(screen.getByLabelText("bloquear tarefa"));
-    expect(p.onUpdate).toHaveBeenCalledWith({ blocked: true });
+    const reason = await screen.findByLabelText("motivo do bloqueio (opcional)");
+    await userEvent.type(reason, "sem acesso");
+    await userEvent.click(screen.getByRole("button", { name: "salvar" }));
+    expect(p.onUpdate).toHaveBeenCalledWith({ blocked: true, blockedReason: "sem acesso" });
 
     const q = base({ blocked: true });
     render(<TaskRow {...q} />);
     await userEvent.click(screen.getByLabelText("desbloquear tarefa"));
     expect(q.onUpdate).toHaveBeenCalledWith({ blocked: false });
+  });
+
+  it("prompt de bloqueio vazio bloqueia sem motivo", async () => {
+    const p = base();
+    render(<TaskRow {...p} />);
+    await userEvent.click(screen.getByLabelText("bloquear tarefa"));
+    await screen.findByLabelText("motivo do bloqueio (opcional)");
+    await userEvent.click(screen.getByRole("button", { name: "salvar" }));
+    expect(p.onUpdate).toHaveBeenCalledWith({ blocked: true, blockedReason: "" });
   });
 
   it("concluída mostra texto riscado", () => {
@@ -184,7 +196,7 @@ describe("TaskRow", () => {
   });
 
   it("mostra nota, bloqueada e vencida na sub", () => {
-    render(<TaskRow {...base({ subs: [sub({ id: "a", note: "passo 1", blocked: true, due: "2000-01-01" })] })} />);
+    render(<TaskRow {...base({ subs: [sub({ id: "a", note: "passo 1", blocked: true, blockedReason: "", due: "2000-01-01" })] })} />);
     expect(screen.getByText(/passo 1/)).toBeTruthy();
     expect(screen.getByText(/bloqueada/)).toBeTruthy();
     expect(screen.getByText(/vencida/)).toBeTruthy();

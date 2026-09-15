@@ -7,10 +7,10 @@ const base = (over: Partial<ProjectCardProps> = {}): ProjectCardProps => ({
   project: {
     id: "p1",
     title: "Projeto Alfa",
-    blocked: false, archived: false, prio: 3, due: "", collapsed: false,
+        note: "", blocked: false, blockedReason: "", archived: false, prio: 3, due: "", collapsed: false,
     sections: [
       { id: "s1", title: "geral", notes: "", collapsed: false, tasks: [
-        { id: "t1", text: "fazer", status: "todo", note: "", blocked: false, prio: 3, due: "", doneAt: null, subs: [] },
+        { id: "t1", text: "fazer", status: "todo", note: "", blocked: false, blockedReason: "", prio: 3, due: "", doneAt: null, subs: [] },
       ] },
     ],
   },
@@ -19,6 +19,7 @@ const base = (over: Partial<ProjectCardProps> = {}): ProjectCardProps => ({
       onToggle: vi.fn(),
       onAddTask: vi.fn(),
       onRename: vi.fn(),
+      onNotes: vi.fn(),
       onDelete: vi.fn(),
     },
     taskActions: {
@@ -55,13 +56,28 @@ describe("ProjectCard", () => {
     expect(screen.getByText("stuck")).toBeTruthy();
   });
 
-  it("alterna stuck/bloqueado pelo ⋯ sem passar pelo modal", async () => {
+  it("desmarcar stuck pelo ⋯ é direto, bloquear abre prompt de motivo", async () => {
+    const p = base({ project: { ...base().project, blocked: true } });
+    render(<ProjectCard {...p} />);
+    await openMenu();
+    await userEvent.click(await screen.findByRole("menuitem", { name: "desmarcar stuck / bloqueado" }));
+    expect(p.onRename).toHaveBeenCalledWith("p1", "Projeto Alfa", false);
+  });
+
+  it("bloquear projeto pede motivo e salva com onRename", async () => {
     const p = base();
     render(<ProjectCard {...p} />);
     await openMenu();
     await userEvent.click(await screen.findByRole("menuitem", { name: "marcar como stuck / bloqueado" }));
-    expect(p.onRename).toHaveBeenCalledWith("p1", "Projeto Alfa", true);
-    expect(screen.queryByLabelText("marcar como stuck / bloqueado")).toBeNull();
+    const reason = await screen.findByLabelText("motivo do bloqueio (opcional)");
+    await userEvent.type(reason, "aguardando cliente");
+    await userEvent.click(screen.getByRole("button", { name: "salvar" }));
+    expect(p.onRename).toHaveBeenCalledWith("p1", "Projeto Alfa", true, undefined, undefined, "aguardando cliente");
+  });
+
+  it("mostra nota do projeto no cartão", () => {
+    render(<ProjectCard {...base({ project: { ...base().project, note: "contexto" } })} />);
+    expect(screen.getByText("contexto")).toBeTruthy();
   });
 
   it("clique no badge de prioridade cicla (chama onCyclePrio)", async () => {
@@ -107,7 +123,7 @@ describe("ProjectCard", () => {
     const input = await screen.findByLabelText("título");
     await userEvent.clear(input);
     await userEvent.type(input, "Renomeado{Enter}");
-    expect(p.onRename).toHaveBeenCalledWith("p1", "Renomeado", false, "");
+    expect(p.onRename).toHaveBeenCalledWith("p1", "Renomeado", false, "", "");
   });
 
   it("define vencimento do projeto pelo modal de editar", async () => {
@@ -118,7 +134,7 @@ describe("ProjectCard", () => {
     const due = await screen.findByLabelText("vencimento");
     await userEvent.type(due, "2026-09-01");
     await userEvent.click(screen.getByRole("button", { name: "salvar" }));
-    expect(p.onRename).toHaveBeenCalledWith("p1", "Projeto Alfa", false, "2026-09-01");
+    expect(p.onRename).toHaveBeenCalledWith("p1", "Projeto Alfa", false, "2026-09-01", "");
   });
 
   it("exclui diretamente sem confirm nativo (undo cobre)", async () => {

@@ -129,7 +129,7 @@ function KanbanTask({
           </span>
         )}
         {item.task.blocked && (
-          <span className="text-[10px] font-bold uppercase tracking-[0.08em] text-[var(--gave)]" title={t("bloqueada")}>
+          <span className="text-[10px] font-bold uppercase tracking-[0.08em] text-[var(--gave)]" title={item.task.blockedReason || t("bloqueada")}>
             ⛔ bloqueada
           </span>
         )}
@@ -212,7 +212,7 @@ const emptyTask: Task = {
   text: "",
   status: "todo",
   note: "",
-  blocked: false,
+  blocked: false, blockedReason: "",
   prio: 3,
   due: "",
   doneAt: null,

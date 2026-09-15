@@ -31,14 +31,16 @@ interface BoardStore {
   setLocale: (locale: Locale) => void;
   canUndo: boolean;
   undo: () => void;
-  addProject: (title: string) => void;
-  renameProject: (id: string, title: string, blocked: boolean, due?: string) => void;
+  addProject: (title: string, note?: string) => void;
+  renameProject: (id: string, title: string, blocked: boolean, due?: string, note?: string, blockedReason?: string) => void;
   deleteProject: (id: string) => void;
   toggleProjectArchive: (id: string) => void;
   setProjectPrio: (id: string, prio: Prio) => void;
   toggleProjectCollapsed: (id: string) => void;
   addSection: (pid: string, title: string) => void;
   renameSection: (pid: string, sid: string, title: string) => void;
+  setSectionNotes: (pid: string, sid: string, notes: string) => void;
+  moveSection: (pid: string, sid: string, index: number) => void;
   deleteSection: (pid: string, sid: string) => void;
   addTask: (pid: string, sid: string, text: string) => void;
   addTaskFull: (pid: string, sid: string, input: AddTaskInput) => void;
@@ -106,7 +108,7 @@ export function createBoardStore(initial: Project[] = []) {
           set({ canUndo: undoStack.length > 0 });
         },
 
-        addProject: (title) =>
+        addProject: (title, note) =>
           commit(() =>
             set((s) => ({
               projetos: [
@@ -114,9 +116,11 @@ export function createBoardStore(initial: Project[] = []) {
                 {
                   id: uid(),
                   title,
+                  note: note ?? "",
                   blocked: false,
+                  blockedReason: "",
                   archived: false,
-                  prio: 3,
+                  prio: 5,
                   due: "",
                   collapsed: false,
                   sections: [{ id: uid(), title: "geral", tasks: [], notes: "", collapsed: false }],
@@ -125,11 +129,20 @@ export function createBoardStore(initial: Project[] = []) {
             })),
           ),
 
-        renameProject: (id, title, blocked, due) =>
+        renameProject: (id, title, blocked, due, note, blockedReason) =>
           commit(() =>
             set((s) => ({
               projetos: s.projetos.map((p) =>
-                p.id === id ? { ...p, title, blocked, ...(due !== undefined ? { due } : {}) } : p,
+                p.id === id
+                  ? {
+                      ...p,
+                      title,
+                      blocked,
+                      ...(due !== undefined ? { due } : {}),
+                      ...(note !== undefined ? { note } : {}),
+                      ...(blockedReason !== undefined ? { blockedReason } : {}),
+                    }
+                  : p,
               ),
             })),
           ),
@@ -180,6 +193,32 @@ export function createBoardStore(initial: Project[] = []) {
             })),
           ),
 
+        setSectionNotes: (pid, sid, notes) =>
+          commit(() =>
+            set((s) => ({
+              projetos: s.projetos.map((p) =>
+                p.id === pid
+                  ? { ...p, sections: p.sections.map((sec) => (sec.id === sid ? { ...sec, notes } : sec)) }
+                  : p,
+              ),
+            })),
+          ),
+
+        moveSection: (pid, sid, index) =>
+          commit(() =>
+            set((s) => ({
+              projetos: s.projetos.map((p) => {
+                if (p.id !== pid) return p;
+                const from = p.sections.findIndex((sec) => sec.id === sid);
+                if (from === -1) return p;
+                const next = [...p.sections];
+                const [moved] = next.splice(from, 1);
+                next.splice(Math.max(0, Math.min(index, next.length)), 0, moved);
+                return { ...p, sections: next };
+              }),
+            })),
+          ),
+
         deleteSection: (pid, sid) =>
           commit(() =>
             set((s) => ({
@@ -210,7 +249,8 @@ export function createBoardStore(initial: Project[] = []) {
                                   status: input.status,
                                   note: input.note ?? "",
                                   blocked: input.blocked ?? false,
-                                  prio: input.prio ?? 3,
+                                  blockedReason: input.blockedReason ?? "",
+                                  prio: input.prio ?? 5,
                                   due: input.due ?? "",
                                   doneAt: input.status === "done" ? new Date().toISOString() : null,
                                   subs: input.subs ? reconcileSubs(input.subs) : [],
@@ -252,6 +292,7 @@ export function createBoardStore(initial: Project[] = []) {
                                         text: patch.text ?? t.text,
                                         note: patch.note ?? t.note,
                                         blocked: patch.blocked ?? t.blocked,
+                                        blockedReason: patch.blockedReason ?? t.blockedReason,
                                         prio: patch.prio ?? t.prio,
                                         due: patch.due ?? t.due,
                                         subs,
@@ -371,7 +412,7 @@ export function createBoardStore(initial: Project[] = []) {
             set((s) => {
               const t = findTask(s.projetos, pid, sid, tid);
               if (!t) return s;
-              const next = (t.prio % 3) + 1 as Prio;
+              const next = ((t.prio % 5) + 1) as Prio;
               return {
                 projetos: s.projetos.map((p) =>
                   p.id === pid

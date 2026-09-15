@@ -1,6 +1,7 @@
 import { useState } from "react";
 import { useT } from "@/hooks/useT";
 import type { TKey } from "@/lib/i18n";
+import { SortableContext, verticalListSortingStrategy } from "@dnd-kit/sortable";
 import { Modal } from "@/components/client/Modal";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -19,7 +20,7 @@ import type { Filters } from "@/lib/filter";
 
 export interface ProjectActions {
   onAddSection: (title: string) => void;
-  onRename: (id: string, title: string, blocked: boolean, due?: string) => void;
+  onRename: (id: string, title: string, blocked: boolean, due?: string, note?: string, blockedReason?: string) => void;
   onDelete: (id: string) => void;
 }
 
@@ -30,7 +31,7 @@ export interface ProjectCardProps {
     taskActions: TaskLevelActions;
   };
   onAddSection: (title: string) => void;
-  onRename: (id: string, title: string, blocked: boolean, due?: string) => void;
+  onRename: (id: string, title: string, blocked: boolean, due?: string, note?: string, blockedReason?: string) => void;
   onDelete: (id: string) => void;
   onToggleArchive: () => void;
   onCyclePrio: () => void;
@@ -42,6 +43,7 @@ export interface ProjectCardProps {
 type ModalState =
   | { kind: "rename" }
   | { kind: "add-section" }
+  | { kind: "block" }
   | null;
 
 export function ProjectCard({ project, collectActions, onAddSection, onRename, onDelete, onToggleArchive, onCyclePrio, onToggleCollapse, prioSort, filters }: ProjectCardProps) {
@@ -54,7 +56,12 @@ export function ProjectCard({ project, collectActions, onAddSection, onRename, o
   const submitProject = (v: Record<string, string | boolean>) => {
     setModal(null);
     if (!String(v.title).trim()) return;
-onRename(project.id, String(v.title).trim(), project.blocked, String(v.due ?? ""));
+    onRename(project.id, String(v.title).trim(), project.blocked, String(v.due ?? ""), String(v.note ?? ""));
+  };
+
+  const submitBlock = (v: Record<string, string | boolean>) => {
+    setModal(null);
+    onRename(project.id, project.title, true, undefined, undefined, String(v.reason ?? "").trim());
   };
 
   const submitSection = (v: Record<string, string | boolean>) => {
@@ -94,7 +101,7 @@ onRename(project.id, String(v.title).trim(), project.blocked, String(v.due ?? ""
           </span>
         )}
         {project.blocked && (
-          <Badge variant="destructive" className="rounded-[4px] px-1.5 text-[11px] font-bold uppercase tracking-[0.08em]">
+          <Badge variant="destructive" className="rounded-[4px] px-1.5 text-[11px] font-bold uppercase tracking-[0.08em]" title={project.blockedReason || undefined}>
             {t("stuck")}
           </Badge>
         )}
@@ -133,7 +140,7 @@ onRename(project.id, String(v.title).trim(), project.blocked, String(v.due ?? ""
               </DropdownMenuItem>
               <DropdownMenuItem
                 className="text-xs"
-                onClick={() => onRename(project.id, project.title, !project.blocked)}
+                onClick={() => (project.blocked ? onRename(project.id, project.title, false) : setModal({ kind: "block" }))}
               >
                 {project.blocked ? t("desmarcar stuck / bloqueado") : t("marcar como stuck / bloqueado")}
               </DropdownMenuItem>
@@ -153,8 +160,19 @@ onRename(project.id, String(v.title).trim(), project.blocked, String(v.due ?? ""
         </span>
       </div>
 
+      {!project.collapsed && project.note && (
+        <div className="whitespace-pre-wrap break-words border-b border-[var(--line)] px-3.5 py-1.5 text-[11.5px] leading-relaxed text-[var(--muted-text)]">
+          {project.note}
+        </div>
+      )}
+
       {!project.collapsed &&
-        project.sections.map((s) => {
+        project.sections.length > 0 && (
+        <SortableContext
+          items={project.sections.map((s) => `section:${project.id}:${s.id}`)}
+          strategy={verticalListSortingStrategy}
+        >
+        {project.sections.map((s) => {
         const secTaskActions: SectionLevelTaskActions = {
           onToggle: (tid) => actions.taskActions.onToggle(s.id, tid),
           onPrioCycle: (tid) => actions.taskActions.onPrioCycle(s.id, tid),
@@ -171,6 +189,7 @@ onRename(project.id, String(v.title).trim(), project.blocked, String(v.due ?? ""
             onToggleSection={() => actions.sectionActions.onToggle(s.id)}
             onAddTask={(text) => actions.sectionActions.onAddTask(s.id, text)}
             onRename={(title) => actions.sectionActions.onRename(s.id, title)}
+            onNotes={(notes) => actions.sectionActions.onNotes(s.id, notes)}
             onDelete={() => actions.sectionActions.onDelete(s.id)}
             taskActions={secTaskActions}
             prioSort={prioSort}
@@ -178,6 +197,8 @@ onRename(project.id, String(v.title).trim(), project.blocked, String(v.due ?? ""
           />
 );
         })}
+        </SortableContext>
+        )}
 
       {modal?.kind === "rename" && (
         <Modal
@@ -186,8 +207,20 @@ onRename(project.id, String(v.title).trim(), project.blocked, String(v.due ?? ""
           fields={[
             { key: "title", label: t("título"), value: project.title },
             { key: "due", label: t("vencimento"), type: "date", value: project.due },
+            { key: "note", label: t("nota do projeto"), type: "textarea", value: project.note },
           ]}
           onSubmit={submitProject}
+          onCancel={() => setModal(null)}
+        />
+      )}
+      {modal?.kind === "block" && (
+        <Modal
+          title={t("por que foi bloqueado?")}
+          submitLabel={t("salvar")}
+          fields={[
+            { key: "reason", label: t("motivo do bloqueio (opcional)"), type: "textarea", value: project.blockedReason },
+          ]}
+          onSubmit={submitBlock}
           onCancel={() => setModal(null)}
         />
       )}

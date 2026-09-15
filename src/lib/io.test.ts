@@ -5,7 +5,7 @@ import type { Project } from "./types";
 const projeto = (over: Partial<Project> = {}): Project => ({
   id: "p1",
   title: "P",
-  blocked: false,
+    note: "", blocked: false, blockedReason: "",
   archived: false, prio: 3, due: "", collapsed: false,
   sections: [
     {
@@ -14,7 +14,7 @@ const projeto = (over: Partial<Project> = {}): Project => ({
       notes: "",
       collapsed: false,
       tasks: [
-        { id: "t1", text: "x", status: "todo", note: "", blocked: false, prio: 3, due: "", doneAt: null, subs: [] },
+        { id: "t1", text: "x", status: "todo", note: "", blocked: false, blockedReason: "", prio: 3, due: "", doneAt: null, subs: [] },
       ],
     },
   ],
@@ -100,8 +100,8 @@ describe("parseImport", () => {
     expect(restored).toEqual(original);
   });
 
-  it("rejeita prio fora de 1..3", () => {
-    for (const prio of [0, 4, 1.5]) {
+  it("rejeita prio fora de 1..5", () => {
+    for (const prio of [0, 6, 1.5]) {
       const raw = JSON.parse(exportJson([projeto()]));
       raw.projetos[0].sections[0].tasks[0].prio = prio;
       expect(() => parseImport(JSON.stringify(raw))).toThrow(/inválido/i);

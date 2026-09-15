@@ -87,6 +87,8 @@ test("bloqueia e desbloqueia tarefa pelo botão da linha", async ({ page }) => {
   await addTask(page, "tarefa travada");
 
   await page.getByTestId("task-row").getByLabel("bloquear tarefa").click();
+  await page.getByLabel("motivo do bloqueio (opcional)").fill("sem acesso");
+  await page.getByRole("button", { name: "salvar" }).click();
   await expect(page.getByText("bloqueada", { exact: true })).toBeVisible();
   await expect(page.getByTestId("task-row").getByLabel("desbloquear tarefa")).toBeVisible();
 
@@ -106,6 +108,8 @@ test("renomeia projeto e marca/desmarca stuck pelo ⋯; renomeia seção", async
 
   await page.getByRole("button", { name: "ações do projeto", exact: true }).click();
   await page.getByRole("menuitem", { name: "marcar como stuck / bloqueado" }).click();
+  await page.getByLabel("motivo do bloqueio (opcional)").fill("aguardando cliente");
+  await page.getByRole("button", { name: "salvar" }).click();
   await expect(page.getByText("stuck", { exact: true })).toBeVisible();
 
   await page.getByRole("button", { name: "ações do projeto", exact: true }).click();

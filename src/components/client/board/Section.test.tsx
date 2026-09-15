@@ -11,13 +11,14 @@ const base = (over: Partial<SectionProps> = {}): SectionProps => ({
     notes: "nota longa",
     collapsed: false,
     tasks: [
-      { id: "t1", text: "feita", status: "done", note: "", blocked: false, prio: 3, due: "", doneAt: "2026-01-01T00:00:00.000Z", subs: [] },
-      { id: "t2", text: "pendente", status: "todo", note: "", blocked: false, prio: 3, due: "", doneAt: null, subs: [] },
+      { id: "t1", text: "feita", status: "done", note: "", blocked: false, blockedReason: "", prio: 3, due: "", doneAt: "2026-01-01T00:00:00.000Z", subs: [] },
+      { id: "t2", text: "pendente", status: "todo", note: "", blocked: false, blockedReason: "", prio: 3, due: "", doneAt: null, subs: [] },
     ],
   },
   onToggleSection: vi.fn(),
   onAddTask: vi.fn(),
   onRename: vi.fn(),
+  onNotes: vi.fn(),
   onDelete: vi.fn(),
   taskActions: {
     onToggle: vi.fn(),
@@ -91,5 +92,22 @@ describe("Section", () => {
     await openMenu("ações da seção");
     await userEvent.click(await screen.findByRole("menuitem", { name: "excluir seção" }));
     expect(p.onDelete).toHaveBeenCalledTimes(1);
+  });
+
+  it("menu ⋯ edita nota da seção via modal", async () => {
+    const p = base();
+    render(<Section {...p} />);
+    await openMenu("ações da seção");
+    await userEvent.click(await screen.findByRole("menuitem", { name: "editar nota" }));
+    const input = await screen.findByLabelText("nota");
+    await userEvent.clear(input);
+    await userEvent.type(input, "foco novo");
+    await userEvent.click(screen.getByRole("button", { name: "salvar" }));
+    expect(p.onNotes).toHaveBeenCalledWith("foco novo");
+  });
+
+  it("grip de arrastar seção tem label acessível", () => {
+    render(<Section {...base()} />);
+    expect(screen.getByLabelText("arrastar seção p/ reordenar")).toBeTruthy();
   });
 });

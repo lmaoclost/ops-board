@@ -34,6 +34,8 @@ export default function Home() {
   const toggleProjectCollapsed = useBoard((s) => s.toggleProjectCollapsed);
   const addSection = useBoard((s) => s.addSection);
   const renameSection = useBoard((s) => s.renameSection);
+  const setSectionNotes = useBoard((s) => s.setSectionNotes);
+  const moveSection = useBoard((s) => s.moveSection);
   const deleteSection = useBoard((s) => s.deleteSection);
   const addTask = useBoard((s) => s.addTask);
   const addTaskFull = useBoard((s) => s.addTaskFull);
@@ -247,13 +249,13 @@ const notifiedRef = useRef(false);
           onClearFilters={clear}
           projectActions={{
             onAddSection: (pid, title) => addSection(pid, title),
-            onRename: (id, title, blocked, due) => renameProject(id, title, blocked, due),
+            onRename: (id, title, blocked, due, note, blockedReason) => renameProject(id, title, blocked, due, note, blockedReason),
             onDelete: (id) => deleteProject(id),
             onToggleArchive: handleToggleArchive,
             onCyclePrio: (id) => {
               const p = projetos.find((x) => x.id === id);
               if (!p) return;
-              setProjectPrio(id, (p.prio === 3 ? 1 : p.prio + 1) as Prio);
+              setProjectPrio(id, ((p.prio % 5) + 1) as Prio);
             },
             onToggleCollapse: (id) => toggleProjectCollapsed(id),
           }}
@@ -262,6 +264,8 @@ const notifiedRef = useRef(false);
             onAddTask: (pid, sid, text) => addTask(pid, sid, text),
             onAddTaskFull: (pid, sid, input) => addTaskFull(pid, sid, input),
             onRename: (pid, sid, title) => renameSection(pid, sid, title),
+            onNotes: (pid, sid, notes) => setSectionNotes(pid, sid, notes),
+            onMoveSection: (pid, sid, index) => moveSection(pid, sid, index),
             onDelete: (pid, sid) => deleteSection(pid, sid),
           }}
           taskActions={{
@@ -372,11 +376,14 @@ const notifiedRef = useRef(false);
         <Modal
           title={t("novo projeto")}
           submitLabel={t("criar")}
-          fields={[{ key: "title", label: t("título") }]}
+          fields={[
+            { key: "title", label: t("título") },
+            { key: "note", label: t("nota do projeto"), type: "textarea", value: "" },
+          ]}
           onSubmit={(v) => {
             setNewProjectOpen(false);
             const title = String(v.title).trim();
-            if (title) addProject(title);
+            if (title) addProject(title, String(v.note ?? "").trim());
           }}
           onCancel={() => setNewProjectOpen(false)}
         />

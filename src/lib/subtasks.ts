@@ -5,10 +5,11 @@ export const makeSub = (text: string): SubTask => ({
   id: uid(),
   text,
   note: "",
-  prio: 3,
+  prio: 5,
   due: "",
   status: "todo",
   blocked: false,
+  blockedReason: "",
   subs: [],
 });
 

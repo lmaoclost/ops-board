@@ -11,17 +11,21 @@ async function createProject(page: Page, title: string) {
   await page.getByRole("button", { name: "criar" }).click();
 }
 
-test("badge de prioridade do projeto cicla P3 → P1 → P2", async ({ page }) => {
+test("badge de prioridade do projeto cicla P5 → P1 → P2 → P3 → P4 → P5", async ({ page }) => {
   await page.goto("/");
   await createProject(page, "app");
 
-  await expect(page.getByLabel("prioridade do projeto P3")).toBeVisible();
-  await page.getByLabel("prioridade do projeto P3").click();
+  await expect(page.getByLabel("prioridade do projeto P5")).toBeVisible();
+  await page.getByLabel("prioridade do projeto P5").click();
   await expect(page.getByLabel("prioridade do projeto P1")).toBeVisible();
   await page.getByLabel("prioridade do projeto P1").click();
   await expect(page.getByLabel("prioridade do projeto P2")).toBeVisible();
   await page.getByLabel("prioridade do projeto P2").click();
   await expect(page.getByLabel("prioridade do projeto P3")).toBeVisible();
+  await page.getByLabel("prioridade do projeto P3").click();
+  await expect(page.getByLabel("prioridade do projeto P4")).toBeVisible();
+  await page.getByLabel("prioridade do projeto P4").click();
+  await expect(page.getByLabel("prioridade do projeto P5")).toBeVisible();
 });
 
 test("minimizar projeto esconde tarefas e expandir restaura", async ({ page }) => {

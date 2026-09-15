@@ -1,12 +1,12 @@
 import { PRIOS, REPEATS, STATUSES, type Prio, type Project, type Repeat, type Section, type Status, type SubTask, type Task } from "./types";
 
-export const SCHEMA_VERSION = 7;
+export const SCHEMA_VERSION = 8;
 
 type UnknownRecord = Record<string, unknown>;
 
 function normSub(s: UnknownRecord | undefined): SubTask {
   const status = STATUSES.includes(s?.status as Status) ? (s!.status as Status) : s?.done ? "done" : "todo";
-  const prio = PRIOS.includes(s?.prio as Prio) ? (s!.prio as Prio) : 3;
+  const prio = PRIOS.includes(s?.prio as Prio) ? (s!.prio as Prio) : 5;
   return {
     id: String(s?.id ?? ""),
     text: String(s?.text ?? ""),
@@ -15,13 +15,14 @@ function normSub(s: UnknownRecord | undefined): SubTask {
     due: String(s?.due ?? ""),
     status,
     blocked: Boolean(s?.blocked),
+    blockedReason: String(s?.blockedReason ?? ""),
     subs: Array.isArray(s?.subs) ? s.subs.map((x) => normSub(x as UnknownRecord)) : [],
   };
 }
 
 function normTask(t: UnknownRecord | undefined): Task {
   const status = STATUSES.includes(t?.status as Status) ? (t!.status as Status) : "todo";
-  const prio = PRIOS.includes(t?.prio as Prio) ? (t!.prio as Prio) : 3;
+  const prio = PRIOS.includes(t?.prio as Prio) ? (t!.prio as Prio) : 5;
   const repeat = REPEATS.includes(t?.repeat as Repeat) ? (t!.repeat as Repeat) : undefined;
   return {
     id: String(t?.id ?? ""),
@@ -29,6 +30,7 @@ function normTask(t: UnknownRecord | undefined): Task {
     status,
     note: String(t?.note ?? ""),
     blocked: Boolean(t?.blocked),
+    blockedReason: String(t?.blockedReason ?? ""),
     prio,
     due: String(t?.due ?? ""),
     doneAt: t?.doneAt ? String(t.doneAt) : null,
@@ -49,11 +51,13 @@ function normSection(s: UnknownRecord | undefined): Section {
 }
 
 export function normProject(p: UnknownRecord | undefined): Project {
-  const prio = PRIOS.includes(p?.prio as Prio) ? (p!.prio as Prio) : 3;
+  const prio = PRIOS.includes(p?.prio as Prio) ? (p!.prio as Prio) : 5;
   return {
     id: String(p?.id ?? ""),
     title: String(p?.title ?? ""),
+    note: String(p?.note ?? ""),
     blocked: Boolean(p?.blocked),
+    blockedReason: String(p?.blockedReason ?? ""),
     archived: Boolean(p?.archived),
     prio,
     due: String(p?.due ?? ""),

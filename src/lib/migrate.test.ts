@@ -22,7 +22,7 @@ describe("migrateLegacy", () => {
       ],
     });
     const t = out![0].sections[0].tasks[0];
-    expect(t.prio).toBe(3);
+    expect(t.prio).toBe(5);
     expect(t.due).toBe("");
     expect(t.doneAt).toBeNull();
     expect(t.note).toBe("");
@@ -50,8 +50,8 @@ describe("migrateLegacy", () => {
     });
     const t = out![0].sections[0].tasks[0];
     expect(t.subs).toEqual([
-      { id: "a", text: "sub", note: "", prio: 3, due: "", status: "done", blocked: false, subs: [] },
-      { id: "b", text: "outra", note: "", prio: 3, due: "", status: "todo", blocked: false, subs: [] },
+      { id: "a", text: "sub", note: "", prio: 5, due: "", status: "done", blocked: false, blockedReason: "", subs: [] },
+      { id: "b", text: "outra", note: "", prio: 5, due: "", status: "todo", blocked: false, blockedReason: "", subs: [] },
     ]);
   });
 
@@ -83,11 +83,12 @@ describe("migrateLegacy", () => {
       id: "a",
       text: "sub",
       note: "",
-      prio: 3,
+      prio: 5,
       due: "",
       status: "todo",
       blocked: false,
-      subs: [{ id: "c", text: "neta", note: "", prio: 3, due: "", status: "done", blocked: false, subs: [] }],
+      blockedReason: "",
+      subs: [{ id: "c", text: "neta", note: "", prio: 5, due: "", status: "done", blocked: false, blockedReason: "", subs: [] }],
     });
   });
 
@@ -103,8 +104,10 @@ describe("migrateLegacy", () => {
     const out = migrateLegacy({ projetos: [{ id: "p1", title: "P" }] });
     expect(out![0].sections).toEqual([]);
     expect(out![0].blocked).toBe(false);
+    expect(out![0].blockedReason).toBe("");
+    expect(out![0].note).toBe("");
     expect(out![0].archived).toBe(false);
-    expect(out![0].prio).toBe(3);
+    expect(out![0].prio).toBe(5);
     expect(out![0].due).toBe("");
     expect(out![0].collapsed).toBe(false);
   });
@@ -116,9 +119,9 @@ describe("migrateLegacy", () => {
     expect(out![0].collapsed).toBe(true);
   });
 
-  it("força prio de projeto inválida para 3", () => {
+  it("força prio de projeto inválida para 5", () => {
     const out = migrateLegacy({ projetos: [{ id: "p1", title: "P", prio: 9 }] });
-    expect(out![0].prio).toBe(3);
+    expect(out![0].prio).toBe(5);
   });
 
   it("preserva archived quando presente", () => {
@@ -132,7 +135,7 @@ describe("migrateLegacy", () => {
         {
           id: "p1",
           title: "N8N",
-          blocked: true,
+                    note: "", blocked: true, blockedReason: "",
           sections: [
             {
               id: "s1",
@@ -159,10 +162,11 @@ describe("migrateLegacy", () => {
   });
 
   it("mantém versão de schema estável e exportada", () => {
-    expect(SCHEMA_VERSION).toBe(7);
+    expect(SCHEMA_VERSION).toBe(8);
   });
 
   it("normaliza repeat/deletedAt do schema v7", () => {
+    const recent = new Date(Date.now() - 2 * 24 * 60 * 60 * 1000).toISOString();
     const out = migrateLegacy({
       projetos: [
         {
@@ -173,7 +177,7 @@ describe("migrateLegacy", () => {
               id: "s1",
               title: "S",
               tasks: [
-                { id: "t1", text: "recorrente", status: "todo", repeat: "daily", deletedAt: "2026-08-18T10:00:00.000Z" },
+                { id: "t1", text: "recorrente", status: "todo", repeat: "daily", deletedAt: recent },
                 { id: "t2", text: "simples", status: "todo", repeat: "hourly" as string, deletedAt: "" },
               ],
             },
@@ -183,9 +187,15 @@ describe("migrateLegacy", () => {
     })!;
     const [t1, t2] = out[0].sections[0].tasks;
     expect(t1.repeat).toBe("daily");
-    expect(t1.deletedAt).toBe("2026-08-18T10:00:00.000Z");
+    expect(t1.deletedAt).toBe(recent);
     expect(t2.repeat).toBeUndefined();
     expect(t2.deletedAt).toBeUndefined();
+  });
+
+  it("preenche note/blockedReason do projeto no schema v8", () => {
+    const out = migrateLegacy({ projetos: [{ id: "p1", title: "P" }] })!;
+    expect(out[0].note).toBe("");
+    expect(out[0].blockedReason).toBe("");
   });
 });
 
@@ -204,7 +214,7 @@ describe("normalizeState", () => {
     });
     const t = out[0].sections[0].tasks[0];
     expect(t.status).toBe("todo");
-    expect(t.prio).toBe(3);
+    expect(t.prio).toBe(5);
   });
 
   it("rejeita estado sem formato de projetos", () => {
@@ -218,7 +228,7 @@ describe("purgeExpired", () => {
     text: id,
     status: "todo" as const,
     note: "",
-    blocked: false,
+    blocked: false, blockedReason: "",
     prio: 3,
     due: "",
     doneAt: null,
@@ -229,7 +239,7 @@ describe("purgeExpired", () => {
   const project = (tasks: Task[]): Project => ({
     id: "p1",
     title: "P",
-    blocked: false,
+        note: "", blocked: false, blockedReason: "",
     archived: false,
     prio: 3,
     due: "",
