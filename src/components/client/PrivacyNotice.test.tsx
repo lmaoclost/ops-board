@@ -9,26 +9,27 @@ const NOTICE_KEY = "opsboard.notice-v1";
 describe("PrivacyNotice consentimento de métricas", () => {
   beforeEach(() => localStorage.clear());
 
-  it("aceitar métricas liga tracking e dispensa aviso", async () => {
+  it("aceitar liga tracking e dispensa aviso", async () => {
     render(<PrivacyNotice />);
-    await userEvent.click(await screen.findByRole("button", { name: "aceitar métricas" }));
+    await userEvent.click(await screen.findByRole("button", { name: "aceitar" }));
     expect(localStorage.getItem(METRICS_KEY)).toBe("1");
     expect(localStorage.getItem(NOTICE_KEY)).toBe("1");
     expect(screen.queryByRole("dialog", { name: "aviso de privacidade" })).toBeNull();
   });
 
-  it("recusar métricas desliga tracking e dispensa aviso", async () => {
+  it("recusar desliga tracking e dispensa aviso", async () => {
     render(<PrivacyNotice />);
-    await userEvent.click(await screen.findByRole("button", { name: "só dados locais" }));
+    await userEvent.click(await screen.findByRole("button", { name: "recusar" }));
     expect(localStorage.getItem(METRICS_KEY)).toBe("0");
     expect(localStorage.getItem(NOTICE_KEY)).toBe("1");
     expect(screen.queryByRole("dialog", { name: "aviso de privacidade" })).toBeNull();
   });
 
-  it("entendi dispensa sem tocar no consentimento", async () => {
+  it("texto traz link inline para a política", async () => {
     render(<PrivacyNotice />);
-    await userEvent.click(await screen.findByRole("button", { name: "entendi" }));
-    expect(localStorage.getItem(METRICS_KEY)).toBeNull();
-    expect(localStorage.getItem(NOTICE_KEY)).toBe("1");
+    const dialog = await screen.findByRole("dialog", { name: "aviso de privacidade" });
+    const link = dialog.querySelector('a[href="/privacy"]');
+    expect(link).not.toBeNull();
+    expect(dialog.querySelectorAll("button").length).toBe(2);
   });
 });

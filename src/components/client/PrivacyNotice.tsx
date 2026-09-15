@@ -3,7 +3,7 @@
 import { useEffect, useState } from "react";
 import { useT } from "@/hooks/useT";
 import Link from "next/link";
-import { Button, buttonVariants } from "@/components/ui/button";
+import { Button } from "@/components/ui/button";
 import { setMetricsConsent } from "./Metrics";
 
 const NOTICE_KEY = "opsboard.notice-v1";
@@ -17,14 +17,10 @@ export function PrivacyNotice() {
     if (!localStorage.getItem(NOTICE_KEY)) setOpen(true);
   }, []);
 
-  const dismiss = () => {
-    localStorage.setItem(NOTICE_KEY, "1");
-    setOpen(false);
-  };
-
   const choose = (consented: boolean) => {
     setMetricsConsent(consented);
-    dismiss();
+    localStorage.setItem(NOTICE_KEY, "1");
+    setOpen(false);
   };
 
   if (!open) return null;
@@ -33,28 +29,26 @@ export function PrivacyNotice() {
     <div
       role="dialog"
       aria-label={t("aviso de privacidade")}
-      className="fixed bottom-5 left-1/2 z-50 w-[min(92vw,26rem)] -translate-x-1/2 rounded-lg border border-[var(--line)] bg-[var(--panel)] p-4 shadow-xl"
+      className="fixed bottom-0 left-0 right-0 z-50 border-t border-[var(--line)] bg-[var(--panel)] p-4 shadow-lg"
     >
-      <h2 className="text-sm font-bold tracking-wide text-[var(--text)]">{t("priv_titulo")}</h2>
-      <p className="mt-1.5 text-xs leading-relaxed text-[var(--muted-text)]">
-        {t("priv_txt")}
-      </p>
-      <div className="mt-3 flex items-center justify-end gap-2">
-        <Link
-          href="/privacy"
-          className={buttonVariants({ variant: "ghost", size: "xs" }) + " text-[var(--muted-text)]"}
-        >
-          {t("priv_link")}
-        </Link>
-        <Button type="button" variant="ghost" size="xs" onClick={() => choose(false)}>
-          {t("priv_so_local")}
-        </Button>
-        <Button type="button" variant="default" size="sm" onClick={() => choose(true)}>
-          {t("priv_metricas")}
-        </Button>
-        <Button type="button" variant="ghost" size="sm" onClick={dismiss}>
-          {t("priv_ok")}
-        </Button>
+      <div className="mx-auto flex max-w-5xl flex-col items-start gap-3 sm:flex-row sm:items-center sm:justify-between">
+        <p className="text-sm text-[var(--muted-text)]">
+          {t("priv_txt")}{" "}
+          <Link
+            href="/privacy"
+            className="underline underline-offset-4 hover:text-[var(--text)]"
+          >
+            {t("priv_link")}
+          </Link>
+        </p>
+        <div className="flex shrink-0 gap-2">
+          <Button type="button" variant="outline" size="sm" onClick={() => choose(false)}>
+            {t("priv_decline")}
+          </Button>
+          <Button type="button" variant="default" size="sm" onClick={() => choose(true)}>
+            {t("priv_accept")}
+          </Button>
+        </div>
       </div>
     </div>
   );
