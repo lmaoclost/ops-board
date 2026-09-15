@@ -376,10 +376,10 @@ export function TaskRow({ task, onToggle, onPrioCycle, onStatusChange, onEdit, o
           title={t("por que foi bloqueado?")}
           submitLabel={t("salvar")}
           fields={[
-            { key: "reason", label: t("motivo do bloqueio"), type: "textarea", value: task.blockedReason ?? "" },
+            { key: "blockedReason", label: t("motivo do bloqueio"), type: "textarea", value: task.blockedReason ?? "" },
           ]}
           onSubmit={(v) => {
-            onUpdate({ blocked: true, blockedReason: String(v.reason ?? "").trim() });
+            onUpdate({ blocked: true, blockedReason: String(v.blockedReason ?? "").trim() });
             setBlocking(false);
           }}
           onCancel={() => setBlocking(false)}

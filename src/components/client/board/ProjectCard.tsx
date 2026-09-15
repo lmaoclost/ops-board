@@ -94,7 +94,7 @@ export function ProjectCard({
       true,
       undefined,
       undefined,
-      String(v.reason ?? "").trim(),
+      String(v.blockedReason ?? "").trim(),
     );
   };
 
@@ -309,7 +309,7 @@ export function ProjectCard({
           submitLabel={t("salvar")}
           fields={[
             {
-              key: "reason",
+              key: "blockedReason",
               label: t("motivo do bloqueio"),
               type: "textarea",
               value: project.blockedReason,
