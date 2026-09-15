@@ -16,6 +16,7 @@ OpsBoard — visualizador de projetos e tarefas. Next.js 16.3 (App Router, break
 - `npm run typecheck` — `tsc --noEmit`
 - `npm run lint` — eslint **sem** `--max-warnings`: warnings não quebram CI (existem vários pré-existentes, não "consertar" todos)
 - `npm test` — vitest (jsdom, globals, alias `@` → `src`), testes colados em `src/**/*.test.{ts,tsx}`
+- **vitest 5 + jest-dom 7**: tipos dos matchers quebram (vitest alargou `Assertion` p/ 2 params, jest-dom aumenta a de 1) — calço em `src/vitest-jest-dom.d.ts`; remover quando jest-dom suportar vitest 5
 - `npm run e2e` — Playwright; `webServer` faz `npm run build && npm start` na porta 3000 (`reuseExistingServer` quando não-CI)
 - CI (`.github/workflows/ci.yml`): npm ci → `npm audit --audit-level=high` → `npm ls` → lint → typecheck → unit → Playwright chromium. Job único `check` é obrigatório nos PRs; merge **squash** (nunca `--admin`)
 
