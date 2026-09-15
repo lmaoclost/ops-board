@@ -4,9 +4,9 @@ test("aviso de privacidade aparece na primeira visita e some ao aceitar", async 
   await page.goto("/");
   const dialog = page.getByRole("dialog", { name: "aviso de privacidade" });
   await expect(dialog).toBeVisible();
-  await expect(dialog.getByText("Seus dados, só no seu navegador")).toBeVisible();
+  await expect(dialog.getByText("processa os seus dados localmente")).toBeVisible();
 
-  await dialog.getByRole("button", { name: "entendi" }).click();
+  await dialog.getByRole("button", { name: "aceitar" }).click();
   await expect(dialog).toBeHidden();
 
   await page.reload();
@@ -36,21 +36,21 @@ test("política de privacidade acessível em 1 clique pelo topbar", async ({ pag
 test("aviso oferece link direto para a política", async ({ page }) => {
   await page.goto("/");
   const dialog = page.getByRole("dialog", { name: "aviso de privacidade" });
-  await dialog.getByRole("link", { name: "política completa" }).click();
+  await dialog.getByRole("link", { name: "Política de privacidade" }).click();
   await expect(page).toHaveURL(/\/privacy/);
   await expect(page.getByRole("heading", { name: "Política de privacidade" })).toBeVisible();
 });
 test("aviso: aceitar métricas liga tracking; recusar desliga", async ({ page }) => {
   await page.goto("/");
   const dialog = page.getByRole("dialog", { name: "aviso de privacidade" });
-  await dialog.getByRole("button", { name: "aceitar métricas" }).click();
+  await dialog.getByRole("button", { name: "aceitar" }).click();
   await expect(dialog).toBeHidden();
   expect(await page.evaluate(() => localStorage.getItem("opsboard.metrics-v1"))).toBe("1");
 
   await page.evaluate(() => localStorage.clear());
   await page.reload();
   const dialog2 = page.getByRole("dialog", { name: "aviso de privacidade" });
-  await dialog2.getByRole("button", { name: "só dados locais" }).click();
+  await dialog2.getByRole("button", { name: "recusar" }).click();
   await expect(dialog2).toBeHidden();
   expect(await page.evaluate(() => localStorage.getItem("opsboard.metrics-v1"))).toBe("0");
 });
