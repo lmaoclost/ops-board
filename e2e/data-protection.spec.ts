@@ -23,6 +23,7 @@ test("ctrl+z desfaz exclusão de projeto", async ({ page }) => {
 
   await page.getByRole("button", { name: "ações do projeto", exact: true }).click();
   await page.getByRole("menuitem", { name: "excluir projeto" }).click();
+  await page.getByRole("dialog", { name: "excluir projeto?" }).getByRole("button", { name: "excluir" }).click();
   await expect(page.getByText("nenhum projeto na fila.")).toBeVisible();
 
   await page.keyboard.press("Control+z");

@@ -43,6 +43,7 @@ export type DropResult =
   | { kind: "move"; src: TaskRef; dest: { pid: string; sid: string }; index: number }
   | { kind: "status"; task: TaskRef; status: Status }
   | { kind: "secmove"; pid: string; sid: string; index: number }
+  | { kind: "projmove"; pid: string; overPid: string }
   | { kind: "none" };
 
 export function findTaskRef(projetos: Project[], tid: string): TaskRef | null {
@@ -60,6 +61,14 @@ export function resolveDrop(args: {
   over: string;
 }): DropResult {
   const { projetos, active, over } = args;
+
+  if (active.startsWith("project:")) {
+    const pid = active.split(":")[1];
+    if (!over.startsWith("project:")) return { kind: "none" };
+    const overPid = over.split(":")[1];
+    if (projetos.every((p) => p.id !== pid) || projetos.every((p) => p.id !== overPid)) return { kind: "none" };
+    return { kind: "projmove", pid, overPid };
+  }
 
   if (active.startsWith("section:")) {
     const [, pid, sid] = active.split(":");

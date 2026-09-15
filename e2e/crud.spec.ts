@@ -12,7 +12,9 @@ async function createProject(page: Page, title: string) {
 }
 
 async function addSection(page: Page, title: string) {
-  await page.getByRole("button", { name: "ações do projeto", exact: true }).click();
+  await page
+    .getByRole("button", { name: "ações do projeto", exact: true })
+    .click();
   await page.getByRole("menuitem", { name: "adicionar seção" }).click();
   await page.getByLabel("título").fill(title);
   await page.getByRole("button", { name: "criar" }).click();
@@ -23,7 +25,9 @@ async function addTask(page: Page, text: string) {
   await page.getByLabel("nova tarefa").first().press("Enter");
 }
 
-test("cria projeto (com seção padrão), tarefas; persiste após reload", async ({ page }) => {
+test("cria projeto (com seção padrão), tarefas; persiste após reload", async ({
+  page,
+}) => {
   await page.goto("/");
 
   await createProject(page, "webapp");
@@ -41,14 +45,19 @@ test("cria projeto (com seção padrão), tarefas; persiste após reload", async
   await expect(page.getByText("beber café", { exact: false })).toBeVisible();
 });
 
-test("adiciona seção extra, edita tarefa: texto, prioridade, vencimento, nota e bloqueada", async ({ page }) => {
+test("adiciona seção extra, edita tarefa: texto, prioridade, vencimento, nota e bloqueada", async ({
+  page,
+}) => {
   await page.goto("/");
   await createProject(page, "app");
   await addSection(page, "backlog");
   await expect(page.getByText("backlog", { exact: true })).toBeVisible();
   await addTask(page, "tarefa antiga");
 
-  await page.getByTestId("task-row").getByRole("button", { name: "editar" }).click();
+  await page
+    .getByTestId("task-row")
+    .getByRole("button", { name: "editar" })
+    .click();
   const dialog = page.getByRole("dialog", { name: "editar tarefa" });
   await dialog.getByLabel("tarefa", { exact: true }).fill("tarefa nova");
   await dialog.getByLabel("prioridade").selectOption({ label: "P1 — urgente" });
@@ -58,26 +67,42 @@ test("adiciona seção extra, edita tarefa: texto, prioridade, vencimento, nota 
   await page.getByRole("button", { name: "salvar" }).click();
 
   await expect(page.getByText("tarefa nova", { exact: false })).toBeVisible();
-  await expect(page.getByText("detalhe da nota", { exact: false })).toBeVisible();
+  await expect(
+    page.getByText("detalhe da nota", { exact: false }),
+  ).toBeVisible();
   await expect(page.getByText("P1", { exact: true })).toBeVisible();
   await expect(page.getByText("bloqueada", { exact: true })).toBeVisible();
-  await expect(page.getByRole("button", { name: "bloqueadas 1" })).toBeVisible();
+  await expect(
+    page.getByRole("button", { name: "bloqueadas 1" }),
+  ).toBeVisible();
 });
 
-test("exclui tarefa, seção e projeto (sem confirm nativo, undo cobre)", async ({ page }) => {
+test("exclui tarefa, seção e projeto com modal de confirmação", async ({
+  page,
+}) => {
   await page.goto("/");
   await createProject(page, "app");
   await addTask(page, "tarefa a");
 
-  await page.getByTestId("task-row").getByRole("button", { name: "excluir" }).click();
+  await page
+    .getByTestId("task-row")
+    .getByRole("button", { name: "excluir" })
+    .click();
+  await page.getByRole("dialog", { name: "excluir tarefa?" }).getByRole("button", { name: "excluir" }).click();
   await expect(page.getByText("tarefa a", { exact: false })).toHaveCount(0);
 
-  await page.getByRole("button", { name: "ações da seção", exact: true }).click();
+  await page
+    .getByRole("button", { name: "ações da seção", exact: true })
+    .click();
   await page.getByRole("menuitem", { name: "excluir seção" }).click();
+  await page.getByRole("dialog", { name: "excluir seção?" }).getByRole("button", { name: "excluir" }).click();
   await expect(page.getByText("geral", { exact: true })).toHaveCount(0);
 
-  await page.getByRole("button", { name: "ações do projeto", exact: true }).click();
+  await page
+    .getByRole("button", { name: "ações do projeto", exact: true })
+    .click();
   await page.getByRole("menuitem", { name: "excluir projeto" }).click();
+  await page.getByRole("dialog", { name: "excluir projeto?" }).getByRole("button", { name: "excluir" }).click();
   await expect(page.getByText("nenhum projeto na fila.")).toBeVisible();
 });
 
@@ -87,37 +112,55 @@ test("bloqueia e desbloqueia tarefa pelo botão da linha", async ({ page }) => {
   await addTask(page, "tarefa travada");
 
   await page.getByTestId("task-row").getByLabel("bloquear tarefa").click();
-  await page.getByLabel("motivo do bloqueio (opcional)").fill("sem acesso");
+  await page.getByLabel("motivo do bloqueio").fill("sem acesso");
   await page.getByRole("button", { name: "salvar" }).click();
   await expect(page.getByText("bloqueada", { exact: true })).toBeVisible();
-  await expect(page.getByTestId("task-row").getByLabel("desbloquear tarefa")).toBeVisible();
+  await expect(
+    page.getByTestId("task-row").getByLabel("desbloquear tarefa"),
+  ).toBeVisible();
 
   await page.getByTestId("task-row").getByLabel("desbloquear tarefa").click();
   await expect(page.getByText("bloqueada", { exact: true })).toHaveCount(0);
 });
 
-test("renomeia projeto e marca/desmarca stuck pelo ⋯; renomeia seção", async ({ page }) => {
+test("renomeia projeto e marca/desmarca stuck pelo ⋯; renomeia seção", async ({
+  page,
+}) => {
   await page.goto("/");
   await createProject(page, "app");
 
-  await page.getByRole("button", { name: "ações do projeto", exact: true }).click();
-  await page.getByRole("menuitem", { name: "renomear projeto" }).click();
+  await page
+    .getByRole("button", { name: "ações do projeto", exact: true })
+    .click();
+  await page.getByRole("menuitem", { name: "editar projeto" }).click();
   await page.getByLabel("título").fill("prod");
   await page.getByRole("button", { name: "salvar" }).click();
   await expect(page.getByRole("heading", { name: "prod" })).toBeVisible();
 
-  await page.getByRole("button", { name: "ações do projeto", exact: true }).click();
-  await page.getByRole("menuitem", { name: "marcar como stuck / bloqueado" }).click();
-  await page.getByLabel("motivo do bloqueio (opcional)").fill("aguardando cliente");
+  await page
+    .getByRole("button", { name: "ações do projeto", exact: true })
+    .click();
+  await page
+    .getByRole("menuitem", { name: "marcar como stuck / bloqueado" })
+    .click();
+  await page
+    .getByLabel("motivo do bloqueio")
+    .fill("aguardando cliente");
   await page.getByRole("button", { name: "salvar" }).click();
   await expect(page.getByText("stuck", { exact: true })).toBeVisible();
 
-  await page.getByRole("button", { name: "ações do projeto", exact: true }).click();
-  await page.getByRole("menuitem", { name: "desmarcar stuck / bloqueado" }).click();
+  await page
+    .getByRole("button", { name: "ações do projeto", exact: true })
+    .click();
+  await page
+    .getByRole("menuitem", { name: "desmarcar stuck / bloqueado" })
+    .click();
   await expect(page.getByText("stuck", { exact: true })).toHaveCount(0);
 
-  await page.getByRole("button", { name: "ações da seção", exact: true }).click();
-  await page.getByRole("menuitem", { name: "renomear seção" }).click();
+  await page
+    .getByRole("button", { name: "ações da seção", exact: true })
+    .click();
+  await page.getByRole("menuitem", { name: "editar seção" }).click();
   await page.getByLabel("título").fill("backlog");
   await page.getByRole("button", { name: "salvar" }).click();
   await expect(page.getByText("backlog", { exact: true })).toBeVisible();

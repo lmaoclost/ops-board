@@ -36,7 +36,7 @@ OpsBoard — visualizador de projetos e tarefas. Next.js 16.3 (App Router, break
 - `store.ts` `reconcileSubs()` — regra recursiva: sub com filhas = todas `done` ? `done` : `todo`; pai idem (via `editTask`); `addTaskFull(pid, sid, input)` = criação completa em 1 commit de undo (status done seta `doneAt`)
 - Componentes UI (Modal, Tooltip, Select, DropdownMenu…) são wrappers próprios de base-ui em `src/components/client/`; testids/aria-labels em **pt-BR** são contrato com e2e (`task-row`, `stat-total`, `combobox name="status"`)
 - **SelectValue sem children mostra o value cru** (ex: "todo") — `label` do `SelectItem` no base-ui é só p/ keyboard nav; para o trigger exibir texto traduzido/amigável, passar children ao `SelectValue` (ex: `{status(task.status)}`)
-- `privacidade/page.tsx` é client component — **não pode exportar `metadata`** (erro de build)
+- `privacy/page.tsx` é client component — **não pode exportar `metadata`** (erro de build)
 
 ## i18n
 - Padrão **pt-BR**; toggle EN no header; locale persistido no store

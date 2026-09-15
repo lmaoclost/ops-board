@@ -97,6 +97,7 @@ test("apagar item individual não deixa resíduo no localStorage", async ({ page
     .getByRole("button", { name: "ações do projeto", exact: true })
     .click();
   await page.getByRole("menuitem", { name: "excluir projeto" }).click();
+  await page.getByRole("dialog", { name: "excluir projeto?" }).getByRole("button", { name: "excluir" }).click();
 
   await expect(page.getByRole("heading", { name: "alpha" })).toHaveCount(0);
   await expect(page.getByRole("heading", { name: "beta" })).toBeVisible();

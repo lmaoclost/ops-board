@@ -31,16 +31,17 @@ interface BoardStore {
   setLocale: (locale: Locale) => void;
   canUndo: boolean;
   undo: () => void;
-  addProject: (title: string, note?: string) => void;
+  addProject: (title: string, note?: string, due?: string) => void;
   renameProject: (id: string, title: string, blocked: boolean, due?: string, note?: string, blockedReason?: string) => void;
   deleteProject: (id: string) => void;
   toggleProjectArchive: (id: string) => void;
   setProjectPrio: (id: string, prio: Prio) => void;
   toggleProjectCollapsed: (id: string) => void;
-  addSection: (pid: string, title: string) => void;
+  addSection: (pid: string, title: string, notes?: string) => void;
   renameSection: (pid: string, sid: string, title: string) => void;
   setSectionNotes: (pid: string, sid: string, notes: string) => void;
   moveSection: (pid: string, sid: string, index: number) => void;
+  moveProject: (pid: string, index: number) => void;
   deleteSection: (pid: string, sid: string) => void;
   addTask: (pid: string, sid: string, text: string) => void;
   addTaskFull: (pid: string, sid: string, input: AddTaskInput) => void;
@@ -108,7 +109,7 @@ export function createBoardStore(initial: Project[] = []) {
           set({ canUndo: undoStack.length > 0 });
         },
 
-        addProject: (title, note) =>
+        addProject: (title, note, due) =>
           commit(() =>
             set((s) => ({
               projetos: [
@@ -121,7 +122,7 @@ export function createBoardStore(initial: Project[] = []) {
                   blockedReason: "",
                   archived: false,
                   prio: 5,
-                  due: "",
+                  due: due ?? "",
                   collapsed: false,
                   sections: [{ id: uid(), title: "geral", tasks: [], notes: "", collapsed: false }],
                 },
@@ -171,12 +172,12 @@ export function createBoardStore(initial: Project[] = []) {
             })),
           ),
 
-        addSection: (pid, title) =>
+        addSection: (pid, title, notes) =>
           commit(() =>
             set((s) => ({
               projetos: s.projetos.map((p) =>
                 p.id === pid
-                  ? { ...p, sections: [...p.sections, { id: uid(), title, tasks: [], notes: "", collapsed: false }] }
+                  ? { ...p, sections: [...p.sections, { id: uid(), title, tasks: [], notes: notes ?? "", collapsed: false }] }
                   : p,
               ),
             })),
@@ -217,6 +218,18 @@ export function createBoardStore(initial: Project[] = []) {
                 return { ...p, sections: next };
               }),
             })),
+          ),
+
+        moveProject: (pid, index) =>
+          commit(() =>
+            set((s) => {
+              const from = s.projetos.findIndex((p) => p.id === pid);
+              if (from === -1) return s;
+              const next = [...s.projetos];
+              const [moved] = next.splice(from, 1);
+              next.splice(Math.max(0, Math.min(index, next.length)), 0, moved);
+              return { projetos: next };
+            }),
           ),
 
         deleteSection: (pid, sid) =>

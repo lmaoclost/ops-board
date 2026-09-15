@@ -4,6 +4,7 @@ import { ThemeProvider } from "next-themes";
 import "./globals.css";
 import { cn } from "@/lib/utils";
 import { TooltipProvider } from "@/components/ui/tooltip";
+import { Metrics } from "@/components/client/Metrics";
 
 const geist = Geist({ subsets: ["latin"], variable: "--font-sans" });
 
@@ -29,6 +30,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
           storageKey="opsboard.theme"
         >
           <TooltipProvider>{children}</TooltipProvider>
+          <Metrics />
         </ThemeProvider>
       </body>
     </html>

@@ -23,6 +23,7 @@ export interface ModalField {
   type?: "text" | "textarea" | "checkbox" | "select" | "date";
   options?: ModalFieldOption[];
   placeholder?: string;
+  required?: boolean;
 }
 
 interface ModalProps {
@@ -31,16 +32,33 @@ interface ModalProps {
   submitLabel?: string;
   onSubmit: (values: Record<string, string | boolean>) => void;
   onCancel: () => void;
+  onFieldChange?: (key: string, value: string | boolean) => void;
   children?: ReactNode;
   topChildren?: ReactNode;
 }
 
-export function Modal({ title, fields, submitLabel = "salvar", onSubmit, onCancel, children, topChildren }: ModalProps) {
+export function Modal({ title, fields, submitLabel = "salvar", onSubmit, onCancel, onFieldChange, children, topChildren }: ModalProps) {
   const { t } = useT();
   const titleId = useId();
   const [checks, setChecks] = useState<Record<string, boolean>>(() =>
     Object.fromEntries(fields.filter((f) => f.type === "checkbox").map((f) => [f.key, Boolean(f.value)])),
   );
+  const [errors, setErrors] = useState<Record<string, boolean>>({});
+
+  const clearError = (key: string) =>
+    setErrors((prev) => (prev[key] ? { ...prev, [key]: false } : prev));
+
+  const collect = () => {
+    const values: Record<string, string | boolean> = {};
+    for (const f of fields) {
+      if (f.type === "checkbox") values[f.key] = checks[f.key] ?? false;
+      else {
+        const input = document.getElementById(`field-${f.key}`) as HTMLInputElement | null;
+        values[f.key] = input?.value ?? "";
+      }
+    }
+    return values;
+  };
 
   return (
     <Dialog open onOpenChange={(o) => { if (!o) onCancel(); }}>
@@ -62,13 +80,23 @@ export function Modal({ title, fields, submitLabel = "salvar", onSubmit, onCance
         <form
           onSubmit={(e) => {
             e.preventDefault();
-            const values: Record<string, string | boolean> = {};
-            for (const f of fields) {
-              if (f.type === "checkbox") values[f.key] = checks[f.key] ?? false;
-              else {
-                const input = document.getElementById(`field-${f.key}`) as HTMLInputElement | null;
-                values[f.key] = input?.value ?? "";
-              }
+            const values = collect();
+            const invalid = fields.some(
+              (f) =>
+                f.required &&
+                f.type !== "checkbox" &&
+                String(values[f.key] ?? "").trim() === "",
+            );
+            if (invalid) {
+              setErrors(
+                Object.fromEntries(
+                  fields.map((f) => [
+                    f.key,
+                    !!f.required && f.type !== "checkbox" && String(values[f.key] ?? "").trim() === "",
+                  ]),
+                ),
+              );
+              return;
             }
             onSubmit(values);
           }}
@@ -79,7 +107,8 @@ export function Modal({ title, fields, submitLabel = "salvar", onSubmit, onCance
               <div key={f.key}>
                 <Label
                   htmlFor={`field-${f.key}`}
-                  className="mb-1.5 block text-[11px] font-semibold uppercase tracking-wider text-[var(--muted-text)]"
+                  data-required={f.required ? "" : undefined}
+                  className="modal-label mb-1.5 block text-[11px] font-semibold uppercase tracking-wider text-[var(--muted-text)]"
                 >
                   {f.label}
                 </Label>
@@ -89,21 +118,26 @@ export function Modal({ title, fields, submitLabel = "salvar", onSubmit, onCance
                     data-modal-first={i === 0 ? "" : undefined}
                     defaultValue={String(f.value ?? "")}
                     placeholder={f.placeholder}
-                    className="input-line min-h-[72px] w-full resize-y"
+                    onChange={() => clearError(f.key)}
+                    className={`min-h-[72px] w-full resize-y rounded-lg border bg-[var(--field)] px-2.5 py-1 text-sm text-[var(--text)] outline-none placeholder:text-[var(--dimmer)] focus-visible:border-[var(--fired)] dark:bg-[var(--field)] ${errors[f.key] ? "border-[var(--gave)]" : "border-[var(--line)]"}`}
                   />
                 ) : f.type === "checkbox" ? (
                   <Switch
                     id={`field-${f.key}`}
                     data-modal-first={i === 0 ? "" : undefined}
                     checked={checks[f.key] ?? false}
-                    onCheckedChange={(c) => setChecks((prev) => ({ ...prev, [f.key]: c }))}
+                    onCheckedChange={(c) => {
+                      setChecks((prev) => ({ ...prev, [f.key]: c }));
+                      onFieldChange?.(f.key, c);
+                    }}
                   />
                 ) : f.type === "select" ? (
                   <select
                     id={`field-${f.key}`}
                     data-modal-first={i === 0 ? "" : undefined}
                     defaultValue={String(f.value ?? "")}
-                    className="input-line w-full"
+                    onChange={() => clearError(f.key)}
+                    className={`h-8 w-full rounded-lg border bg-[var(--field)] px-2 text-sm text-[var(--text)] outline-none dark:bg-[var(--field)] ${errors[f.key] ? "border-[var(--gave)]" : "border-[var(--line)]"}`}
                   >
                     {(f.options ?? []).map((o) => (
                       <option key={String(o.value)} value={String(o.value)}>
@@ -117,7 +151,8 @@ export function Modal({ title, fields, submitLabel = "salvar", onSubmit, onCance
                     data-modal-first={i === 0 ? "" : undefined}
                     type="date"
                     defaultValue={String(f.value ?? "")}
-                    className="input-line w-full"
+                    onChange={() => clearError(f.key)}
+                    className={`h-8 w-full rounded-lg border bg-[var(--field)] px-2 text-sm text-[var(--text)] outline-none dark:bg-[var(--field)] ${errors[f.key] ? "border-[var(--gave)]" : "border-[var(--line)]"}`}
                   />
                 ) : (
                   <Input
@@ -128,8 +163,12 @@ export function Modal({ title, fields, submitLabel = "salvar", onSubmit, onCance
                     placeholder={f.placeholder}
                     autoComplete="off"
                     spellCheck={false}
-                    className="bg-[var(--field)]"
+                    onChange={() => clearError(f.key)}
+                    className={`bg-[var(--field)] dark:bg-[var(--field)] ${errors[f.key] ? "border-[var(--gave)]" : ""}`}
                   />
+                )}
+                {errors[f.key] && (
+                  <p className="mt-1 text-[11px] font-semibold text-[var(--gave)]">{t("campo obrigatório")}</p>
                 )}
               </div>
             ))}

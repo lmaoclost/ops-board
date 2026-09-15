@@ -4,6 +4,7 @@ import { Badge } from "@/components/ui/badge";
 import { useT } from "@/hooks/useT";
 import { Button } from "@/components/ui/button";
 import { Modal } from "@/components/client/Modal";
+import { ConfirmDelete } from "@/components/client/ConfirmDelete";
 import {
   Select,
   SelectContent,
@@ -143,7 +144,7 @@ function SubRow({
         )}
         {sub.blocked && (
           <Badge variant="destructive" className="rounded-[4px] px-1.5 text-[11px] font-bold uppercase tracking-[0.08em]">
-            bloqueada
+            {t('bloqueada')}
           </Badge>
         )}
         <button
@@ -159,14 +160,14 @@ function SubRow({
             <Badge
               variant="destructive"
               className="rounded-[4px] px-1.5 text-[10.5px] font-bold uppercase tracking-[0.08em]"
-              title={`vencimento ${sub.due}`}
+              title={t("vencimento N").replace("N", sub.due)}
             >
-              {fmtDate(sub.due)} vencida
+              {fmtDate(sub.due)} {t("vencida")}
             </Badge>
           ) : (
             <span
               className={`shrink-0 text-[10.5px] font-semibold ${dueSoon ? "text-[var(--warn)]" : "text-[var(--dimmer)]"}`}
-              title={`vencimento ${sub.due}`}
+              title={t("vencimento N").replace("N", sub.due)}
             >
               {fmtDate(sub.due)}
             </span>
@@ -198,6 +199,7 @@ export function TaskRow({ task, onToggle, onPrioCycle, onStatusChange, onEdit, o
   const [subDraft, setSubDraft] = useState("");
   const [editingSub, setEditingSub] = useState<SubTask | null>(null);
   const [blocking, setBlocking] = useState(false);
+  const [confirmingDelete, setConfirmingDelete] = useState(false);
   const overdue = isOverdue(task.due, task.status);
   const dueSoon = isDueSoon(task.due, task.status);
   const done = task.status === "done";
@@ -273,7 +275,7 @@ export function TaskRow({ task, onToggle, onPrioCycle, onStatusChange, onEdit, o
         )}
         {task.blocked && (
           <Badge variant="destructive" className="rounded-[4px] px-1.5 text-[11px] font-bold uppercase tracking-[0.08em]" title={task.blockedReason || undefined}>
-            bloqueada
+            {t('bloqueada')}
           </Badge>
         )}
         <Tooltip>
@@ -287,21 +289,21 @@ export function TaskRow({ task, onToggle, onPrioCycle, onStatusChange, onEdit, o
               {PRIO_KEYS[task.prio]}
             </button>
           } />
-          <TooltipContent side="top">prioridade: clique pra mudar</TooltipContent>
+          <TooltipContent side="top">{t("prioridade: clique pra mudar")}</TooltipContent>
         </Tooltip>
         {task.due &&
           (overdue ? (
             <Badge
               variant="destructive"
               className="rounded-[4px] px-1.5 text-[11px] font-bold uppercase tracking-[0.08em]"
-              title={`vencimento ${task.due}`}
+              title={t("vencimento N").replace("N", task.due)}
             >
-              {fmtDate(task.due)} vencida
+              {fmtDate(task.due)} {t("vencida")}
             </Badge>
           ) : (
             <span
               className={`shrink-0 text-[10.5px] font-semibold ${dueSoon ? "text-[var(--warn)]" : "text-[var(--muted-text)]"}`}
-              title={`vencimento ${task.due}`}
+              title={t("vencimento N").replace("N", task.due)}
             >
               {fmtDate(task.due)}
             </span>
@@ -344,7 +346,7 @@ export function TaskRow({ task, onToggle, onPrioCycle, onStatusChange, onEdit, o
           type="button"
           variant="destructive"
           size="icon-xs"
-          onClick={onDelete}
+          onClick={() => setConfirmingDelete(true)}
           title="excluir"
           aria-label="excluir"
         >
@@ -374,13 +376,24 @@ export function TaskRow({ task, onToggle, onPrioCycle, onStatusChange, onEdit, o
           title={t("por que foi bloqueado?")}
           submitLabel={t("salvar")}
           fields={[
-            { key: "reason", label: t("motivo do bloqueio (opcional)"), type: "textarea", value: task.blockedReason ?? "" },
+            { key: "reason", label: t("motivo do bloqueio"), type: "textarea", value: task.blockedReason ?? "" },
           ]}
           onSubmit={(v) => {
             onUpdate({ blocked: true, blockedReason: String(v.reason ?? "").trim() });
             setBlocking(false);
           }}
           onCancel={() => setBlocking(false)}
+        />
+      )}
+      {confirmingDelete && (
+        <ConfirmDelete
+          title={t("excluir tarefa?")}
+          message={t("excluir_tarefa_txt")}
+          onConfirm={() => {
+            setConfirmingDelete(false);
+            onDelete();
+          }}
+          onCancel={() => setConfirmingDelete(false)}
         />
       )}
     </div>

@@ -11,7 +11,9 @@ async function createProject(page: Page, title: string) {
   await page.getByRole("button", { name: "criar" }).click();
 }
 
-test("badge de prioridade do projeto cicla P5 → P1 → P2 → P3 → P4 → P5", async ({ page }) => {
+test("badge de prioridade do projeto cicla P5 → P1 → P2 → P3 → P4 → P5", async ({
+  page,
+}) => {
   await page.goto("/");
   await createProject(page, "app");
 
@@ -28,7 +30,9 @@ test("badge de prioridade do projeto cicla P5 → P1 → P2 → P3 → P4 → P5
   await expect(page.getByLabel("prioridade do projeto P5")).toBeVisible();
 });
 
-test("minimizar projeto esconde tarefas e expandir restaura", async ({ page }) => {
+test("minimizar projeto esconde tarefas e expandir restaura", async ({
+  page,
+}) => {
   await page.goto("/");
   await createProject(page, "app");
   await page.getByLabel("nova tarefa").first().fill("importante");
@@ -52,12 +56,16 @@ test("projeto minimizado persiste após reload", async ({ page }) => {
   await expect(page.getByLabel("expandir projeto")).toBeVisible();
 });
 
-test("vencimento do projeto com ano; tarefa vencida também", async ({ page }) => {
+test("vencimento do projeto com ano; tarefa vencida também", async ({
+  page,
+}) => {
   await page.goto("/");
   await createProject(page, "app");
 
-  await page.getByRole("button", { name: "ações do projeto", exact: true }).click();
-  await page.getByRole("menuitem", { name: "renomear projeto" }).click();
+  await page
+    .getByRole("button", { name: "ações do projeto", exact: true })
+    .click();
+  await page.getByRole("menuitem", { name: "editar projeto" }).click();
   await page.getByLabel("vencimento").fill("2026-09-01");
   await page.getByRole("button", { name: "salvar" }).click();
   await expect(page.getByText("01/09/2026")).toBeVisible();
@@ -65,7 +73,10 @@ test("vencimento do projeto com ano; tarefa vencida também", async ({ page }) =
   await page.getByLabel("nova tarefa").first().fill("entrega");
   await page.getByLabel("nova tarefa").first().press("Enter");
   await page.getByRole("button", { name: "kanban" }).click();
-  await page.getByRole("button", { name: "editar tarefa entrega" }).first().click();
+  await page
+    .getByRole("button", { name: "editar tarefa entrega" })
+    .first()
+    .click();
   await page.getByLabel("vencimento").fill("2026-09-05");
   await page.getByRole("button", { name: "salvar" }).click();
   await page.getByRole("button", { name: "lista" }).click();

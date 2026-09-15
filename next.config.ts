@@ -1,10 +1,16 @@
 import type { NextConfig } from "next";
 
+// React usa eval() apenas em development (stack traces de debug); em
+// production nunca. Por isso 'unsafe-eval' entra só fora de production.
+const scriptSrc = ["'self'", "'unsafe-inline'", process.env.NODE_ENV === "production" ? null : "'unsafe-eval'"]
+  .filter((v): v is string => v !== null)
+  .join(" ");
+
 const CSP = [
   "default-src 'self'",
   // 'unsafe-inline' em script: único script inline do app é o ThemeScript
   // (antiflash de tema do next-themes); sem ele há FOUC no primeiro load.
-  "script-src 'self' 'unsafe-inline'",
+  `script-src ${scriptSrc} https://va.vercel-scripts.com`,
   // worker-src blob: libera o worker em blob do canvas-confetti (confete);
   // sem ele o confete cai para fallback no main thread com erro de console.
   "worker-src 'self' blob:",
@@ -12,7 +18,8 @@ const CSP = [
   "style-src 'self' 'unsafe-inline'",
   "img-src 'self' data:",
   "font-src 'self'",
-  "connect-src 'self'",
+  // beacons do Vercel Analytics / Speed Insights (só disparam com consentimento).
+  "connect-src 'self' https://va.vercel-scripts.com",
   "object-src 'none'",
   "base-uri 'self'",
   "form-action 'self'",

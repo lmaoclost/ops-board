@@ -97,6 +97,19 @@ describe("resolveDrop", () => {
     expect(r.kind).toBe("none");
   });
 
+  it("projeto sobre outro projeto reordena (projmove)", () => {
+    const r = resolveDrop({ projetos: [projeto(), projeto({ id: "p2" })], active: "project:p1", over: "project:p2" });
+    expect(r.kind).toBe("projmove");
+    if (r.kind !== "projmove") return;
+    expect(r.pid).toBe("p1");
+    expect(r.overPid).toBe("p2");
+  });
+
+  it("projeto sobre alvo inexistente retorna none", () => {
+    const r = resolveDrop({ projetos: [projeto()], active: "project:p1", over: "project:fantasma" });
+    expect(r.kind).toBe("none");
+  });
+
   it("retorna none para tarefa ativa inexistente", () => {
     const r = resolveDrop({ projetos: [projeto()], active: "task:fantasma", over: "task:t1" });
     expect(r.kind).toBe("none");

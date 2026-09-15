@@ -26,9 +26,9 @@ A versão clássica (HTML/CSS/JS vanilla) vive em `legacy/` como referência de 
 
 ## Privacidade (LGPD)
 
-- Sem seed, sem telemetria, sem terceiros processando dados
+- Sem seed, sem terceiros processando dados; telemetria (Vercel Analytics/Speed Insights) só com opt-in explícito
 - Export exporta tudo; `apagar todos os dados` (rodapé) apaga tudo (direitos do titular)
-- Aviso de privacidade no primeiro acesso + política em `/privacidade`
+- Aviso de privacidade no primeiro acesso + política em `/privacy`
 - Lint bloqueia PII (e-mails, CPFs, telefones) em literais; CSP estrito; `npm audit` no CI
 - Documento de conformidade completo em [`docs/lgpd.md`](docs/lgpd.md) (mapeamento art. 18, base legal, retenção, incidentes)
 - Auditoria OWASP Top 10 em [`docs/security.md`](docs/security.md) (headers, XSS, integridade, componentes)

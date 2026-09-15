@@ -76,7 +76,7 @@ export function FilterChips({
         aria-pressed={archivedActive}
         className={`text-[var(--violet)] ${archivedActive ? "border-current bg-[var(--hover)]" : "opacity-60"}`}
       >
-        arquivados
+        {t("arquivados")}
         <span className="opacity-60">{archivedCount}</span>
       </Button>
       <Tooltip>
@@ -90,7 +90,7 @@ export function FilterChips({
               aria-pressed={prioSort}
               className={`text-[var(--muted-text)] ${prioSort ? "border-current text-[var(--warn)] bg-[var(--hover)]" : ""}`}
             >
-              ↕ prio
+              {t("↕ prio")}
             </Button>
           }
         />
@@ -103,9 +103,9 @@ export function FilterChips({
           size="xs"
           onClick={onClear}
           className="font-bold text-[var(--muted-text)]"
-          title="limpar filtros (status, busca, arquivados)"
+          title={t("limpar filtros")}
         >
-          ✕ limpar
+          {t("✕ limpar")}
         </Button>
       )}
     </div>

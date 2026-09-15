@@ -4,6 +4,7 @@ import { useDroppable } from "@dnd-kit/core";
 import { SortableContext, verticalListSortingStrategy, useSortable } from "@dnd-kit/sortable";
 import { CSS } from "@dnd-kit/utilities";
 import { Modal } from "@/components/client/Modal";
+import { ConfirmDelete } from "@/components/client/ConfirmDelete";
 import { Button } from "@/components/ui/button";
 import {
   DropdownMenu,
@@ -51,7 +52,7 @@ export function Section({ projectId, section, onToggleSection, onAddTask, onRena
   const [draft, setDraft] = useState("");
   const [editingId, setEditingId] = useState<string | null>(null);
   const [renaming, setRenaming] = useState(false);
-  const [editingNotes, setEditingNotes] = useState(false);
+  const [confirmingDelete, setConfirmingDelete] = useState(false);
   const { setNodeRef: setDropRef, isOver } = useDroppable({ id: `sec:${projectId}:${section.id}` });
   const { setNodeRef: setEndRef, isOver: isEndOver } = useDroppable({ id: `sec-end:${projectId}:${section.id}` });
   const { attributes, listeners, setNodeRef, transform, transition, isDragging } = useSortable({
@@ -66,10 +67,6 @@ export function Section({ projectId, section, onToggleSection, onAddTask, onRena
   const submitRename = (v: Record<string, string | boolean>) => {
     setRenaming(false);
     if (String(v.title).trim()) onRename(String(v.title).trim());
-  };
-
-  const submitNotes = (v: Record<string, string | boolean>) => {
-    setEditingNotes(false);
     onNotes(String(v.notes ?? ""));
   };
 
@@ -102,7 +99,7 @@ export function Section({ projectId, section, onToggleSection, onAddTask, onRena
           <span className="text-[11px] text-[var(--dimmer)]">
             {doneCount}/{section.tasks.length}
           </span>
-          {section.notes && <span className="ml-auto hidden text-[11px] text-[var(--dimmer)] sm:inline">notas</span>}
+          {section.notes && <span className="ml-auto hidden text-[11px] text-[var(--dimmer)] sm:inline">{t("notas")}</span>}
         </button>
         <span className="flex items-center gap-0.5">
           <DropdownMenu>
@@ -127,16 +124,7 @@ export function Section({ projectId, section, onToggleSection, onAddTask, onRena
                   setRenaming(true);
                 }}
               >
-                {t("renomear seção")}
-              </DropdownMenuItem>
-              <DropdownMenuItem
-                className="text-xs"
-                onClick={(e) => {
-                  e.stopPropagation();
-                  setEditingNotes(true);
-                }}
-              >
-                {section.notes ? t("editar nota") : t("adicionar nota")}
+                {t("editar seção")}
               </DropdownMenuItem>
               <DropdownMenuSeparator className="bg-[var(--line)]" />
               <DropdownMenuItem
@@ -144,7 +132,7 @@ export function Section({ projectId, section, onToggleSection, onAddTask, onRena
                 className="text-xs"
                 onClick={(e) => {
                   e.stopPropagation();
-                  onDelete();
+                  setConfirmingDelete(true);
                 }}
               >
                 {t("excluir seção")}
@@ -185,7 +173,7 @@ export function Section({ projectId, section, onToggleSection, onAddTask, onRena
             <div
               ref={setEndRef}
               className={`h-2 rounded ${isEndOver ? "bg-[var(--fired)]/30" : ""}`}
-              title="soltar no fim"
+              title={t("soltar no fim")}
             />
           </div>
           <div className="flex items-center gap-2 px-2 pt-2">
@@ -214,21 +202,14 @@ export function Section({ projectId, section, onToggleSection, onAddTask, onRena
 
       {renaming && (
         <Modal
-          title={t("renomear seção")}
+          title={t("editar seção")}
           submitLabel={t("salvar")}
-          fields={[{ key: "title", label: t("título"), value: section.title }]}
+          fields={[
+            { key: "title", label: t("título"), value: section.title, required: true },
+            { key: "notes", label: t("nota"), type: "textarea", value: section.notes },
+          ]}
           onSubmit={submitRename}
           onCancel={() => setRenaming(false)}
-        />
-      )}
-
-      {editingNotes && (
-        <Modal
-          title={t("nota da seção")}
-          submitLabel={t("salvar")}
-          fields={[{ key: "notes", label: t("nota"), type: "textarea", value: section.notes }]}
-          onSubmit={submitNotes}
-          onCancel={() => setEditingNotes(false)}
         />
       )}
 
@@ -240,6 +221,18 @@ export function Section({ projectId, section, onToggleSection, onAddTask, onRena
             setEditingId(null);
           }}
           onCancel={() => setEditingId(null)}
+        />
+      )}
+
+      {confirmingDelete && (
+        <ConfirmDelete
+          title={t("excluir seção?")}
+          message={t("excluir_secao_txt").replace("{n}", String(section.tasks.length))}
+          onConfirm={() => {
+            setConfirmingDelete(false);
+            onDelete();
+          }}
+          onCancel={() => setConfirmingDelete(false)}
         />
       )}
     </div>

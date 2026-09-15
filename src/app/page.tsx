@@ -36,6 +36,7 @@ export default function Home() {
   const renameSection = useBoard((s) => s.renameSection);
   const setSectionNotes = useBoard((s) => s.setSectionNotes);
   const moveSection = useBoard((s) => s.moveSection);
+  const moveProject = useBoard((s) => s.moveProject);
   const deleteSection = useBoard((s) => s.deleteSection);
   const addTask = useBoard((s) => s.addTask);
   const addTaskFull = useBoard((s) => s.addTaskFull);
@@ -248,7 +249,7 @@ const notifiedRef = useRef(false);
           onNewProject={() => setNewProjectOpen(true)}
           onClearFilters={clear}
           projectActions={{
-            onAddSection: (pid, title) => addSection(pid, title),
+            onAddSection: (pid, title, notes) => addSection(pid, title, notes),
             onRename: (id, title, blocked, due, note, blockedReason) => renameProject(id, title, blocked, due, note, blockedReason),
             onDelete: (id) => deleteProject(id),
             onToggleArchive: handleToggleArchive,
@@ -258,6 +259,11 @@ const notifiedRef = useRef(false);
               setProjectPrio(id, ((p.prio % 5) + 1) as Prio);
             },
             onToggleCollapse: (id) => toggleProjectCollapsed(id),
+            onMoveProject: (pid, overPid) => {
+              const all = useBoard.getState().projetos;
+              const index = all.findIndex((p) => p.id === overPid);
+              if (index !== -1) moveProject(pid, index);
+            },
           }}
           sectionActions={{
             onToggle: (pid, sid) => toggleSection(pid, sid),
@@ -377,13 +383,14 @@ const notifiedRef = useRef(false);
           title={t("novo projeto")}
           submitLabel={t("criar")}
           fields={[
-            { key: "title", label: t("título") },
+            { key: "title", label: t("título"), required: true },
+            { key: "due", label: t("vencimento"), type: "date", value: "" },
             { key: "note", label: t("nota do projeto"), type: "textarea", value: "" },
           ]}
           onSubmit={(v) => {
             setNewProjectOpen(false);
             const title = String(v.title).trim();
-            if (title) addProject(title, String(v.note ?? "").trim());
+            if (title) addProject(title, String(v.note ?? "").trim(), String(v.due ?? ""));
           }}
           onCancel={() => setNewProjectOpen(false)}
         />

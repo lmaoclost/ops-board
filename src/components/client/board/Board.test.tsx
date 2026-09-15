@@ -28,6 +28,7 @@ const base = (over: Partial<BoardProps> = {}): BoardProps => ({
     onToggleArchive: vi.fn(),
     onCyclePrio: vi.fn(),
     onToggleCollapse: vi.fn(),
+    onMoveProject: vi.fn(),
   },
   sectionActions: {
     onToggle: vi.fn(),

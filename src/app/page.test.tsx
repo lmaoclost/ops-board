@@ -13,7 +13,8 @@ describe("criação de projeto (integração página)", () => {
     render(<Home />);
     await user.click(screen.getByRole("button", { name: "+ criar primeiro projeto" }));
     await user.click(screen.getByRole("button", { name: "criar" }));
-    expect(screen.getByRole("button", { name: "+ criar primeiro projeto" })).toBeInTheDocument();
+    expect(screen.getByRole("dialog", { name: "novo projeto" })).toBeInTheDocument();
+    expect(screen.getByText("campo obrigatório")).toBeInTheDocument();
   });
 
   it("cria projeto preenchido no modal", async () => {

@@ -102,8 +102,8 @@ function KanbanTask({
               e.stopPropagation();
               onSubs();
             }}
-            title={`${item.task.subs.filter((s) => s.status === "done").length}/${item.task.subs.length} sub-tarefas concluídas`}
-            aria-label={`sub-tarefas ${item.task.subs.filter((s) => s.status === "done").length}/${item.task.subs.length}`}
+            title={t("sub-tarefas n/m").replace("n/m", `${item.task.subs.filter((s) => s.status === "done").length}/${item.task.subs.length}`)}
+            aria-label={t("sub-tarefas n/m").replace("n/m", `${item.task.subs.filter((s) => s.status === "done").length}/${item.task.subs.length}`)}
             className="shrink-0 rounded border border-[var(--line-soft)] px-1 py-0.5 text-[9px] text-[var(--dim)] transition-colors hover:border-[var(--muted-text)] hover:text-[var(--text)]"
           >
             {item.task.subs.filter((s) => s.status === "done").length}/{item.task.subs.length}
@@ -130,18 +130,18 @@ function KanbanTask({
         )}
         {item.task.blocked && (
           <span className="text-[10px] font-bold uppercase tracking-[0.08em] text-[var(--gave)]" title={item.task.blockedReason || t("bloqueada")}>
-            ⛔ bloqueada
+            ⛔ {t("bloqueada")}
           </span>
         )}
         {item.task.due &&
           (overdue ? (
-            <span className="text-[10px] font-bold uppercase text-[var(--gave)]" title={`vencimento ${item.task.due}`}>
-              {fmtDate(item.task.due)} vencida
+            <span className="text-[10px] font-bold uppercase text-[var(--gave)]" title={t("vencimento N").replace("N", item.task.due)}>
+              {fmtDate(item.task.due)} {t("vencida")}
             </span>
           ) : (
             <span
               className={`text-[10px] font-semibold ${dueSoon ? "text-[var(--warn)]" : "text-[var(--muted-text)]"}`}
-              title={`vencimento ${item.task.due}`}
+              title={t("vencimento N").replace("N", item.task.due)}
             >
               {fmtDate(item.task.due)}
             </span>

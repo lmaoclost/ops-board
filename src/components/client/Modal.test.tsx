@@ -48,6 +48,23 @@ describe("Modal", () => {
     expect(onCancel).toHaveBeenCalledTimes(1);
   });
 
+  it("campo required marca label com data-required (asterisco via CSS)", () => {
+    render(
+      <Modal
+        title="x"
+        fields={[
+          { key: "title", label: "título", value: "", required: true },
+          { key: "note", label: "nota", type: "textarea", value: "" },
+        ]}
+        submitLabel="ok"
+        onSubmit={() => {}}
+        onCancel={() => {}}
+      />,
+    );
+    expect(screen.getByText("título").closest("label")).toHaveAttribute("data-required");
+    expect(screen.getByText("nota").closest("label")).not.toHaveAttribute("data-required");
+  });
+
   it("clique no backdrop chama onCancel", async () => {
     const onCancel = vi.fn();
     const { container } = render(<Modal title="x" fields={[]} submitLabel="ok" onSubmit={() => {}} onCancel={onCancel} />);
@@ -58,5 +75,42 @@ describe("Modal", () => {
   it("marca dialog como modal com aria", () => {
     render(<Modal title="x" fields={[]} submitLabel="ok" onSubmit={() => {}} onCancel={() => {}} />);
     expect(screen.getByRole("dialog", { name: "x" })).toBeTruthy();
+  });
+
+  it("bloqueia submit com required vazio e mostra erro inline", async () => {
+    const onSubmit = vi.fn();
+    render(
+      <Modal
+        title="x"
+        fields={[{ key: "title", label: "título", value: "", required: true }]}
+        submitLabel="ok"
+        onSubmit={onSubmit}
+        onCancel={() => {}}
+      />,
+    );
+    await userEvent.click(screen.getByRole("button", { name: "ok" }));
+    expect(onSubmit).not.toHaveBeenCalled();
+    expect(screen.getByRole("dialog", { name: "x" })).toBeTruthy();
+    expect(screen.getByText("campo obrigatório")).toBeTruthy();
+  });
+
+  it("branco só com espaços também é inválido; preencher libera", async () => {
+    const onSubmit = vi.fn();
+    render(
+      <Modal
+        title="x"
+        fields={[{ key: "title", label: "título", value: "", required: true }]}
+        submitLabel="ok"
+        onSubmit={onSubmit}
+        onCancel={() => {}}
+      />,
+    );
+    await userEvent.type(screen.getByLabelText("título"), "   ");
+    await userEvent.click(screen.getByRole("button", { name: "ok" }));
+    expect(onSubmit).not.toHaveBeenCalled();
+    await userEvent.clear(screen.getByLabelText("título"));
+    await userEvent.type(screen.getByLabelText("título"), "vale");
+    await userEvent.click(screen.getByRole("button", { name: "ok" }));
+    expect(onSubmit).toHaveBeenCalledWith({ title: "vale" });
   });
 });

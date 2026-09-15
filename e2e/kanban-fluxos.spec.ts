@@ -118,7 +118,7 @@ test("Enter no ⋯ da seção não colapsa a seção", async ({ page }) => {
   await page.getByRole("button", { name: "ações da seção" }).focus();
   await page.keyboard.press("Enter");
 
-  await expect(page.getByRole("menuitem", { name: "renomear seção" })).toBeVisible();
+  await expect(page.getByRole("menuitem", { name: "editar seção" })).toBeVisible();
   await expect(page.getByLabel("nova tarefa")).toHaveCount(1);
 });
 

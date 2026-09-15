@@ -4,6 +4,7 @@ import { useEffect, useState } from "react";
 import { useT } from "@/hooks/useT";
 import Link from "next/link";
 import { Button, buttonVariants } from "@/components/ui/button";
+import { setMetricsConsent } from "./Metrics";
 
 const NOTICE_KEY = "opsboard.notice-v1";
 
@@ -21,6 +22,11 @@ export function PrivacyNotice() {
     setOpen(false);
   };
 
+  const choose = (consented: boolean) => {
+    setMetricsConsent(consented);
+    dismiss();
+  };
+
   if (!open) return null;
 
   return (
@@ -35,12 +41,18 @@ export function PrivacyNotice() {
       </p>
       <div className="mt-3 flex items-center justify-end gap-2">
         <Link
-          href="/privacidade"
+          href="/privacy"
           className={buttonVariants({ variant: "ghost", size: "xs" }) + " text-[var(--muted-text)]"}
         >
           {t("priv_link")}
         </Link>
-        <Button type="button" variant="default" size="sm" onClick={dismiss}>
+        <Button type="button" variant="ghost" size="xs" onClick={() => choose(false)}>
+          {t("priv_so_local")}
+        </Button>
+        <Button type="button" variant="default" size="sm" onClick={() => choose(true)}>
+          {t("priv_metricas")}
+        </Button>
+        <Button type="button" variant="ghost" size="sm" onClick={dismiss}>
           {t("priv_ok")}
         </Button>
       </div>

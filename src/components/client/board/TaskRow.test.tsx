@@ -102,20 +102,30 @@ describe("TaskRow", () => {
     expect(p.onStatusChange).toHaveBeenCalledWith("doing");
   });
 
-  it("editar e excluir chamam callbacks", async () => {
+  it("editar chama callback; excluir pede confirmação", async () => {
     const p = base();
     render(<TaskRow {...p} />);
     await userEvent.click(screen.getByTitle("editar"));
     expect(p.onEdit).toHaveBeenCalledTimes(1);
     await userEvent.click(screen.getByTitle("excluir"));
+    expect(p.onDelete).not.toHaveBeenCalled();
+    await userEvent.click(await screen.findByRole("button", { name: "excluir" }));
     expect(p.onDelete).toHaveBeenCalledTimes(1);
+  });
+
+  it("excluir cancela sem chamar callback", async () => {
+    const p = base();
+    render(<TaskRow {...p} />);
+    await userEvent.click(screen.getByTitle("excluir"));
+    await userEvent.click(await screen.findByRole("button", { name: "cancelar" }));
+    expect(p.onDelete).not.toHaveBeenCalled();
   });
 
   it("botão bloqueia via prompt de motivo e desbloqueia direto", async () => {
     const p = base();
     render(<TaskRow {...p} />);
     await userEvent.click(screen.getByLabelText("bloquear tarefa"));
-    const reason = await screen.findByLabelText("motivo do bloqueio (opcional)");
+    const reason = await screen.findByLabelText("motivo do bloqueio");
     await userEvent.type(reason, "sem acesso");
     await userEvent.click(screen.getByRole("button", { name: "salvar" }));
     expect(p.onUpdate).toHaveBeenCalledWith({ blocked: true, blockedReason: "sem acesso" });
@@ -130,7 +140,7 @@ describe("TaskRow", () => {
     const p = base();
     render(<TaskRow {...p} />);
     await userEvent.click(screen.getByLabelText("bloquear tarefa"));
-    await screen.findByLabelText("motivo do bloqueio (opcional)");
+    await screen.findByLabelText("motivo do bloqueio");
     await userEvent.click(screen.getByRole("button", { name: "salvar" }));
     expect(p.onUpdate).toHaveBeenCalledWith({ blocked: true, blockedReason: "" });
   });

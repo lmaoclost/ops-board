@@ -73,6 +73,13 @@ describe("board store", () => {
     expect(store.getState().projetos.at(-1)!.note).toBe("");
   });
 
+  it("addProject aceita vencimento opcional (default vazio)", () => {
+    store.getState().addProject("Com due", "nota", "2026-10-01");
+    expect(store.getState().projetos.at(-1)!.due).toBe("2026-10-01");
+    store.getState().addProject("Sem due");
+    expect(store.getState().projetos.at(-1)!.due).toBe("");
+  });
+
   it("renameProject atualiza nota e motivo do bloqueio", () => {
     store.getState().renameProject("p1", "Renomeado", true, undefined, "nota nova", "aguardando cliente");
     const p = store.getState().projetos[0];
@@ -81,6 +88,15 @@ describe("board store", () => {
     store.getState().renameProject("p1", "Outro", false);
     expect(store.getState().projetos[0].note).toBe("nota nova");
     expect(store.getState().projetos[0].blockedReason).toBe("aguardando cliente");
+  });
+
+  it("moveProject reordena projetos", () => {
+    store.getState().addProject("B");
+    store.getState().addProject("C");
+    store.getState().moveProject("p1", 2);
+    expect(store.getState().projetos.map((p) => p.title)).toEqual(["B", "C", "Projeto A"]);
+    store.getState().moveProject("p1", 0);
+    expect(store.getState().projetos.map((p) => p.title)).toEqual(["Projeto A", "B", "C"]);
   });
 
   it("setSectionNotes atualiza notas da seção", () => {
@@ -117,6 +133,13 @@ describe("board store", () => {
     expect(store.getState().projetos[0].sections[0].title).toBe("geral 2");
     store.getState().deleteSection("p1", "s1");
     expect(store.getState().projetos[0].sections.map((s) => s.title)).toEqual(["dev"]);
+  });
+
+  it("addSection aceita nota opcional (default vazia)", () => {
+    store.getState().addSection("p1", "com nota", "foco");
+    expect(store.getState().projetos[0].sections.at(-1)!.notes).toBe("foco");
+    store.getState().addSection("p1", "sem nota");
+    expect(store.getState().projetos[0].sections.at(-1)!.notes).toBe("");
   });
 
   it("adiciona tarefa nova em todo", () => {
