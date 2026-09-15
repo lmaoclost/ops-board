@@ -23,7 +23,7 @@ test("política de privacidade acessível em 1 clique pelo topbar", async ({ pag
   await page.addInitScript(() => localStorage.setItem("opsboard.notice-v1", "1"));
   await page.goto("/");
 
-  await page.getByRole("link", { name: "privacidade" }).click();
+  await page.getByRole("link", { name: "privacidade", exact: true }).click();
 
   await expect(page).toHaveURL(/\/privacy/);
   await expect(page.getByRole("heading", { name: "Política de privacidade" })).toBeVisible();

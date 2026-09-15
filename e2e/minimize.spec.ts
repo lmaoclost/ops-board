@@ -21,7 +21,7 @@ test("nenhuma requisição a terceiros no runtime (só origin)", async ({ page }
   await page.getByLabel("nova tarefa").first().press("Enter");
   await page.getByRole("button", { name: "kanban" }).click();
   await page.getByRole("button", { name: "lista" }).click();
-  await page.getByRole("link", { name: "privacidade" }).click();
+  await page.getByRole("link", { name: "privacidade", exact: true }).click();
   await expect(page.getByRole("heading", { name: "Política de privacidade" })).toBeVisible();
   await page.waitForTimeout(300);
 
