@@ -66,7 +66,7 @@ export function Topbar({
 
   return (
     <header className="sticky top-0 z-30 border-b border-[var(--line)] bg-[var(--bg)]/95 backdrop-blur">
-      <div className="mx-auto max-w-5xl px-4 py-3 flex flex-col gap-3 sm:flex-row sm:items-center sm:gap-6">
+      <div className="mx-auto max-w-5xl px-4 py-3 flex flex-col gap-3 lg:flex-row lg:items-center lg:gap-6">
         <div className="flex items-center justify-between gap-4">
           <Tooltip>
             <TooltipTrigger closeDelay={300}
@@ -80,7 +80,7 @@ export function Topbar({
               <Stats stats={stats} view={view} />
             </TooltipContent>
           </Tooltip>
-          <div className="flex items-center gap-1.5">
+          <div className="flex min-w-0 flex-1 items-center gap-1 overflow-x-auto py-0.5 sm:gap-1.5">
             <Tooltip>
             <TooltipTrigger closeDelay={300}
               render={
@@ -89,7 +89,7 @@ export function Topbar({
                   variant="ghost"
                   size="xs"
                   onClick={onToggleTheme}
-                  className="text-[var(--muted-text)] hover:text-[var(--text)]"
+                  className="shrink-0 text-[var(--muted-text)] hover:text-[var(--text)]"
                 >
                   {mounted ? (isDark ? "☾" : "☀") : "☾"}
                 </Button>
@@ -102,12 +102,12 @@ export function Topbar({
               variant="ghost"
               size="xs"
               onClick={onToggleLocale}
-              className="text-[var(--muted-text)] hover:text-[var(--text)]"
+              className="shrink-0 text-[var(--muted-text)] hover:text-[var(--text)]"
               title={locale === "pt" ? "English" : "Português"}
             >
               {locale === "pt" ? "EN" : "PT"}
             </Button>
-            <div className="flex items-center gap-0.5 rounded-md border border-[var(--line-soft)] p-0.5">
+            <div className="flex shrink-0 items-center gap-0.5 rounded-md border border-[var(--line-soft)] p-0.5">
               {(["list", "kanban", "agenda", "lixeira"] as View[]).map((v) => (
                 <Button
                   key={v}
@@ -127,7 +127,7 @@ export function Topbar({
               variant="ghost"
               size="xs"
               onClick={onExport}
-              className="text-[var(--muted-text)] hover:text-[var(--text)]"
+              className="shrink-0 text-[var(--muted-text)] hover:text-[var(--text)]"
               title={t("exportar JSON (backup)")}
             >
               ↓{t("exportar")}
@@ -137,19 +137,19 @@ export function Topbar({
               variant="ghost"
               size="xs"
               onClick={onImport}
-              className="text-[var(--muted-text)] hover:text-[var(--text)]"
+              className="shrink-0 text-[var(--muted-text)] hover:text-[var(--text)]"
               title={t("importar JSON")}
             >
               ↑{t("importar")}
             </Button>
             <Link
               href="/privacy"
-              className={buttonVariants({ variant: "ghost", size: "xs" }) + " text-[var(--muted-text)] hover:text-[var(--text)]"}
+              className={buttonVariants({ variant: "ghost", size: "xs" }) + " shrink-0 text-[var(--muted-text)] hover:text-[var(--text)]"}
               title={t("política de privacidade")}
             >
               {t("privacidade")}
             </Link>
-            <Button type="button" variant="default" size="sm" onClick={onNewProject}>
+            <Button type="button" variant="default" size="sm" onClick={onNewProject} className="shrink-0">
               <span className="mr-1">+</span>{t("projeto")}
             </Button>
           </div>

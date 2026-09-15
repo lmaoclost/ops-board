@@ -225,3 +225,36 @@ describe("TaskRow", () => {
     });
   });
 });
+
+describe("TaskRow menu mobile (⋯)", () => {
+  it("⋯ abre menu; editar chama callback", async () => {
+    const p = base();
+    render(<TaskRow {...p} />);
+    await userEvent.click(screen.getByRole("button", { name: "ações da tarefa" }));
+    await userEvent.click(await screen.findByRole("menuitem", { name: "editar" }));
+    expect(p.onEdit).toHaveBeenCalledTimes(1);
+  });
+
+  it("menu muda status via item", async () => {
+    const p = base();
+    render(<TaskRow {...p} />);
+    await userEvent.click(screen.getByRole("button", { name: "ações da tarefa" }));
+    await userEvent.click(await screen.findByRole("menuitem", { name: "em andamento" }));
+    expect(p.onStatusChange).toHaveBeenCalledWith("doing");
+  });
+
+  it("menu bloqueia com motivo e excluir confirma antes de deletar", async () => {
+    const p = base();
+    render(<TaskRow {...p} />);
+    await userEvent.click(screen.getByRole("button", { name: "ações da tarefa" }));
+    await userEvent.click(await screen.findByRole("menuitem", { name: "bloquear tarefa" }));
+    await userEvent.type(await screen.findByLabelText("motivo do bloqueio"), "motivo x");
+    await userEvent.click(screen.getByRole("button", { name: "salvar" }));
+    expect(p.onUpdate).toHaveBeenCalledWith({ blocked: true, blockedReason: "motivo x" });
+
+    await userEvent.click(screen.getByRole("button", { name: "ações da tarefa" }));
+    await userEvent.click(await screen.findByRole("menuitem", { name: "excluir" }));
+    await userEvent.click(await screen.findByRole("button", { name: "excluir" }));
+    expect(p.onDelete).toHaveBeenCalledTimes(1);
+  });
+});

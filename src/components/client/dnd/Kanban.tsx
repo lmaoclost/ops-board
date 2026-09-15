@@ -175,7 +175,7 @@ function DroppableCol({
   return (
     <div
       ref={setNodeRef}
-      className={`group flex min-w-[200px] flex-1 flex-col rounded-lg border ${isOver ? "border-[var(--fired)]/60" : "border-[var(--line)]"} bg-[var(--panel)]`}
+      className={`group flex min-w-[min(200px,100%)] flex-1 flex-col rounded-lg border ${isOver ? "border-[var(--fired)]/60" : "border-[var(--line)]"} bg-[var(--panel)]`}
     >
       <header className="flex items-center justify-between gap-2 border-b border-[var(--line)] px-3 py-2">
         <span className="text-[11px] font-bold uppercase tracking-wider text-[var(--muted-text)]">
