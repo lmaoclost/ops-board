@@ -12,7 +12,7 @@ import { Trash } from "@/components/client/trash/Trash";
 
 export interface BoardProjectActions {
   onAddSection: (pid: string, title: string, notes?: string) => void;
-  onRename: (id: string, title: string, blocked: boolean, due?: string, note?: string, blockedReason?: string) => void;
+  onEdit: (id: string, title: string, blocked: boolean, due?: string, note?: string, blockedReason?: string) => void;
   onDelete: (id: string) => void;
   onToggleArchive: (id: string) => void;
   onCyclePrio: (id: string) => void;
@@ -24,7 +24,7 @@ export interface BoardSectionActions {
   onToggle: (pid: string, sid: string) => void;
   onAddTask: (pid: string, sid: string, text: string) => void;
   onAddTaskFull: (pid: string, sid: string, input: AddTaskInput) => void;
-  onRename: (pid: string, sid: string, title: string) => void;
+  onEdit: (pid: string, sid: string, title: string) => void;
   onNotes: (pid: string, sid: string, notes: string) => void;
   onMoveSection: (pid: string, sid: string, index: number) => void;
   onDelete: (pid: string, sid: string) => void;
@@ -44,7 +44,7 @@ export interface BoardTaskActions {
 export interface SectionLevelActions {
   onToggle: (sid: string) => void;
   onAddTask: (sid: string, text: string) => void;
-  onRename: (sid: string, title: string) => void;
+  onEdit: (sid: string, title: string) => void;
   onNotes: (sid: string, notes: string) => void;
   onDelete: (sid: string) => void;
 }
@@ -79,7 +79,7 @@ export function Board({ projetos, filters, onNewProject, onClearFilters, project
     sectionActions: {
       onToggle: (sid: string) => sectionActions.onToggle(pid, sid),
       onAddTask: (sid: string, text: string) => sectionActions.onAddTask(pid, sid, text),
-      onRename: (sid: string, title: string) => sectionActions.onRename(pid, sid, title),
+      onEdit: (sid: string, title: string) => sectionActions.onEdit(pid, sid, title),
       onNotes: (sid: string, notes: string) => sectionActions.onNotes(pid, sid, notes),
       onDelete: (sid: string) => sectionActions.onDelete(pid, sid),
     },
@@ -183,7 +183,7 @@ export function Board({ projetos, filters, onNewProject, onClearFilters, project
             project={p}
             collectActions={collectActions}
             onAddSection={(title, notes) => projectActions.onAddSection(p.id, title, notes)}
-            onRename={(id, title, blocked, due, note, blockedReason) => projectActions.onRename(id, title, blocked, due, note, blockedReason)}
+            onEdit={(id, title, blocked, due, note, blockedReason) => projectActions.onEdit(id, title, blocked, due, note, blockedReason)}
             onDelete={(id) => projectActions.onDelete(id)}
             onToggleArchive={() => projectActions.onToggleArchive(p.id)}
             onCyclePrio={() => projectActions.onCyclePrio(p.id)}

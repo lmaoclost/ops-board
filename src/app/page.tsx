@@ -24,7 +24,7 @@ import { Button } from "@/components/ui/button";
 export default function Home() {
   const projetos = useBoard((s) => s.projetos);
   const addProject = useBoard((s) => s.addProject);
-  const renameProject = useBoard((s) => s.renameProject);
+  const editProject = useBoard((s) => s.editProject);
   const deleteProject = useBoard((s) => s.deleteProject);
   const toggleProjectArchive = useBoard((s) => s.toggleProjectArchive);
   const locale = useBoard((s) => s.locale);
@@ -33,7 +33,7 @@ export default function Home() {
   const setProjectPrio = useBoard((s) => s.setProjectPrio);
   const toggleProjectCollapsed = useBoard((s) => s.toggleProjectCollapsed);
   const addSection = useBoard((s) => s.addSection);
-  const renameSection = useBoard((s) => s.renameSection);
+  const editSection = useBoard((s) => s.editSection);
   const setSectionNotes = useBoard((s) => s.setSectionNotes);
   const moveSection = useBoard((s) => s.moveSection);
   const moveProject = useBoard((s) => s.moveProject);
@@ -249,7 +249,7 @@ const notifiedRef = useRef(false);
           onClearFilters={clear}
           projectActions={{
             onAddSection: (pid, title, notes) => addSection(pid, title, notes),
-            onRename: (id, title, blocked, due, note, blockedReason) => renameProject(id, title, blocked, due, note, blockedReason),
+            onEdit: (id, title, blocked, due, note, blockedReason) => editProject(id, title, blocked, due, note, blockedReason),
             onDelete: (id) => deleteProject(id),
             onToggleArchive: handleToggleArchive,
             onCyclePrio: (id) => {
@@ -268,7 +268,7 @@ const notifiedRef = useRef(false);
             onToggle: (pid, sid) => toggleSection(pid, sid),
             onAddTask: (pid, sid, text) => addTask(pid, sid, text),
             onAddTaskFull: (pid, sid, input) => addTaskFull(pid, sid, input),
-            onRename: (pid, sid, title) => renameSection(pid, sid, title),
+            onEdit: (pid, sid, title) => editSection(pid, sid, title),
             onNotes: (pid, sid, notes) => setSectionNotes(pid, sid, notes),
             onMoveSection: (pid, sid, index) => moveSection(pid, sid, index),
             onDelete: (pid, sid) => deleteSection(pid, sid),

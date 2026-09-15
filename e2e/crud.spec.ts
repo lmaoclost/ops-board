@@ -123,7 +123,7 @@ test("bloqueia e desbloqueia tarefa pelo botão da linha", async ({ page }) => {
   await expect(page.getByText("bloqueada", { exact: true })).toHaveCount(0);
 });
 
-test("renomeia projeto e marca/desmarca stuck pelo ⋯; renomeia seção", async ({
+test("edita projeto e marca/desmarca stuck pelo ⋯; edita seção", async ({
   page,
 }) => {
   await page.goto("/");

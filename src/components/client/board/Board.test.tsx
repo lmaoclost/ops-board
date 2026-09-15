@@ -23,7 +23,7 @@ const base = (over: Partial<BoardProps> = {}): BoardProps => ({
   onClearFilters: vi.fn(),
   projectActions: {
     onAddSection: vi.fn(),
-    onRename: vi.fn(),
+    onEdit: vi.fn(),
     onDelete: vi.fn(),
     onToggleArchive: vi.fn(),
     onCyclePrio: vi.fn(),
@@ -34,7 +34,7 @@ const base = (over: Partial<BoardProps> = {}): BoardProps => ({
     onToggle: vi.fn(),
     onAddTask: vi.fn(),
     onAddTaskFull: vi.fn(),
-    onRename: vi.fn(),
+    onEdit: vi.fn(),
     onNotes: vi.fn(),
     onMoveSection: vi.fn(),
     onDelete: vi.fn(),

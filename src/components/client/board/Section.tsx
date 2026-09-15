@@ -39,7 +39,7 @@ export interface SectionProps {
   };
   onToggleSection: () => void;
   onAddTask: (text: string) => void;
-  onRename: (title: string) => void;
+  onEdit: (title: string) => void;
   onNotes: (notes: string) => void;
   onDelete: () => void;
   taskActions: SectionTaskActions;
@@ -47,7 +47,7 @@ export interface SectionProps {
   filters?: Filters;
 }
 
-export function Section({ projectId, section, onToggleSection, onAddTask, onRename, onNotes, onDelete, taskActions, prioSort, filters }: SectionProps) {
+export function Section({ projectId, section, onToggleSection, onAddTask, onEdit, onNotes, onDelete, taskActions, prioSort, filters }: SectionProps) {
   const { t } = useT();
   const [draft, setDraft] = useState("");
   const [editingId, setEditingId] = useState<string | null>(null);
@@ -64,9 +64,9 @@ export function Section({ projectId, section, onToggleSection, onAddTask, onRena
 
   const editing = editingId ? section.tasks.find((t) => t.id === editingId) : null;
 
-  const submitRename = (v: Record<string, string | boolean>) => {
+  const submitEdit = (v: Record<string, string | boolean>) => {
     setRenaming(false);
-    if (String(v.title).trim()) onRename(String(v.title).trim());
+    if (String(v.title).trim()) onEdit(String(v.title).trim());
     onNotes(String(v.notes ?? ""));
   };
 
@@ -208,7 +208,7 @@ export function Section({ projectId, section, onToggleSection, onAddTask, onRena
             { key: "title", label: t("título"), value: section.title, required: true },
             { key: "notes", label: t("nota"), type: "textarea", value: section.notes },
           ]}
-          onSubmit={submitRename}
+          onSubmit={submitEdit}
           onCancel={() => setRenaming(false)}
         />
       )}

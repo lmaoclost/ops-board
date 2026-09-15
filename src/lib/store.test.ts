@@ -32,20 +32,20 @@ describe("board store", () => {
     expect(p.sections[0].tasks).toEqual([]);
   });
 
-  it("renomeia e marca projeto como bloqueado", () => {
-    store.getState().renameProject("p1", "Renomeado", true);
+  it("edita e marca projeto como bloqueado", () => {
+    store.getState().editProject("p1", "Renomeado", true);
     const p = store.getState().projetos[0];
     expect(p.title).toBe("Renomeado");
     expect(p.blocked).toBe(true);
   });
 
-  it("renameProject sem due preserva o vencimento atual", () => {
+  it("editProject sem due preserva o vencimento atual", () => {
     store.getState().setProjectPrio("p1", 1);
-    store.getState().renameProject("p1", "X", false);
+    store.getState().editProject("p1", "X", false);
     expect(store.getState().projetos[0].due).toBe("");
-    store.getState().renameProject("p1", "Y", false, "2026-09-01");
+    store.getState().editProject("p1", "Y", false, "2026-09-01");
     expect(store.getState().projetos[0].due).toBe("2026-09-01");
-    store.getState().renameProject("p1", "Z", false);
+    store.getState().editProject("p1", "Z", false);
     expect(store.getState().projetos[0].due).toBe("2026-09-01");
   });
 
@@ -80,12 +80,12 @@ describe("board store", () => {
     expect(store.getState().projetos.at(-1)!.due).toBe("");
   });
 
-  it("renameProject atualiza nota e motivo do bloqueio", () => {
-    store.getState().renameProject("p1", "Renomeado", true, undefined, "nota nova", "aguardando cliente");
+  it("editProject atualiza nota e motivo do bloqueio", () => {
+    store.getState().editProject("p1", "Renomeado", true, undefined, "nota nova", "aguardando cliente");
     const p = store.getState().projetos[0];
     expect(p.note).toBe("nota nova");
     expect(p.blockedReason).toBe("aguardando cliente");
-    store.getState().renameProject("p1", "Outro", false);
+    store.getState().editProject("p1", "Outro", false);
     expect(store.getState().projetos[0].note).toBe("nota nova");
     expect(store.getState().projetos[0].blockedReason).toBe("aguardando cliente");
   });
@@ -126,10 +126,10 @@ describe("board store", () => {
     expect(t.blockedReason).toBe("sem acesso");
   });
 
-  it("adiciona, renomeia e exclui seção", () => {
+  it("adiciona, edita e exclui seção", () => {
     store.getState().addSection("p1", "dev");
     expect(store.getState().projetos[0].sections.map((s) => s.title)).toEqual(["geral", "dev"]);
-    store.getState().renameSection("p1", "s1", "geral 2");
+    store.getState().editSection("p1", "s1", "geral 2");
     expect(store.getState().projetos[0].sections[0].title).toBe("geral 2");
     store.getState().deleteSection("p1", "s1");
     expect(store.getState().projetos[0].sections.map((s) => s.title)).toEqual(["dev"]);
@@ -407,8 +407,8 @@ describe("board store", () => {
     expect(store.getState().projetos[0].sections.map((s) => s.title)).toEqual(["geral"]);
   });
 
-  it("renameProject é desfeita restaurando título e bloqueio", () => {
-    store.getState().renameProject("p1", "Renomeado", true);
+  it("editProject é desfeita restaurando título e bloqueio", () => {
+    store.getState().editProject("p1", "Renomeado", true);
     store.getState().undo();
     const p = store.getState().projetos[0];
     expect(p.title).toBe("Projeto A");

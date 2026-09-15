@@ -41,7 +41,7 @@ const base = (over: Partial<ProjectCardProps> = {}): ProjectCardProps => ({
     sectionActions: {
       onToggle: vi.fn(),
       onAddTask: vi.fn(),
-      onRename: vi.fn(),
+      onEdit: vi.fn(),
       onNotes: vi.fn(),
       onDelete: vi.fn(),
     },
@@ -55,7 +55,7 @@ const base = (over: Partial<ProjectCardProps> = {}): ProjectCardProps => ({
     },
   }),
   onAddSection: vi.fn(),
-  onRename: vi.fn(),
+  onEdit: vi.fn(),
   onDelete: vi.fn(),
   onToggleArchive: vi.fn(),
   onCyclePrio: vi.fn(),
@@ -97,10 +97,10 @@ describe("ProjectCard", () => {
         name: "desmarcar stuck / bloqueado",
       }),
     );
-    expect(p.onRename).toHaveBeenCalledWith("p1", "Projeto Alfa", false);
+    expect(p.onEdit).toHaveBeenCalledWith("p1", "Projeto Alfa", false);
   });
 
-  it("bloquear projeto pede motivo e salva com onRename", async () => {
+  it("bloquear projeto pede motivo e salva com onEdit", async () => {
     const p = base();
     render(<ProjectCard {...p} />);
     await openMenu();
@@ -114,7 +114,7 @@ describe("ProjectCard", () => {
     );
     await userEvent.type(reason, "aguardando cliente");
     await userEvent.click(screen.getByRole("button", { name: "salvar" }));
-    expect(p.onRename).toHaveBeenCalledWith(
+    expect(p.onEdit).toHaveBeenCalledWith(
       "p1",
       "Projeto Alfa",
       true,
@@ -180,7 +180,7 @@ describe("ProjectCard", () => {
     expect(p.onAddSection).toHaveBeenCalledWith("dev", "foco");
   });
 
-  it("renomeia via modal preenchido", async () => {
+  it("edita via modal preenchido", async () => {
     const p = base();
     render(<ProjectCard {...p} />);
     await openMenu();
@@ -190,7 +190,7 @@ describe("ProjectCard", () => {
     const input = await screen.findByLabelText("título");
     await userEvent.clear(input);
     await userEvent.type(input, "Renomeado{Enter}");
-    expect(p.onRename).toHaveBeenCalledWith("p1", "Renomeado", false, "", "");
+    expect(p.onEdit).toHaveBeenCalledWith("p1", "Renomeado", false, "", "");
   });
 
   it("define vencimento do projeto pelo modal de editar", async () => {
@@ -203,7 +203,7 @@ describe("ProjectCard", () => {
     const due = await screen.findByLabelText("vencimento");
     await userEvent.type(due, "2026-09-01");
     await userEvent.click(screen.getByRole("button", { name: "salvar" }));
-    expect(p.onRename).toHaveBeenCalledWith(
+    expect(p.onEdit).toHaveBeenCalledWith(
       "p1",
       "Projeto Alfa",
       false,

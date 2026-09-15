@@ -32,13 +32,13 @@ interface BoardStore {
   canUndo: boolean;
   undo: () => void;
   addProject: (title: string, note?: string, due?: string) => void;
-  renameProject: (id: string, title: string, blocked: boolean, due?: string, note?: string, blockedReason?: string) => void;
+  editProject: (id: string, title: string, blocked: boolean, due?: string, note?: string, blockedReason?: string) => void;
   deleteProject: (id: string) => void;
   toggleProjectArchive: (id: string) => void;
   setProjectPrio: (id: string, prio: Prio) => void;
   toggleProjectCollapsed: (id: string) => void;
   addSection: (pid: string, title: string, notes?: string) => void;
-  renameSection: (pid: string, sid: string, title: string) => void;
+  editSection: (pid: string, sid: string, title: string) => void;
   setSectionNotes: (pid: string, sid: string, notes: string) => void;
   moveSection: (pid: string, sid: string, index: number) => void;
   moveProject: (pid: string, index: number) => void;
@@ -129,7 +129,7 @@ export function createBoardStore(initial: Project[] = []) {
             })),
           ),
 
-        renameProject: (id, title, blocked, due, note, blockedReason) =>
+        editProject: (id, title, blocked, due, note, blockedReason) =>
           commit(() =>
             set((s) => ({
               projetos: s.projetos.map((p) =>
@@ -182,7 +182,7 @@ export function createBoardStore(initial: Project[] = []) {
             })),
           ),
 
-        renameSection: (pid, sid, title) =>
+        editSection: (pid, sid, title) =>
           commit(() =>
             set((s) => ({
               projetos: s.projetos.map((p) =>

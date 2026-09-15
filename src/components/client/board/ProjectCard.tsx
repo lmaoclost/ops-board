@@ -34,7 +34,7 @@ export interface ProjectCardProps {
     taskActions: TaskLevelActions;
   };
   onAddSection: (title: string, notes?: string) => void;
-  onRename: (
+  onEdit: (
     id: string,
     title: string,
     blocked: boolean,
@@ -51,13 +51,13 @@ export interface ProjectCardProps {
 }
 
 type ModalState =
-  { kind: "rename" } | { kind: "add-section" } | { kind: "block" } | { kind: "delete" } | null;
+  { kind: "edit" } | { kind: "add-section" } | { kind: "block" } | { kind: "delete" } | null;
 
 export function ProjectCard({
   project,
   collectActions,
   onAddSection,
-  onRename,
+  onEdit,
   onDelete,
   onToggleArchive,
   onCyclePrio,
@@ -77,7 +77,7 @@ export function ProjectCard({
   const submitProject = (v: Record<string, string | boolean>) => {
     setModal(null);
     if (!String(v.title).trim()) return;
-    onRename(
+    onEdit(
       project.id,
       String(v.title).trim(),
       project.blocked,
@@ -88,7 +88,7 @@ export function ProjectCard({
 
   const submitBlock = (v: Record<string, string | boolean>) => {
     setModal(null);
-    onRename(
+    onEdit(
       project.id,
       project.title,
       true,
@@ -200,7 +200,7 @@ export function ProjectCard({
               </DropdownMenuItem>
               <DropdownMenuItem
                 className="text-xs"
-                onClick={() => setModal({ kind: "rename" })}
+                onClick={() => setModal({ kind: "edit" })}
               >
                 {t("editar projeto")}
               </DropdownMenuItem>
@@ -208,7 +208,7 @@ export function ProjectCard({
                 className="text-xs"
                 onClick={() =>
                   project.blocked
-                    ? onRename(project.id, project.title, false)
+                    ? onEdit(project.id, project.title, false)
                     : setModal({ kind: "block" })
                 }
               >
@@ -266,8 +266,8 @@ export function ProjectCard({
                 onAddTask={(text) =>
                   actions.sectionActions.onAddTask(s.id, text)
                 }
-                onRename={(title) =>
-                  actions.sectionActions.onRename(s.id, title)
+                onEdit={(title) =>
+                  actions.sectionActions.onEdit(s.id, title)
                 }
                 onNotes={(notes) => actions.sectionActions.onNotes(s.id, notes)}
                 onDelete={() => actions.sectionActions.onDelete(s.id)}
@@ -280,7 +280,7 @@ export function ProjectCard({
         </SortableContext>
       )}
 
-      {modal?.kind === "rename" && (
+      {modal?.kind === "edit" && (
         <Modal
           title={t("editar projeto")}
           submitLabel={t("salvar")}
