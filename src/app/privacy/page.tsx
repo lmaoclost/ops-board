@@ -3,6 +3,7 @@
 import { useEffect, useState } from "react";
 import Link from "next/link";
 import { useT } from "@/hooks/useT";
+import type { TKey } from "@/lib/i18n";
 import { Switch } from "@/components/ui/switch";
 import { METRICS_EVENT, readMetricsConsent, setMetricsConsent } from "@/components/client/Metrics";
 
@@ -39,7 +40,13 @@ function MetricsToggle() {
   );
 }
 
-const SECTIONS = [
+interface PrivacySection {
+  tk: TKey;
+  bk: TKey;
+  toggle?: boolean;
+}
+
+const SECTIONS: PrivacySection[] = [
   { tk: "priv_s1t", bk: "priv_s1b" },
   { tk: "priv_s2t", bk: "priv_s2b" },
   { tk: "priv_s3t", bk: "priv_s3b" },
@@ -47,7 +54,7 @@ const SECTIONS = [
   { tk: "priv_s5t", bk: "priv_s5b" },
   { tk: "priv_s6t", bk: "priv_s6b" },
   { tk: "priv_s7t", bk: "priv_s7b", toggle: true },
-] as const;
+];
 
 export default function PrivacidadePage() {
   const { t } = useT();
@@ -69,7 +76,7 @@ export default function PrivacidadePage() {
           <section key={s.tk}>
             <h2 className="text-base font-semibold text-[var(--text)]">{t(s.tk)}</h2>
             <p className="mt-1.5 text-sm leading-relaxed text-[var(--muted-text)]">{t(s.bk)}</p>
-            {"toggle" in s && s.toggle && <MetricsToggle />}
+            {s.toggle && <MetricsToggle />}
           </section>
         ))}
       </div>
