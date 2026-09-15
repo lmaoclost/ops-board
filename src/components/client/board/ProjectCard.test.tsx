@@ -97,7 +97,7 @@ describe("ProjectCard", () => {
         name: "desmarcar stuck / bloqueado",
       }),
     );
-    expect(p.onEdit).toHaveBeenCalledWith("p1", "Projeto Alfa", false);
+    expect(p.onEdit).toHaveBeenCalledWith("p1", { title: "Projeto Alfa", blocked: false });
   });
 
   it("bloquear projeto pede motivo e salva com onEdit", async () => {
@@ -114,14 +114,11 @@ describe("ProjectCard", () => {
     );
     await userEvent.type(reason, "aguardando cliente");
     await userEvent.click(screen.getByRole("button", { name: "salvar" }));
-    expect(p.onEdit).toHaveBeenCalledWith(
-      "p1",
-      "Projeto Alfa",
-      true,
-      undefined,
-      undefined,
-      "aguardando cliente",
-    );
+    expect(p.onEdit).toHaveBeenCalledWith("p1", {
+      title: "Projeto Alfa",
+      blocked: true,
+      blockedReason: "aguardando cliente",
+    });
   });
 
   it("mostra nota do projeto no cartão", () => {
@@ -177,7 +174,7 @@ describe("ProjectCard", () => {
     await userEvent.type(input, "dev");
     await userEvent.type(await screen.findByLabelText("nota", { exact: true }), "foco");
     await userEvent.click(screen.getByRole("button", { name: "criar" }));
-    expect(p.onAddSection).toHaveBeenCalledWith("dev", "foco");
+    expect(p.onAddSection).toHaveBeenCalledWith({ title: "dev", notes: "foco" });
   });
 
   it("edita via modal preenchido", async () => {
@@ -190,7 +187,7 @@ describe("ProjectCard", () => {
     const input = await screen.findByLabelText("título");
     await userEvent.clear(input);
     await userEvent.type(input, "Renomeado{Enter}");
-    expect(p.onEdit).toHaveBeenCalledWith("p1", "Renomeado", false, "", "");
+    expect(p.onEdit).toHaveBeenCalledWith("p1", { title: "Renomeado", blocked: false, due: "", note: "" });
   });
 
   it("define vencimento do projeto pelo modal de editar", async () => {
@@ -203,13 +200,12 @@ describe("ProjectCard", () => {
     const due = await screen.findByLabelText("vencimento");
     await userEvent.type(due, "2026-09-01");
     await userEvent.click(screen.getByRole("button", { name: "salvar" }));
-    expect(p.onEdit).toHaveBeenCalledWith(
-      "p1",
-      "Projeto Alfa",
-      false,
-      "2026-09-01",
-      "",
-    );
+    expect(p.onEdit).toHaveBeenCalledWith("p1", {
+      title: "Projeto Alfa",
+      blocked: false,
+      due: "2026-09-01",
+      note: "",
+    });
   });
 
   it("excluir pede confirmação no modal antes de chamar callback", async () => {

@@ -15,7 +15,7 @@ import {
 } from "@/components/ui/dropdown-menu";
 import { Input } from "@/components/ui/input";
 import { sortTasks, visibleTasks, type Filters } from "@/lib/filter";
-import type { TaskPatch, Task } from "@/lib/types";
+import type { TaskPatch, SectionPatch, Task } from "@/lib/types";
 import { SortableTaskItem } from "@/components/client/dnd/SortableTaskItem";
 import { TaskEditModal } from "@/components/client/board/TaskEditModal";
 
@@ -39,15 +39,14 @@ export interface SectionProps {
   };
   onToggleSection: () => void;
   onAddTask: (text: string) => void;
-  onEdit: (title: string) => void;
-  onNotes: (notes: string) => void;
+  onEdit: (patch: SectionPatch) => void;
   onDelete: () => void;
   taskActions: SectionTaskActions;
   prioSort?: boolean;
   filters?: Filters;
 }
 
-export function Section({ projectId, section, onToggleSection, onAddTask, onEdit, onNotes, onDelete, taskActions, prioSort, filters }: SectionProps) {
+export function Section({ projectId, section, onToggleSection, onAddTask, onEdit, onDelete, taskActions, prioSort, filters }: SectionProps) {
   const { t } = useT();
   const [draft, setDraft] = useState("");
   const [editingId, setEditingId] = useState<string | null>(null);
@@ -66,8 +65,8 @@ export function Section({ projectId, section, onToggleSection, onAddTask, onEdit
 
   const submitEdit = (v: Record<string, string | boolean>) => {
     setRenaming(false);
-    if (String(v.title).trim()) onEdit(String(v.title).trim());
-    onNotes(String(v.notes ?? ""));
+    if (!String(v.title).trim()) return;
+    onEdit({ title: String(v.title).trim(), notes: String(v.notes ?? "") });
   };
 
   return (

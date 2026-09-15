@@ -62,6 +62,30 @@ export interface TaskPatch {
   deletedAt?: string | null;
 }
 
+export interface ProjectPatch {
+  title: string;
+  blocked: boolean;
+  due?: string;
+  note?: string;
+  blockedReason?: string;
+}
+
+export interface AddProjectInput {
+  title: string;
+  note?: string;
+  due?: string;
+}
+
+export interface SectionPatch {
+  title?: string;
+  notes?: string;
+}
+
+export interface AddSectionInput {
+  title: string;
+  notes?: string;
+}
+
 export interface AddTaskInput {
   text: string;
   status: Status;

@@ -24,7 +24,7 @@ describe("board store", () => {
   });
 
   it("adiciona projeto com seção geral vazia", () => {
-    store.getState().addProject("Novo");
+    store.getState().addProject({ title: "Novo" });
     const p = store.getState().projetos.at(-1)!;
     expect(p.title).toBe("Novo");
     expect(p.sections).toHaveLength(1);
@@ -33,7 +33,7 @@ describe("board store", () => {
   });
 
   it("edita e marca projeto como bloqueado", () => {
-    store.getState().editProject("p1", "Renomeado", true);
+    store.getState().editProject("p1", { title: "Renomeado", blocked: true });
     const p = store.getState().projetos[0];
     expect(p.title).toBe("Renomeado");
     expect(p.blocked).toBe(true);
@@ -41,11 +41,11 @@ describe("board store", () => {
 
   it("editProject sem due preserva o vencimento atual", () => {
     store.getState().setProjectPrio("p1", 1);
-    store.getState().editProject("p1", "X", false);
+    store.getState().editProject("p1", { title: "X", blocked: false });
     expect(store.getState().projetos[0].due).toBe("");
-    store.getState().editProject("p1", "Y", false, "2026-09-01");
+    store.getState().editProject("p1", { title: "Y", blocked: false, due: "2026-09-01" });
     expect(store.getState().projetos[0].due).toBe("2026-09-01");
-    store.getState().editProject("p1", "Z", false);
+    store.getState().editProject("p1", { title: "Z", blocked: false });
     expect(store.getState().projetos[0].due).toBe("2026-09-01");
   });
 
@@ -67,45 +67,45 @@ describe("board store", () => {
   });
 
   it("addProject aceita nota opcional (default vazia)", () => {
-    store.getState().addProject("Com nota", "contexto do projeto");
+    store.getState().addProject({ title: "Com nota", note: "contexto do projeto" });
     expect(store.getState().projetos.at(-1)!.note).toBe("contexto do projeto");
-    store.getState().addProject("Sem nota");
+    store.getState().addProject({ title: "Sem nota" });
     expect(store.getState().projetos.at(-1)!.note).toBe("");
   });
 
   it("addProject aceita vencimento opcional (default vazio)", () => {
-    store.getState().addProject("Com due", "nota", "2026-10-01");
+    store.getState().addProject({ title: "Com due", note: "nota", due: "2026-10-01" });
     expect(store.getState().projetos.at(-1)!.due).toBe("2026-10-01");
-    store.getState().addProject("Sem due");
+    store.getState().addProject({ title: "Sem due" });
     expect(store.getState().projetos.at(-1)!.due).toBe("");
   });
 
   it("editProject atualiza nota e motivo do bloqueio", () => {
-    store.getState().editProject("p1", "Renomeado", true, undefined, "nota nova", "aguardando cliente");
+    store.getState().editProject("p1", { title: "Renomeado", blocked: true, note: "nota nova", blockedReason: "aguardando cliente" });
     const p = store.getState().projetos[0];
     expect(p.note).toBe("nota nova");
     expect(p.blockedReason).toBe("aguardando cliente");
-    store.getState().editProject("p1", "Outro", false);
+    store.getState().editProject("p1", { title: "Outro", blocked: false });
     expect(store.getState().projetos[0].note).toBe("nota nova");
     expect(store.getState().projetos[0].blockedReason).toBe("aguardando cliente");
   });
 
   it("moveProject reordena projetos", () => {
-    store.getState().addProject("B");
-    store.getState().addProject("C");
+    store.getState().addProject({ title: "B" });
+    store.getState().addProject({ title: "C" });
     store.getState().moveProject("p1", 2);
     expect(store.getState().projetos.map((p) => p.title)).toEqual(["B", "C", "Projeto A"]);
     store.getState().moveProject("p1", 0);
     expect(store.getState().projetos.map((p) => p.title)).toEqual(["Projeto A", "B", "C"]);
   });
 
-  it("setSectionNotes atualiza notas da seção", () => {
-    store.getState().setSectionNotes("p1", "s1", "foco da sprint");
+  it("editSection atualiza notas da seção", () => {
+    store.getState().editSection("p1", "s1", { notes: "foco da sprint" });
     expect(store.getState().projetos[0].sections[0].notes).toBe("foco da sprint");
   });
 
   it("moveSection reordena seções do projeto", () => {
-    store.getState().addSection("p1", "dev");
+    store.getState().addSection("p1", { title: "dev" });
     store.getState().moveSection("p1", "s1", 1);
     const titles = store.getState().projetos[0].sections.map((s) => s.title);
     expect(titles).toEqual(["dev", "geral"]);
@@ -127,18 +127,18 @@ describe("board store", () => {
   });
 
   it("adiciona, edita e exclui seção", () => {
-    store.getState().addSection("p1", "dev");
+    store.getState().addSection("p1", { title: "dev" });
     expect(store.getState().projetos[0].sections.map((s) => s.title)).toEqual(["geral", "dev"]);
-    store.getState().editSection("p1", "s1", "geral 2");
+    store.getState().editSection("p1", "s1", { title: "geral 2" });
     expect(store.getState().projetos[0].sections[0].title).toBe("geral 2");
     store.getState().deleteSection("p1", "s1");
     expect(store.getState().projetos[0].sections.map((s) => s.title)).toEqual(["dev"]);
   });
 
   it("addSection aceita nota opcional (default vazia)", () => {
-    store.getState().addSection("p1", "com nota", "foco");
+    store.getState().addSection("p1", { title: "com nota", notes: "foco" });
     expect(store.getState().projetos[0].sections.at(-1)!.notes).toBe("foco");
-    store.getState().addSection("p1", "sem nota");
+    store.getState().addSection("p1", { title: "sem nota" });
     expect(store.getState().projetos[0].sections.at(-1)!.notes).toBe("");
   });
 
@@ -365,7 +365,7 @@ describe("board store", () => {
   });
 
   it("toggleProjectArchive arquiva e desarquiva", () => {
-    store.getState().addProject("A");
+    store.getState().addProject({ title: "A" });
     const pid = store.getState().projetos[0].id;
     store.getState().toggleProjectArchive(pid);
     expect(store.getState().projetos[0].archived).toBe(true);
@@ -391,7 +391,7 @@ describe("board store", () => {
   });
 
   it("addProject é desfeito removendo o projeto", () => {
-    store.getState().addProject("Novo");
+    store.getState().addProject({ title: "Novo" });
     expect(store.getState().projetos).toHaveLength(2);
     store.getState().undo();
     expect(store.getState().projetos).toHaveLength(1);
@@ -399,7 +399,7 @@ describe("board store", () => {
   });
 
   it("addSection e addTask são desfeitas", () => {
-    store.getState().addSection("p1", "dev");
+    store.getState().addSection("p1", { title: "dev" });
     store.getState().addTask("p1", "s1", "nova");
     store.getState().undo();
     expect(store.getState().projetos[0].sections[0].tasks.map((t) => t.text)).toEqual(["tarefa 1", "tarefa 2"]);
@@ -408,7 +408,7 @@ describe("board store", () => {
   });
 
   it("editProject é desfeita restaurando título e bloqueio", () => {
-    store.getState().editProject("p1", "Renomeado", true);
+    store.getState().editProject("p1", { title: "Renomeado", blocked: true });
     store.getState().undo();
     const p = store.getState().projetos[0];
     expect(p.title).toBe("Projeto A");
@@ -498,8 +498,8 @@ describe("board store", () => {
   });
 
   it("undo em sequência desfaz passo a passo", () => {
-    store.getState().addProject("A");
-    store.getState().addProject("B");
+    store.getState().addProject({ title: "A" });
+    store.getState().addProject({ title: "B" });
     expect(store.getState().projetos).toHaveLength(3);
     store.getState().undo();
     expect(store.getState().projetos).toHaveLength(2);
@@ -510,7 +510,7 @@ describe("board store", () => {
   });
 
   it("stack limita a 50 passos (os mais recentes)", () => {
-    for (let i = 0; i < 60; i++) store.getState().addProject(`p${i}`);
+    for (let i = 0; i < 60; i++) store.getState().addProject({ title: `p${i}` });
     expect(store.getState().projetos).toHaveLength(61);
     for (let i = 0; i < 55; i++) store.getState().undo();
     expect(store.getState().canUndo).toBe(false);
@@ -520,7 +520,7 @@ describe("board store", () => {
   it("canUndo não é persistido", () => {
     localStorage.clear();
     const s = createBoardStore();
-    s.getState().addProject("X");
+    s.getState().addProject({ title: "X" });
     s.getState().undo();
     const stored = JSON.parse(localStorage.getItem("opsboard.v1")!);
     expect(stored.state).not.toHaveProperty("canUndo");

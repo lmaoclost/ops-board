@@ -19,7 +19,7 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import { isDueSoon, isOverdue, fmtDate } from "@/lib/date";
-import { PRIO_CLS, PRIO_KEYS, type Project } from "@/lib/types";
+import { PRIO_CLS, PRIO_KEYS, type AddSectionInput, type Project, type ProjectPatch } from "@/lib/types";
 import {
   Section,
   type SectionTaskActions as SectionLevelTaskActions,
@@ -33,15 +33,8 @@ export interface ProjectCardProps {
     sectionActions: SectionLevelActions;
     taskActions: TaskLevelActions;
   };
-  onAddSection: (title: string, notes?: string) => void;
-  onEdit: (
-    id: string,
-    title: string,
-    blocked: boolean,
-    due?: string,
-    note?: string,
-    blockedReason?: string,
-  ) => void;
+  onAddSection: (input: AddSectionInput) => void;
+  onEdit: (id: string, patch: ProjectPatch) => void;
   onDelete: (id: string) => void;
   onToggleArchive: () => void;
   onCyclePrio: () => void;
@@ -77,30 +70,27 @@ export function ProjectCard({
   const submitProject = (v: Record<string, string | boolean>) => {
     setModal(null);
     if (!String(v.title).trim()) return;
-    onEdit(
-      project.id,
-      String(v.title).trim(),
-      project.blocked,
-      String(v.due ?? ""),
-      String(v.note ?? ""),
-    );
+    onEdit(project.id, {
+      title: String(v.title).trim(),
+      blocked: project.blocked,
+      due: String(v.due ?? ""),
+      note: String(v.note ?? ""),
+    });
   };
 
   const submitBlock = (v: Record<string, string | boolean>) => {
     setModal(null);
-    onEdit(
-      project.id,
-      project.title,
-      true,
-      undefined,
-      undefined,
-      String(v.blockedReason ?? "").trim(),
-    );
+    onEdit(project.id, {
+      title: project.title,
+      blocked: true,
+      blockedReason: String(v.blockedReason ?? "").trim(),
+    });
   };
 
   const submitSection = (v: Record<string, string | boolean>) => {
     setModal(null);
-    if (String(v.title).trim()) onAddSection(String(v.title).trim(), String(v.notes ?? ""));
+    if (String(v.title).trim())
+      onAddSection({ title: String(v.title).trim(), notes: String(v.notes ?? "") });
   };
 
   return (
@@ -208,7 +198,7 @@ export function ProjectCard({
                 className="text-xs"
                 onClick={() =>
                   project.blocked
-                    ? onEdit(project.id, project.title, false)
+                    ? onEdit(project.id, { title: project.title, blocked: false })
                     : setModal({ kind: "block" })
                 }
               >
@@ -266,10 +256,7 @@ export function ProjectCard({
                 onAddTask={(text) =>
                   actions.sectionActions.onAddTask(s.id, text)
                 }
-                onEdit={(title) =>
-                  actions.sectionActions.onEdit(s.id, title)
-                }
-                onNotes={(notes) => actions.sectionActions.onNotes(s.id, notes)}
+                onEdit={(patch) => actions.sectionActions.onEdit(s.id, patch)}
                 onDelete={() => actions.sectionActions.onDelete(s.id)}
                 taskActions={secTaskActions}
                 prioSort={prioSort}

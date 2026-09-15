@@ -18,7 +18,6 @@ const base = (over: Partial<SectionProps> = {}): SectionProps => ({
   onToggleSection: vi.fn(),
   onAddTask: vi.fn(),
   onEdit: vi.fn(),
-  onNotes: vi.fn(),
   onDelete: vi.fn(),
   taskActions: {
     onToggle: vi.fn(),
@@ -82,8 +81,7 @@ describe("Section", () => {
     await userEvent.clear(note);
     await userEvent.type(note, "foco novo");
     await userEvent.click(screen.getByRole("button", { name: "salvar" }));
-    expect(p.onEdit).toHaveBeenCalledWith("Sprint 12");
-    expect(p.onNotes).toHaveBeenCalledWith("foco novo");
+    expect(p.onEdit).toHaveBeenCalledWith({ title: "Sprint 12", notes: "foco novo" });
   });
 
   it("editar abre modal e excluir pede confirmação", async () => {
@@ -93,7 +91,6 @@ describe("Section", () => {
     await userEvent.click(await screen.findByRole("menuitem", { name: "editar seção" }));
     expect(await screen.findByLabelText("título")).toBeTruthy();
     expect(p.onEdit).not.toHaveBeenCalled();
-    expect(p.onNotes).not.toHaveBeenCalled();
     await userEvent.click(screen.getByTitle("fechar"));
     await openMenu("ações da seção");
     await userEvent.click(await screen.findByRole("menuitem", { name: "excluir seção" }));

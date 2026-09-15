@@ -35,7 +35,6 @@ const base = (over: Partial<BoardProps> = {}): BoardProps => ({
     onAddTask: vi.fn(),
     onAddTaskFull: vi.fn(),
     onEdit: vi.fn(),
-    onNotes: vi.fn(),
     onMoveSection: vi.fn(),
     onDelete: vi.fn(),
   },

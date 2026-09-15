@@ -4,7 +4,7 @@ import { migrateLegacy, normalizeState, purgeExpired, SCHEMA_VERSION } from "./m
 import type { Locale } from "./i18n";
 import { nextDue } from "./repeat";
 import { todayISO } from "./date";
-import type { AddTaskInput, Prio, Project, Status, SubTask, Task, TaskPatch } from "./types";
+import type { AddProjectInput, AddSectionInput, AddTaskInput, Prio, Project, ProjectPatch, SectionPatch, Status, SubTask, Task, TaskPatch } from "./types";
 import { uid } from "./uid";
 
 let storageErrorHandler: (() => void) | null = null;
@@ -31,15 +31,14 @@ interface BoardStore {
   setLocale: (locale: Locale) => void;
   canUndo: boolean;
   undo: () => void;
-  addProject: (title: string, note?: string, due?: string) => void;
-  editProject: (id: string, title: string, blocked: boolean, due?: string, note?: string, blockedReason?: string) => void;
+  addProject: (input: AddProjectInput) => void;
+  editProject: (id: string, patch: ProjectPatch) => void;
   deleteProject: (id: string) => void;
   toggleProjectArchive: (id: string) => void;
   setProjectPrio: (id: string, prio: Prio) => void;
   toggleProjectCollapsed: (id: string) => void;
-  addSection: (pid: string, title: string, notes?: string) => void;
-  editSection: (pid: string, sid: string, title: string) => void;
-  setSectionNotes: (pid: string, sid: string, notes: string) => void;
+  addSection: (pid: string, input: AddSectionInput) => void;
+  editSection: (pid: string, sid: string, patch: SectionPatch) => void;
   moveSection: (pid: string, sid: string, index: number) => void;
   moveProject: (pid: string, index: number) => void;
   deleteSection: (pid: string, sid: string) => void;
@@ -108,7 +107,7 @@ export function createBoardStore(initial: Project[] = []) {
           set({ canUndo: undoStack.length > 0 });
         },
 
-        addProject: (title, note, due) =>
+        addProject: ({ title, note, due }) =>
           commit(() =>
             set((s) => ({
               projetos: [
@@ -129,18 +128,18 @@ export function createBoardStore(initial: Project[] = []) {
             })),
           ),
 
-        editProject: (id, title, blocked, due, note, blockedReason) =>
+        editProject: (id, patch) =>
           commit(() =>
             set((s) => ({
               projetos: s.projetos.map((p) =>
                 p.id === id
                   ? {
                       ...p,
-                      title,
-                      blocked,
-                      ...(due !== undefined ? { due } : {}),
-                      ...(note !== undefined ? { note } : {}),
-                      ...(blockedReason !== undefined ? { blockedReason } : {}),
+                      title: patch.title,
+                      blocked: patch.blocked,
+                      ...(patch.due !== undefined ? { due: patch.due } : {}),
+                      ...(patch.note !== undefined ? { note: patch.note } : {}),
+                      ...(patch.blockedReason !== undefined ? { blockedReason: patch.blockedReason } : {}),
                     }
                   : p,
               ),
@@ -171,7 +170,7 @@ export function createBoardStore(initial: Project[] = []) {
             })),
           ),
 
-        addSection: (pid, title, notes) =>
+        addSection: (pid, { title, notes }) =>
           commit(() =>
             set((s) => ({
               projetos: s.projetos.map((p) =>
@@ -182,23 +181,23 @@ export function createBoardStore(initial: Project[] = []) {
             })),
           ),
 
-        editSection: (pid, sid, title) =>
+        editSection: (pid, sid, patch) =>
           commit(() =>
             set((s) => ({
               projetos: s.projetos.map((p) =>
                 p.id === pid
-                  ? { ...p, sections: p.sections.map((sec) => (sec.id === sid ? { ...sec, title } : sec)) }
-                  : p,
-              ),
-            })),
-          ),
-
-        setSectionNotes: (pid, sid, notes) =>
-          commit(() =>
-            set((s) => ({
-              projetos: s.projetos.map((p) =>
-                p.id === pid
-                  ? { ...p, sections: p.sections.map((sec) => (sec.id === sid ? { ...sec, notes } : sec)) }
+                  ? {
+                      ...p,
+                      sections: p.sections.map((sec) =>
+                        sec.id === sid
+                          ? {
+                              ...sec,
+                              ...(patch.title !== undefined ? { title: patch.title } : {}),
+                              ...(patch.notes !== undefined ? { notes: patch.notes } : {}),
+                            }
+                          : sec,
+                      ),
+                    }
                   : p,
               ),
             })),

@@ -34,7 +34,6 @@ export default function Home() {
   const toggleProjectCollapsed = useBoard((s) => s.toggleProjectCollapsed);
   const addSection = useBoard((s) => s.addSection);
   const editSection = useBoard((s) => s.editSection);
-  const setSectionNotes = useBoard((s) => s.setSectionNotes);
   const moveSection = useBoard((s) => s.moveSection);
   const moveProject = useBoard((s) => s.moveProject);
   const deleteSection = useBoard((s) => s.deleteSection);
@@ -248,8 +247,8 @@ const notifiedRef = useRef(false);
           onNewProject={() => setNewProjectOpen(true)}
           onClearFilters={clear}
           projectActions={{
-            onAddSection: (pid, title, notes) => addSection(pid, title, notes),
-            onEdit: (id, title, blocked, due, note, blockedReason) => editProject(id, title, blocked, due, note, blockedReason),
+            onAddSection: (pid, input) => addSection(pid, input),
+            onEdit: (id, patch) => editProject(id, patch),
             onDelete: (id) => deleteProject(id),
             onToggleArchive: handleToggleArchive,
             onCyclePrio: (id) => {
@@ -268,8 +267,7 @@ const notifiedRef = useRef(false);
             onToggle: (pid, sid) => toggleSection(pid, sid),
             onAddTask: (pid, sid, text) => addTask(pid, sid, text),
             onAddTaskFull: (pid, sid, input) => addTaskFull(pid, sid, input),
-            onEdit: (pid, sid, title) => editSection(pid, sid, title),
-            onNotes: (pid, sid, notes) => setSectionNotes(pid, sid, notes),
+            onEdit: (pid, sid, patch) => editSection(pid, sid, patch),
             onMoveSection: (pid, sid, index) => moveSection(pid, sid, index),
             onDelete: (pid, sid) => deleteSection(pid, sid),
           }}
@@ -389,7 +387,8 @@ const notifiedRef = useRef(false);
           onSubmit={(v) => {
             setNewProjectOpen(false);
             const title = String(v.title).trim();
-            if (title) addProject(title, String(v.note ?? "").trim(), String(v.due ?? ""));
+            if (title)
+              addProject({ title, note: String(v.note ?? "").trim(), due: String(v.due ?? "") });
           }}
           onCancel={() => setNewProjectOpen(false)}
         />

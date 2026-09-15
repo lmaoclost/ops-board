@@ -4,15 +4,15 @@ import { useMemo } from "react";
 import { useT } from "@/hooks/useT";
 import { isFiltering, prioSort, projMatches, type Filters } from "@/lib/filter";
 import { resolveDrop, smartCollision } from "@/lib/dnd";
-import type { AddTaskInput, Project, Status, TaskPatch } from "@/lib/types";
+import type { AddSectionInput, AddTaskInput, Project, ProjectPatch, SectionPatch, Status, TaskPatch } from "@/lib/types";
 import { ProjectCard } from "./ProjectCard";
 import { Kanban } from "@/components/client/dnd/Kanban";
 import { Agenda } from "@/components/client/agenda/Agenda";
 import { Trash } from "@/components/client/trash/Trash";
 
 export interface BoardProjectActions {
-  onAddSection: (pid: string, title: string, notes?: string) => void;
-  onEdit: (id: string, title: string, blocked: boolean, due?: string, note?: string, blockedReason?: string) => void;
+  onAddSection: (pid: string, input: AddSectionInput) => void;
+  onEdit: (id: string, patch: ProjectPatch) => void;
   onDelete: (id: string) => void;
   onToggleArchive: (id: string) => void;
   onCyclePrio: (id: string) => void;
@@ -24,8 +24,7 @@ export interface BoardSectionActions {
   onToggle: (pid: string, sid: string) => void;
   onAddTask: (pid: string, sid: string, text: string) => void;
   onAddTaskFull: (pid: string, sid: string, input: AddTaskInput) => void;
-  onEdit: (pid: string, sid: string, title: string) => void;
-  onNotes: (pid: string, sid: string, notes: string) => void;
+  onEdit: (pid: string, sid: string, patch: SectionPatch) => void;
   onMoveSection: (pid: string, sid: string, index: number) => void;
   onDelete: (pid: string, sid: string) => void;
 }
@@ -44,8 +43,7 @@ export interface BoardTaskActions {
 export interface SectionLevelActions {
   onToggle: (sid: string) => void;
   onAddTask: (sid: string, text: string) => void;
-  onEdit: (sid: string, title: string) => void;
-  onNotes: (sid: string, notes: string) => void;
+  onEdit: (sid: string, patch: SectionPatch) => void;
   onDelete: (sid: string) => void;
 }
 
@@ -79,8 +77,7 @@ export function Board({ projetos, filters, onNewProject, onClearFilters, project
     sectionActions: {
       onToggle: (sid: string) => sectionActions.onToggle(pid, sid),
       onAddTask: (sid: string, text: string) => sectionActions.onAddTask(pid, sid, text),
-      onEdit: (sid: string, title: string) => sectionActions.onEdit(pid, sid, title),
-      onNotes: (sid: string, notes: string) => sectionActions.onNotes(pid, sid, notes),
+      onEdit: (sid: string, patch: SectionPatch) => sectionActions.onEdit(pid, sid, patch),
       onDelete: (sid: string) => sectionActions.onDelete(pid, sid),
     },
     taskActions: {
@@ -182,8 +179,8 @@ export function Board({ projetos, filters, onNewProject, onClearFilters, project
             key={p.id}
             project={p}
             collectActions={collectActions}
-            onAddSection={(title, notes) => projectActions.onAddSection(p.id, title, notes)}
-            onEdit={(id, title, blocked, due, note, blockedReason) => projectActions.onEdit(id, title, blocked, due, note, blockedReason)}
+            onAddSection={(input) => projectActions.onAddSection(p.id, input)}
+            onEdit={(id, patch) => projectActions.onEdit(id, patch)}
             onDelete={(id) => projectActions.onDelete(id)}
             onToggleArchive={() => projectActions.onToggleArchive(p.id)}
             onCyclePrio={() => projectActions.onCyclePrio(p.id)}
