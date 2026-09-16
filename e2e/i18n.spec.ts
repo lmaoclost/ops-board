@@ -18,3 +18,17 @@ test("alterna idioma EN e volta PT persistindo locale", async ({ page }) => {
   await page.getByRole("button", { name: /^PT$/ }).click();
   await expect(page.getByLabel("buscar tarefas")).toBeVisible();
 });
+
+test("página de privacidade permite alternar idioma", async ({ page }) => {
+  await page.goto("/privacy");
+
+  await expect(page.getByRole("heading", { name: "Política de privacidade" })).toBeVisible();
+  await page.getByRole("button", { name: /^EN$/ }).click();
+  await expect(page.getByRole("heading", { name: "Privacy policy" })).toBeVisible();
+
+  const stored = await page.evaluate(() => localStorage.getItem("opsboard.v1"));
+  expect(stored).toContain('"locale":"en"');
+
+  await page.getByRole("button", { name: /^PT$/ }).click();
+  await expect(page.getByRole("heading", { name: "Política de privacidade" })).toBeVisible();
+});
