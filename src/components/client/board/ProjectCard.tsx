@@ -20,7 +20,8 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import { isDueSoon, isOverdue, fmtDate } from "@/lib/date";
-import { PRIO_CLS, PRIO_KEYS, type AddSectionInput, type Project, type ProjectPatch } from "@/lib/types";
+import { PRIO_CHIP_CLS } from "@/lib/tokens";
+import { PRIO_KEYS, type AddSectionInput, type Project, type ProjectPatch } from "@/lib/types";
 import {
   Section,
   type SectionTaskActions as SectionLevelTaskActions,
@@ -131,7 +132,7 @@ export const ProjectCard = memo(function ProjectCard({
         <button
           type="button"
           onClick={onCyclePrio}
-          className={`shrink-0 rounded border px-1.5 py-0.5 text-[10px] font-bold ${PRIO_CLS[project.prio]}`}
+          className={`shrink-0 rounded border px-1.5 py-0.5 text-[10px] font-bold ${PRIO_CHIP_CLS[project.prio]}`}
           title={t("prioridade do projeto (clique pra mudar)")}
           aria-label={t(
             `prioridade do projeto ${PRIO_KEYS[project.prio]}` as TKey,

@@ -7,9 +7,9 @@ import { sortTasks } from "@/lib/filter";
 import { flatTasks, type FlatTask } from "@/lib/flat";
 import { useT } from "@/hooks/useT";
 import { isDueSoon, isOverdue, fmtDate } from "@/lib/date";
-import { PRIO_CLS, PRIO_KEYS, STATUS_ORDER, type AddTaskInput, type Project, type Status, type Task, type TaskPatch } from "@/lib/types";
+import { PRIO_CHIP_CLS, NEXT_PRIO } from "@/lib/tokens";
+import { PRIO_KEYS, STATUS_ORDER, type AddTaskInput, type Project, type Status, type Task, type TaskPatch } from "@/lib/types";
 import { TaskEditModal } from "@/components/client/board/TaskEditModal";
-import { NEXT_PRIO } from "@/components/client/board/TaskRow";
 
 interface KanbanProps {
   projetos: Project[];
@@ -143,7 +143,7 @@ function KanbanTask({
           }}
           aria-label={t("prioridade: clique pra mudar")}
           title={t("prioridade: clique pra mudar")}
-          className={`shrink-0 rounded border px-1 py-0.5 text-[9px] font-bold ${PRIO_CLS[item.task.prio]}`}
+          className={`shrink-0 rounded border px-1 py-0.5 text-[9px] font-bold ${PRIO_CHIP_CLS[item.task.prio]}`}
         >
           {PRIO_KEYS[item.task.prio]}
         </button>

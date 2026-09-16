@@ -23,7 +23,8 @@ import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip
 import { isDueSoon, isOverdue, fmtDate } from "@/lib/date";
 import { linkify } from "@/lib/escape";
 import { addSub, makeSub, mapSubs, removeSub } from "@/lib/subtasks";
-import { PRIO_KEYS, STATUS_ORDER, type Prio, type Status, type SubTask, type Task, type TaskPatch } from "@/lib/types";
+import { LED, PRIO_CHIP_CLS, NEXT_PRIO } from "@/lib/tokens";
+import { PRIO_KEYS, STATUS_ORDER, type Status, type SubTask, type Task, type TaskPatch } from "@/lib/types";
 
 const Modal = dynamic(() => import("@/components/client/Modal").then((m) => m.Modal));
 const TaskEditModal = dynamic(() => import("./TaskEditModal").then((m) => m.TaskEditModal));
@@ -38,22 +39,7 @@ export interface TaskRowProps {
   onUpdate: (patch: TaskPatch) => void;
 }
 
-export const NEXT_PRIO: Record<Prio, Prio> = { 1: 2, 2: 3, 3: 4, 4: 5, 5: 1 };
-
-const LED: Record<Status, string> = {
-  todo: "bg-[var(--todo)]",
-  doing: "bg-[var(--flow)]",
-  waiting: "bg-[var(--warn)]",
-  done: "bg-[var(--fired)]",
-};
-
-const PRIO_CLS: Record<Prio, string> = {
-  1: "text-[var(--gave)] border-[var(--gave)]/40 bg-[var(--gave)]/10",
-  2: "text-[var(--warn)] border-[var(--warn)]/40 bg-[var(--warn)]/10",
-  3: "text-[var(--muted-text)] border-[var(--line)]",
-  4: "text-[var(--muted-text)] border-[var(--line)]",
-  5: "text-[var(--dimmer)] border-[var(--line-soft)]",
-};
+// --- sub-tarefa (recursiva) ---
 
 function SubRow({
   subs,
@@ -160,7 +146,7 @@ function SubRow({
           type="button"
           onClick={() => onUpdate({ subs: mapSubs(subs, sub.id, (s) => ({ ...s, prio: NEXT_PRIO[s.prio] })) })}
           aria-label={t("prioridade: clique pra mudar")}
-          className={`shrink-0 rounded border px-1.5 py-0.5 text-[10.5px] font-bold ${PRIO_CLS[sub.prio]}`}
+          className={`shrink-0 rounded border px-1.5 py-0.5 text-[10.5px] font-bold ${PRIO_CHIP_CLS[sub.prio]}`}
         >
           {PRIO_KEYS[sub.prio]}
         </button>
@@ -201,6 +187,8 @@ function SubRow({
     </div>
   );
 }
+
+// --- linha principal da tarefa ---
 
 export const TaskRow = memo(function TaskRow({ task, onToggle, onPrioCycle, onStatusChange, onEdit, onDelete, onUpdate }: TaskRowProps) {
   const { t, status } = useT();
@@ -293,7 +281,7 @@ export const TaskRow = memo(function TaskRow({ task, onToggle, onPrioCycle, onSt
               type="button"
               onClick={onPrioCycle}
               aria-label={t("prioridade: clique pra mudar")}
-              className={`shrink-0 rounded px-1.5 py-0.5 border text-[11px] font-bold ${PRIO_CLS[task.prio]}`}
+              className={`shrink-0 rounded px-1.5 py-0.5 border text-[11px] font-bold ${PRIO_CHIP_CLS[task.prio]}`}
             >
               {PRIO_KEYS[task.prio]}
             </button>
@@ -400,6 +388,7 @@ export const TaskRow = memo(function TaskRow({ task, onToggle, onPrioCycle, onSt
           </DropdownMenu>
         </span>
       </div>
+      {/* --- subs e modais --- */}
       {task.subs.length > 0 && (
         <div className="pb-1">
           {task.subs.map((s) => (

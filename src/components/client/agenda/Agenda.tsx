@@ -2,7 +2,8 @@ import { useMemo, useState } from "react";
 import { useT } from "@/hooks/useT";
 import { fmtDate, isOverdue, todayISO } from "@/lib/date";
 import { flatTasks, groupAgenda, type FlatTask } from "@/lib/flat";
-import { PRIO_CLS, PRIO_KEYS, type Project, type Status, type TaskPatch } from "@/lib/types";
+import { LED, PRIO_CHIP_CLS } from "@/lib/tokens";
+import { PRIO_KEYS, type Project, type TaskPatch } from "@/lib/types";
 import dynamic from "next/dynamic";
 
 const TaskEditModal = dynamic(() => import("@/components/client/board/TaskEditModal").then((m) => m.TaskEditModal));
@@ -12,13 +13,6 @@ interface AgendaProps {
   onToggle: (pid: string, sid: string, tid: string) => void;
   onEditTask: (pid: string, sid: string, tid: string, patch: TaskPatch) => void;
 }
-
-const LED: Record<Status, string> = {
-  todo: "bg-[var(--todo)]",
-  doing: "bg-[var(--flow)]",
-  waiting: "bg-[var(--warn)]",
-  done: "bg-[var(--fired)]",
-};
 
 const GROUP_KEYS = ["vencidas", "hoje", "próximos 7 dias"] as const;
 
@@ -71,7 +65,7 @@ export function Agenda({ projetos, onToggle, onEditTask }: AgendaProps) {
                       <span className={`h-2 w-2 rounded-full ${LED[item.task.status]} transition-transform group-hover:scale-110`} />
                     </button>
                     <span
-                      className={`shrink-0 rounded border px-1 py-0.5 text-[9px] font-bold ${PRIO_CLS[item.task.prio]}`}
+                      className={`shrink-0 rounded border px-1 py-0.5 text-[9px] font-bold ${PRIO_CHIP_CLS[item.task.prio]}`}
                       title={t("prioridade")}
                     >
                       {PRIO_KEYS[item.task.prio]}

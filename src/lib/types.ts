@@ -108,13 +108,6 @@ export const STATUS_LABEL: Record<Status, string> = {
 };
 
 export const PRIO_KEYS: Record<Prio, string> = { 1: "P1", 2: "P2", 3: "P3", 4: "P4", 5: "P5" };
-export const PRIO_CLS: Record<Prio, string> = {
-  1: "border-[var(--fired)] text-[var(--fired)]",
-  2: "border-[var(--warn)] text-[var(--warn)]",
-  3: "border-[var(--line-soft)] text-[var(--dimmer)]",
-  4: "border-[var(--line-soft)] text-[var(--dimmer)]",
-  5: "border-[var(--line)] text-[var(--dimmer)]",
-};
 
 export const STATUSES: readonly Status[] = STATUS_ORDER;
 export const PRIOS: readonly Prio[] = [1, 2, 3, 4, 5];
