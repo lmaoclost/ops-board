@@ -1,12 +1,10 @@
 import type { Metadata } from "next";
-import { JetBrains_Mono, Geist } from "next/font/google";
+import { JetBrains_Mono } from "next/font/google";
 import { ThemeProvider } from "next-themes";
 import "./globals.css";
 import { cn } from "@/lib/utils";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import { Metrics } from "@/components/client/Metrics";
-
-const geist = Geist({ subsets: ["latin"], variable: "--font-sans" });
 
 const jetbrains = JetBrains_Mono({
   variable: "--font-mono",
@@ -21,7 +19,7 @@ export const metadata: Metadata = {
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {
   return (
-    <html lang="pt-BR" suppressHydrationWarning className={cn("antialiased", jetbrains.variable, "font-sans", geist.variable)}>
+    <html lang="pt-BR" suppressHydrationWarning className={cn("antialiased", jetbrains.variable, "font-sans")}>
       <body className="min-h-full font-mono">
         <ThemeProvider
           attribute="class"

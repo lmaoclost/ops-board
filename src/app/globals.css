@@ -28,8 +28,8 @@
   --color-warn: var(--warn);
   --color-flow: var(--flow);
   --font-mono: var(--font-mono);
-  --font-heading: var(--font-sans);
-  --font-sans: var(--font-sans);
+  --font-heading: var(--font-mono);
+  --font-sans: var(--font-mono);
   --radius-sm: calc(var(--radius) * 0.6);
   --radius-md: calc(var(--radius) * 0.8);
   --radius-lg: var(--radius);
