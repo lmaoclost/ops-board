@@ -6,6 +6,13 @@ import type { Locale } from "@/lib/i18n";
 import { Button, buttonVariants } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuSeparator,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
 import type { View } from "@/lib/filter";
 import { Stats } from "@/components/client/Stats";
 import type { BoardStats } from "@/lib/selectors";
@@ -80,7 +87,7 @@ export function Topbar({
               <Stats stats={stats} view={view} />
             </TooltipContent>
           </Tooltip>
-          <div className="flex min-w-0 flex-1 items-center gap-1 overflow-x-auto py-0.5 sm:gap-1.5">
+          <div className="flex min-w-0 flex-1 items-center justify-end gap-1 sm:gap-1.5 lg:justify-start">
             <Tooltip>
             <TooltipTrigger closeDelay={300}
               render={
@@ -107,7 +114,7 @@ export function Topbar({
             >
               {locale === "pt" ? "EN" : "PT"}
             </Button>
-            <div className="flex shrink-0 items-center gap-0.5 rounded-md border border-[var(--line-soft)] p-0.5">
+            <div className="hidden items-center gap-0.5 rounded-md border border-[var(--line-soft)] p-0.5 lg:flex">
               {(["list", "kanban", "agenda", "lixeira"] as View[]).map((v) => (
                 <Button
                   key={v}
@@ -127,7 +134,7 @@ export function Topbar({
               variant="ghost"
               size="xs"
               onClick={onExport}
-              className="shrink-0 text-[var(--muted-text)] hover:text-[var(--text)]"
+              className="hidden text-[var(--muted-text)] hover:text-[var(--text)] lg:inline-flex"
               title={t("exportar JSON (backup)")}
             >
               ↓{t("exportar")}
@@ -137,14 +144,14 @@ export function Topbar({
               variant="ghost"
               size="xs"
               onClick={onImport}
-              className="shrink-0 text-[var(--muted-text)] hover:text-[var(--text)]"
+              className="hidden text-[var(--muted-text)] hover:text-[var(--text)] lg:inline-flex"
               title={t("importar JSON")}
             >
               ↑{t("importar")}
             </Button>
             <Link
               href="/privacy"
-              className={buttonVariants({ variant: "ghost", size: "xs" }) + " shrink-0 text-[var(--muted-text)] hover:text-[var(--text)]"}
+              className={buttonVariants({ variant: "ghost", size: "xs" }) + " hidden text-[var(--muted-text)] hover:text-[var(--text)] lg:inline-flex"}
               title={t("política de privacidade")}
             >
               {t("privacidade")}
@@ -152,6 +159,45 @@ export function Topbar({
             <Button type="button" variant="default" size="sm" onClick={onNewProject} className="shrink-0">
               <span className="mr-1">+</span>{t("projeto")}
             </Button>
+            <span className="shrink-0 lg:hidden">
+              <DropdownMenu>
+                <DropdownMenuTrigger
+                  render={
+                    <Button
+                      type="button"
+                      variant="ghost"
+                      size="icon-xs"
+                      aria-label={t("menu")}
+                      title={t("menu")}
+                    >
+                      ☰
+                    </Button>
+                  }
+                />
+                <DropdownMenuContent align="end" className="bg-[var(--panel-2)] text-[var(--text)]">
+                  {(["list", "kanban", "agenda", "lixeira"] as View[]).map((v) => (
+                    <DropdownMenuItem
+                      key={v}
+                      className="text-xs"
+                      onClick={() => onViewChange(v)}
+                    >
+                      {v === "list" ? t("lista") : v === "kanban" ? t("kanban") : v === "agenda" ? t("agenda") : t("lixeira")}
+                    </DropdownMenuItem>
+                  ))}
+                  <DropdownMenuSeparator className="bg-[var(--line)]" />
+                  <DropdownMenuItem className="text-xs" onClick={onExport}>
+                    ↓{t("exportar")}
+                  </DropdownMenuItem>
+                  <DropdownMenuItem className="text-xs" onClick={onImport}>
+                    ↑{t("importar")}
+                  </DropdownMenuItem>
+                  <DropdownMenuItem
+                    className="text-xs"
+                    render={<Link href="/privacy">{t("privacidade")}</Link>}
+                  />
+                </DropdownMenuContent>
+              </DropdownMenu>
+            </span>
           </div>
         </div>
 

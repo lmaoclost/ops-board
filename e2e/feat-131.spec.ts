@@ -96,7 +96,9 @@ test("bloquear tarefa pede motivo opcional e mostra no badge", async ({
 });
 
 async function drag(page: Page, src: Locator, dst: Locator) {
-  const sb = await src.boundingBox();
+  const grip = src.getByRole("button", { name: "arrastar tarefa p/ reordenar" });
+  const anchor = (await grip.count()) > 0 ? grip : src;
+  const sb = await anchor.boundingBox();
   const db = await dst.boundingBox();
   if (!sb || !db) throw new Error("bounding box indisponível");
   await page.mouse.move(sb.x + sb.width / 2, sb.y + sb.height / 2);

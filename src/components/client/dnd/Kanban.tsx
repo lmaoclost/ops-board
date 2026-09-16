@@ -1,5 +1,6 @@
-import { useMemo, useRef, useState } from "react";
-import { useDraggable, useDroppable } from "@dnd-kit/core";
+import { useMemo, useState } from "react";
+import { useDroppable } from "@dnd-kit/core";
+import { useSortable } from "@dnd-kit/sortable";
 import { CSS } from "@dnd-kit/utilities";
 import { sortTasks } from "@/lib/filter";
 import { flatTasks, type FlatTask } from "@/lib/flat";
@@ -31,37 +32,28 @@ function KanbanTask({
   onSubs: () => void;
 }) {
   const { t } = useT();
-  const { attributes, listeners, setNodeRef, transform, isDragging } = useDraggable({ id: `task:${item.task.id}` });
-  const { setNodeRef: setCardDropRef } = useDroppable({ id: `task:${item.task.id}` });
+  const { attributes, listeners, setNodeRef: setCardNodeRef, transform, isDragging } = useSortable({ id: `task:${item.task.id}` });
+  const { setNodeRef: setDropRef } = useDroppable({ id: `task:${item.task.id}` });
   const setRefs = (el: HTMLDivElement | null) => {
-    setNodeRef(el);
-    setCardDropRef(el);
+    setCardNodeRef(el);
+    setDropRef(el);
   };
-  const start = useRef<{ x: number; y: number } | null>(null);
   const overdue = isOverdue(item.task.due, item.task.status);
   const dueSoon = isDueSoon(item.task.due, item.task.status);
   const onInteractive = (e: { target: EventTarget }) => (e.target as HTMLElement).closest("button") != null;
   return (
     <div
       ref={setRefs}
-      style={{ transform: CSS.Translate.toString(transform) }}
-      className={`cursor-grab rounded-md border border-[var(--line)] bg-[var(--panel-2)] px-2.5 py-1.5 text-xs hover:bg-[var(--panel-3)] ${isDragging ? "opacity-90 shadow-lg ring-2 ring-[var(--fired)]/70 z-10" : ""}`}
+      style={{ transform: CSS.Transform.toString(transform) }}
+      className={`cursor-pointer rounded-md border border-[var(--line)] bg-[var(--panel-2)] px-2.5 py-1.5 text-xs hover:bg-[var(--panel-3)] ${isDragging ? "opacity-90 shadow-lg ring-2 ring-[var(--fired)]/70 z-10" : ""}`}
       data-testid="kanban-task"
+      role="button"
+      tabIndex={0}
       aria-label={t("editar tarefa X").replace("X", item.task.text)}
       title={item.task.text}
-      onPointerDown={(e) => {
-        start.current = { x: e.clientX, y: e.clientY };
-      }}
       onClick={(e) => {
         if (onInteractive(e)) return;
-        const s = start.current;
-        start.current = null;
-        if (!s) {
-          onEdit();
-          return;
-        }
-        const moved = Math.abs(e.clientX - s.x) > 6 || Math.abs(e.clientY - s.y) > 6;
-        if (!moved) onEdit();
+        onEdit();
       }}
       onKeyDown={(e) => {
         if (onInteractive(e)) return;
@@ -70,10 +62,18 @@ function KanbanTask({
           onEdit();
         }
       }}
-      {...attributes}
-      {...listeners}
     >
       <div className="flex items-start gap-1.5">
+        <button
+          type="button"
+          aria-label={t("arrastar tarefa p/ reordenar")}
+          title={t("arrastar tarefa p/ reordenar")}
+          className="-m-1 shrink-0 cursor-grab touch-none p-0.5 text-[11px] text-[var(--dimmer)] transition-colors hover:text-[var(--text)] active:cursor-grabbing"
+          {...attributes}
+          {...listeners}
+        >
+          ⋮⋮
+        </button>
         <span className="min-w-0 flex-1">
           <span className={item.task.status === "done" ? "line-through text-[var(--dim)]" : "text-[var(--text)]"}>
             {item.task.text}
