@@ -119,7 +119,7 @@ function KanbanTask({
           {...attributes}
           onPointerDown={(e) => {
             onDragItem(item);
-            listeners?.onPointerDown(e);
+            listeners?.onPointerDown?.(e);
           }}
           onPointerUp={() => onDragItem(null)}
           onPointerCancel={() => onDragItem(null)}
