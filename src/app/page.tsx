@@ -5,6 +5,7 @@ import { Board } from "@/components/client/board/Board";
 import { FilterChips } from "@/components/client/FilterChips";
 import dynamic from "next/dynamic";
 import { PrivacyNotice } from "@/components/client/PrivacyNotice";
+import { FooterLinks } from "@/components/client/FooterLinks";
 import { Topbar } from "@/components/client/Topbar";
 import { useT } from "@/hooks/useT";
 import { useFilters } from "@/hooks/useFilters";
@@ -307,6 +308,7 @@ const notifiedRef = useRef(false);
         >
           {t("apagar todos os dados")}
         </button>
+        <FooterLinks />
       </footer>
 
       {confirmClearOpen && (
