@@ -20,11 +20,12 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip";
-import { isDueSoon, isOverdue, fmtDate } from "@/lib/date";
+import { isDueSoon, isOverdue } from "@/lib/date";
 import { linkify } from "@/lib/escape";
 import { addSub, makeSub, mapSubs, removeSub } from "@/lib/subtasks";
-import { LED, PRIO_CHIP_CLS, NEXT_PRIO } from "@/lib/tokens";
-import { PRIO_KEYS, STATUS_ORDER, type Status, type SubTask, type Task, type TaskPatch } from "@/lib/types";
+import { NEXT_PRIO } from "@/lib/tokens";
+import { STATUS_ORDER, type Status, type SubTask, type Task, type TaskPatch } from "@/lib/types";
+import { StatusLed, DueBadge, PrioChip } from "./badges";
 
 const Modal = dynamic(() => import("@/components/client/Modal").then((m) => m.Modal));
 const TaskEditModal = dynamic(() => import("./TaskEditModal").then((m) => m.TaskEditModal));
@@ -88,9 +89,7 @@ function SubRow({
           aria-label={`sub-tarefa ${sub.text}`}
           className="flex h-5 w-5 shrink-0 items-center justify-center rounded-full transition-colors hover:bg-[var(--hover)]"
         >
-          <span
-            className={`h-1.5 w-1.5 rounded-full ${sub.blocked ? "bg-[var(--gave)]" : LED[sub.status]} transition-transform group-hover:scale-110`}
-          />
+          <StatusLed status={sub.status} blocked={sub.blocked} size="xs" />
         </button>
         {addingSub ? (
           <input
@@ -142,31 +141,12 @@ function SubRow({
             {t('bloqueada')}
           </Badge>
         )}
-        <button
-          type="button"
+        <PrioChip
+          prio={sub.prio}
           onClick={() => onUpdate({ subs: mapSubs(subs, sub.id, (s) => ({ ...s, prio: NEXT_PRIO[s.prio] })) })}
-          aria-label={t("prioridade: clique pra mudar")}
-          className={`shrink-0 rounded border px-1.5 py-0.5 text-[10.5px] font-bold ${PRIO_CHIP_CLS[sub.prio]}`}
-        >
-          {PRIO_KEYS[sub.prio]}
-        </button>
-        {sub.due &&
-          (overdue ? (
-            <Badge
-              variant="destructive"
-              className="rounded-[4px] px-1.5 text-[10.5px] font-bold uppercase tracking-[0.08em]"
-              title={t("vencimento N").replace("N", sub.due)}
-            >
-              {fmtDate(sub.due)} {t("vencida")}
-            </Badge>
-          ) : (
-            <span
-              className={`shrink-0 text-[10.5px] font-semibold ${dueSoon ? "text-[var(--warn)]" : "text-[var(--dimmer)]"}`}
-              title={t("vencimento N").replace("N", sub.due)}
-            >
-              {fmtDate(sub.due)}
-            </span>
-          ))}
+          ariaLabel={t("prioridade: clique pra mudar")}
+        />
+        {sub.due && <DueBadge due={sub.due} overdue={overdue} dueSoon={dueSoon} size="xs" dim="text-[var(--dimmer)]" />}
         <button
           type="button"
           onClick={() => onUpdate({ subs: removeSub(subs, sub.id) })}
@@ -227,9 +207,7 @@ export const TaskRow = memo(function TaskRow({ task, onToggle, onPrioCycle, onSt
           aria-label={t("alternar concluída")}
           className={`flex h-6 w-6 shrink-0 items-center justify-center rounded-full transition-colors hover:bg-[var(--hover)]`}
         >
-          <span
-            className={`h-2 w-2 rounded-full ${task.blocked ? "bg-[var(--gave)]" : LED[task.status]} ${done ? "bg-[var(--fired)]" : ""} transition-transform group-hover:scale-110`}
-          />
+          <StatusLed status={task.status} blocked={task.blocked} done={done} />
         </button>
         {addingSub ? (
           <input
@@ -276,35 +254,12 @@ export const TaskRow = memo(function TaskRow({ task, onToggle, onPrioCycle, onSt
           </Badge>
         )}
         <Tooltip>
-          <TooltipTrigger render={
-            <button
-              type="button"
-              onClick={onPrioCycle}
-              aria-label={t("prioridade: clique pra mudar")}
-              className={`shrink-0 rounded px-1.5 py-0.5 border text-[11px] font-bold ${PRIO_CHIP_CLS[task.prio]}`}
-            >
-              {PRIO_KEYS[task.prio]}
-            </button>
-          } />
+          <TooltipTrigger
+            render={<PrioChip prio={task.prio} onClick={onPrioCycle} ariaLabel={t("prioridade: clique pra mudar")} className="px-1.5 py-0.5 text-[11px]" />}
+          />
           <TooltipContent side="top">{t("prioridade: clique pra mudar")}</TooltipContent>
         </Tooltip>
-        {task.due &&
-          (overdue ? (
-            <Badge
-              variant="destructive"
-              className="rounded-[4px] px-1.5 text-[11px] font-bold uppercase tracking-[0.08em]"
-              title={t("vencimento N").replace("N", task.due)}
-            >
-              {fmtDate(task.due)} {t("vencida")}
-            </Badge>
-          ) : (
-            <span
-              className={`shrink-0 text-[10.5px] font-semibold ${dueSoon ? "text-[var(--warn)]" : "text-[var(--muted-text)]"}`}
-              title={t("vencimento N").replace("N", task.due)}
-            >
-              {fmtDate(task.due)}
-            </span>
-          ))}
+        {task.due && <DueBadge due={task.due} overdue={overdue} dueSoon={dueSoon} />}
         <Select
           value={task.status}
           onValueChange={(v) => onStatusChange(v as Status)}

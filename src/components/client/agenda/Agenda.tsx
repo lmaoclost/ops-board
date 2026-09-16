@@ -2,8 +2,8 @@ import { useMemo, useState } from "react";
 import { useT } from "@/hooks/useT";
 import { fmtDate, isOverdue, todayISO } from "@/lib/date";
 import { flatTasks, groupAgenda, type FlatTask } from "@/lib/flat";
-import { LED, PRIO_CHIP_CLS } from "@/lib/tokens";
-import { PRIO_KEYS, type Project, type TaskPatch } from "@/lib/types";
+import type { Project, TaskPatch } from "@/lib/types";
+import { StatusLed, PrioChip } from "@/components/client/board/badges";
 import dynamic from "next/dynamic";
 
 const TaskEditModal = dynamic(() => import("@/components/client/board/TaskEditModal").then((m) => m.TaskEditModal));
@@ -62,14 +62,9 @@ export function Agenda({ projetos, onToggle, onEditTask }: AgendaProps) {
                       aria-label={t("alternar concluída")}
                       className="flex h-6 w-6 shrink-0 items-center justify-center rounded-full transition-colors hover:bg-[var(--hover)]"
                     >
-                      <span className={`h-2 w-2 rounded-full ${LED[item.task.status]} transition-transform group-hover:scale-110`} />
+                      <StatusLed status={item.task.status} />
                     </button>
-                    <span
-                      className={`shrink-0 rounded border px-1 py-0.5 text-[9px] font-bold ${PRIO_CHIP_CLS[item.task.prio]}`}
-                      title={t("prioridade")}
-                    >
-                      {PRIO_KEYS[item.task.prio]}
-                    </span>
+                    <PrioChip prio={item.task.prio} title={t("prioridade")} className="px-1 py-0.5 text-[9px]" />
                     {item.task.blocked && (
                       <span className="shrink-0 text-[10px]" title={item.task.blockedReason || t("bloqueada")}>
                         ⛔
