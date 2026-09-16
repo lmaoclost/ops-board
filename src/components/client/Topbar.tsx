@@ -14,6 +14,7 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import type { View } from "@/lib/filter";
+import { cn } from "@/lib/utils";
 import { Stats } from "@/components/client/Stats";
 import type { BoardStats } from "@/lib/selectors";
 
@@ -114,6 +115,16 @@ export function Topbar({
             >
               {locale === "pt" ? "EN" : "PT"}
             </Button>
+            <Button
+              type="button"
+              variant="ghost"
+              size="xs"
+              onClick={() => onViewChange(view === "kanban" ? "list" : "kanban")}
+              className="shrink-0 text-[var(--muted-text)] hover:text-[var(--text)] lg:hidden"
+              title={t("alternar lista/kanban")}
+            >
+              {view === "kanban" ? t("lista") : t("kanban")}
+            </Button>
             <div className="hidden items-center gap-0.5 rounded-md border border-[var(--line-soft)] p-0.5 lg:flex">
               {(["list", "kanban", "agenda", "lixeira"] as View[]).map((v) => (
                 <Button
@@ -151,7 +162,7 @@ export function Topbar({
             </Button>
             <Link
               href="/privacy"
-              className={buttonVariants({ variant: "ghost", size: "xs" }) + " hidden text-[var(--muted-text)] hover:text-[var(--text)] lg:inline-flex"}
+              className={cn(buttonVariants({ variant: "ghost", size: "xs" }), "hidden text-[var(--muted-text)] hover:text-[var(--text)] lg:inline-flex")}
               title={t("política de privacidade")}
             >
               {t("privacidade")}
@@ -175,15 +186,18 @@ export function Topbar({
                   }
                 />
                 <DropdownMenuContent align="end" className="bg-[var(--panel-2)] text-[var(--text)]">
-                  {(["list", "kanban", "agenda", "lixeira"] as View[]).map((v) => (
-                    <DropdownMenuItem
-                      key={v}
-                      className="text-xs"
-                      onClick={() => onViewChange(v)}
-                    >
-                      {v === "list" ? t("lista") : v === "kanban" ? t("kanban") : v === "agenda" ? t("agenda") : t("lixeira")}
-                    </DropdownMenuItem>
-                  ))}
+                  <DropdownMenuItem
+                    className="text-xs"
+                    onClick={() => onViewChange("agenda")}
+                  >
+                    {t("agenda")}
+                  </DropdownMenuItem>
+                  <DropdownMenuItem
+                    className="text-xs"
+                    onClick={() => onViewChange("lixeira")}
+                  >
+                    {t("lixeira")}
+                  </DropdownMenuItem>
                   <DropdownMenuSeparator className="bg-[var(--line)]" />
                   <DropdownMenuItem className="text-xs" onClick={onExport}>
                     ↓{t("exportar")}
