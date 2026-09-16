@@ -25,6 +25,7 @@ async function addTask(page: Page, text: string, section = 0) {
 
 async function drag(page: Page, src: Locator, dst: Locator) {
   const grip = src.getByRole("button", { name: "arrastar tarefa p/ reordenar" });
+  await grip.waitFor({ state: "attached", timeout: 2000 }).catch(() => {});
   const anchor = (await grip.count()) > 0 ? grip : src;
   const sb = await anchor.boundingBox();
   const db = await dst.boundingBox();
