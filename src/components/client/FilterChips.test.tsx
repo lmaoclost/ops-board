@@ -40,14 +40,25 @@ describe("FilterChips", () => {
     expect(screen.getByRole("button", { name: /arquivados/ })).toHaveAttribute("aria-pressed", "true");
   });
 
-  it("chips de status/arquivados inativos não usam opacity e usam token neutro", () => {
+  it("chips de status/arquivados inativos não usam opacity e usam token dim", () => {
     render(<FilterChips {...base} />);
-    const chips = screen.getAllByRole("button").filter((b) => b.getAttribute("aria-pressed") === "false");
+    const chips = screen
+      .getAllByRole("button")
+      .filter((b) => b.getAttribute("aria-pressed") === "false")
+      .filter((b) => !b.className.includes("chip-idle"));
     expect(chips.length).toBeGreaterThanOrEqual(6);
     for (const chip of chips) {
       const cls = chip.className;
-      expect(cls).not.toContain("opacity-60");
-      expect(cls).toContain("text-[var(--chip-idle)]");
+      expect(cls).toMatch(/text-\[var\(--chip-(todo|flow|warn|fired|gave|violet)\)\]/);
+      const tokens = cls.split(" ");
+      expect(tokens.filter((c) => /^opacity-\d/.test(c))).toEqual([]);
     }
+  });
+
+  it("chip ativo mantém cor de status full", () => {
+    render(<FilterChips {...base} active="doing" />);
+    const chip = screen.getByRole("button", { name: /em andamento/ });
+    expect(chip.className).toContain("text-[var(--flow)]");
+    expect(chip.className).toContain("border-current");
   });
 });

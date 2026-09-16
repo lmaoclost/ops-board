@@ -8,14 +8,15 @@ import { } from "@/lib/types";
 export interface ChipDef {
   key: StatusFilter;
   cls: string;
+  full: string;
 }
 
 const CHIPS: ChipDef[] = [
-  { key: "todo", cls: "text-[var(--todo)]" },
-  { key: "doing", cls: "text-[var(--flow)]" },
-  { key: "waiting", cls: "text-[var(--warn)]" },
-  { key: "done", cls: "text-[var(--fired)]" },
-  { key: "blocked", cls: "text-[var(--gave)]" },
+  { key: "todo", cls: "text-[var(--chip-todo)]", full: "text-[var(--todo)]" },
+  { key: "doing", cls: "text-[var(--chip-flow)]", full: "text-[var(--flow)]" },
+  { key: "waiting", cls: "text-[var(--chip-warn)]", full: "text-[var(--warn)]" },
+  { key: "done", cls: "text-[var(--chip-fired)]", full: "text-[var(--fired)]" },
+  { key: "blocked", cls: "text-[var(--chip-gave)]", full: "text-[var(--gave)]" },
 ];
 
 interface FilterChipsProps {
@@ -48,7 +49,7 @@ export function FilterChips({
   const { t, status } = useT();
   return (
     <div className="flex flex-wrap items-center gap-1.5" role="group" aria-label={t("filtros por status")}>
-      {CHIPS.map(({ key, cls }) => {
+      {CHIPS.map(({ key, cls, full }) => {
         const count = key === "blocked" ? blockedCount : counts[key as Status];
         const isActive = active === key;
         return (
@@ -60,7 +61,7 @@ export function FilterChips({
             onClick={() => onToggleStatus(key)}
             title={`${t("filtro")}: ${status(key as Status)}`}
             aria-pressed={isActive}
-            className={`${cls} ${isActive ? "border-current bg-[var(--hover)]" : "text-[var(--chip-idle)]"}`}
+            className={`${isActive ? `${full} border-current bg-[var(--hover)]` : cls}`}
           >
             {status(key as Status)}
             <span className="text-[var(--chip-count)]">{count}</span>
@@ -74,7 +75,7 @@ export function FilterChips({
         onClick={onToggleArchived}
         title={t("mostrar/ocultar projetos arquivados")}
         aria-pressed={archivedActive}
-        className={`text-[var(--violet)] ${archivedActive ? "border-current bg-[var(--hover)]" : "text-[var(--chip-idle)]"}`}
+        className={`${archivedActive ? "text-[var(--violet)] border-current bg-[var(--hover)]" : "text-[var(--chip-violet)]"}`}
       >
         {t("arquivados")}
         <span className="text-[var(--chip-count)]">{archivedCount}</span>
