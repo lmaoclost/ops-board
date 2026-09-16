@@ -18,7 +18,8 @@ import { visibleProjetos } from "@/lib/filter";
 import { todayISO } from "@/lib/date";
 import { dueReminder } from "@/lib/notify";
 import { useBoard, setStorageErrorHandler } from "@/lib/store";
-import type { Prio, Status } from "@/lib/types";
+import { cyclePrio } from "@/lib/tokens";
+import type { Status } from "@/lib/types";
 import { Dialog, DialogClose, DialogContent, DialogTitle } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
 
@@ -100,6 +101,8 @@ const notifiedRef = useRef(false);
   const boardProjetos = useMemo(() => visibleProjetos(projetos, filters), [projetos, filters]);
   const stats = useMemo(() => deriveStats(boardProjetos), [boardProjetos]);
 
+  // --- actions (callbacks pro Board) ---
+
   const celebrateIfDone = useCallback(
     (pid: string, sid: string, tid: string, next: Status) => {
       const t = projetos.find((p) => p.id === pid)?.sections.find((s) => s.id === sid)?.tasks.find((x) => x.id === tid);
@@ -178,6 +181,8 @@ const notifiedRef = useRef(false);
     showToast(t("desfeito"));
   }, [canUndo, undo, showToast, t]);
 
+  // --- actions (callbacks pro Board) ---
+
   const projectActions = useMemo(
     () => ({
       onAddSection: (pid: string, input: Parameters<typeof addSection>[1]) => addSection(pid, input),
@@ -187,7 +192,7 @@ const notifiedRef = useRef(false);
       onCyclePrio: (id: string) => {
         const p = projetos.find((x) => x.id === id);
         if (!p) return;
-        setProjectPrio(id, ((p.prio % 5) + 1) as Prio);
+        setProjectPrio(id, cyclePrio(p.prio));
       },
       onToggleCollapse: (id: string) => toggleProjectCollapsed(id),
       onMoveProject: (pid: string, overPid: string) => moveProject(pid, overPid),
@@ -236,6 +241,8 @@ const notifiedRef = useRef(false);
     },
     { isModalOpen: () => newProjectOpen || helpOpen },
   );
+
+  // --- render ---
 
   const counts = stats.byStatus;
   const archivedCount = projetos.filter((p) => p.archived).length;
@@ -306,6 +313,8 @@ const notifiedRef = useRef(false);
         </button>
         <FooterLinks />
       </footer>
+
+      {/* --- dialogs --- */}
 
       {confirmClearOpen && (
         <Dialog open onOpenChange={(o) => { if (!o) setConfirmClearOpen(false); }}>

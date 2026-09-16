@@ -3,6 +3,7 @@ import { createJSONStorage, persist } from "zustand/middleware";
 import { migrateLegacy, normalizeState, purgeExpired, SCHEMA_VERSION } from "./migrate";
 import type { Locale } from "./i18n";
 import { nextDue } from "./repeat";
+import { cyclePrio } from "./tokens";
 import { todayISO } from "./date";
 import type { AddProjectInput, AddSectionInput, AddTaskInput, Prio, Project, ProjectPatch, SectionPatch, Status, SubTask, Task, TaskPatch } from "./types";
 import { uid } from "./uid";
@@ -418,7 +419,7 @@ export function createBoardStore(initial: Project[] = []) {
             set((s) => {
               const t = findTask(s.projetos, pid, sid, tid);
               if (!t) return s;
-              const next = ((t.prio % 5) + 1) as Prio;
+              const next = cyclePrio(t.prio);
               return {
                 projetos: s.projetos.map((p) =>
                   p.id === pid
