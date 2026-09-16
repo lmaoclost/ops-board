@@ -30,8 +30,6 @@ export default function Home() {
   const editProject = useBoard((s) => s.editProject);
   const deleteProject = useBoard((s) => s.deleteProject);
   const toggleProjectArchive = useBoard((s) => s.toggleProjectArchive);
-  const locale = useBoard((s) => s.locale);
-  const setLocale = useBoard((s) => s.setLocale);
   const { t } = useT();
   const setProjectPrio = useBoard((s) => s.setProjectPrio);
   const toggleProjectCollapsed = useBoard((s) => s.toggleProjectCollapsed);
@@ -255,8 +253,6 @@ const notifiedRef = useRef(false);
         onNewProject={() => setNewProjectOpen(true)}
         onExport={handleExport}
         onImport={() => setConfirmImportOpen(true)}
-        locale={locale}
-        onToggleLocale={() => setLocale(locale === "pt" ? "en" : "pt")}
         stats={stats}
         searchRef={searchRef}
       />

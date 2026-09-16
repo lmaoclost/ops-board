@@ -1,7 +1,8 @@
 import { render, screen } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
-import { describe, expect, it, vi } from "vitest";
+import { beforeEach, describe, expect, it, vi } from "vitest";
 import { Topbar } from "./Topbar";
+import { useBoard } from "@/lib/store";
 import type { BoardStats } from "@/lib/selectors";
 
 const stats: BoardStats = { byStatus: { todo: 0, doing: 0, waiting: 0, done: 0 }, total: 0, done: 0, pendentes: 0, doneToday: 0, blocked: 0 };
@@ -17,13 +18,15 @@ const props = (over: Partial<Parameters<typeof Topbar>[0]> = {}) => ({
   onNewProject: vi.fn(),
   onExport: vi.fn(),
   onImport: vi.fn(),
-  locale: "pt" as const,
-  onToggleLocale: vi.fn(),
   stats,
   ...over,
 });
 
 describe("Topbar menu mobile (☰)", () => {
+  beforeEach(() => {
+    localStorage.removeItem("opsboard.v1");
+    useBoard.setState({ locale: "pt" });
+  });
   it("trigger ☰ abre menu com agenda/lixeira/exportar/importar/privacidade; itens disparam callbacks", async () => {
     const user = userEvent.setup();
     const p = props();
@@ -89,7 +92,7 @@ describe("Topbar menu mobile (☰)", () => {
     render(<Topbar {...p} />);
 
     await user.click(screen.getByRole("button", { name: "EN" }));
-    expect(p.onToggleLocale).toHaveBeenCalledTimes(1);
+    expect(useBoard.getState().locale).toBe("en");
     expect(p.onToggleTheme).not.toHaveBeenCalled();
   });
 });

@@ -2,7 +2,6 @@ import { useEffect, useRef, useState, type RefObject } from "react";
 import Link from "next/link";
 import { useMounted } from "@/hooks/useMounted";
 import { useT } from "@/hooks/useT";
-import type { Locale } from "@/lib/i18n";
 import { Button, buttonVariants } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip";
@@ -16,6 +15,7 @@ import {
 import type { View } from "@/lib/filter";
 import { cn } from "@/lib/utils";
 import { Stats } from "@/components/client/Stats";
+import { LocaleToggle } from "@/components/client/LocaleToggle";
 import type { BoardStats } from "@/lib/selectors";
 
 interface TopbarProps {
@@ -29,8 +29,6 @@ interface TopbarProps {
   onNewProject: () => void;
   onExport: () => void;
   onImport: () => void;
-  locale: Locale;
-  onToggleLocale: () => void;
   stats: BoardStats;
   searchRef?: RefObject<HTMLInputElement | null>;
 }
@@ -48,8 +46,6 @@ export function Topbar({
   onNewProject,
   onExport,
   onImport,
-  locale,
-  onToggleLocale,
   stats,
   searchRef,
 }: TopbarProps) {
@@ -105,16 +101,7 @@ export function Topbar({
             />
             <TooltipContent side="bottom">{t("alternar tema (t)")}</TooltipContent>
           </Tooltip>
-            <Button
-              type="button"
-              variant="ghost"
-              size="xs"
-              onClick={onToggleLocale}
-              className="shrink-0 text-[var(--muted-text)] hover:text-[var(--text)]"
-              title={locale === "pt" ? "English" : "Português"}
-            >
-              {locale === "pt" ? "EN" : "PT"}
-            </Button>
+            <LocaleToggle />
             <Button
               type="button"
               variant="ghost"
