@@ -1,5 +1,3 @@
-import confetti from "canvas-confetti";
-
 export function chime(): void {
   const ua = (globalThis as { navigator?: { userActivation?: { hasBeenActive?: boolean } } }).navigator?.userActivation;
   if (ua && !ua.hasBeenActive) return;
@@ -32,9 +30,10 @@ export function chime(): void {
   }
 }
 
-export function celebrate(): void {
+export async function celebrate(): Promise<void> {
   chime();
   try {
+    const confetti = (await import("canvas-confetti")).default;
     confetti({ particleCount: 120, spread: 80, origin: { y: 0.6 }, zIndex: 70 });
   } catch {
     return;

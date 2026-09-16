@@ -60,10 +60,10 @@ export function FilterChips({
             onClick={() => onToggleStatus(key)}
             title={`${t("filtro")}: ${status(key as Status)}`}
             aria-pressed={isActive}
-            className={`${cls} ${isActive ? "border-current bg-[var(--hover)]" : "opacity-60"}`}
+            className={`${cls} ${isActive ? "border-current bg-[var(--hover)]" : "text-[var(--chip-idle)]"}`}
           >
             {status(key as Status)}
-            <span className="opacity-60">{count}</span>
+            <span className="text-[var(--chip-count)]">{count}</span>
           </Button>
         );
       })}
@@ -74,10 +74,10 @@ export function FilterChips({
         onClick={onToggleArchived}
         title={t("mostrar/ocultar projetos arquivados")}
         aria-pressed={archivedActive}
-        className={`text-[var(--violet)] ${archivedActive ? "border-current bg-[var(--hover)]" : "opacity-60"}`}
+        className={`text-[var(--violet)] ${archivedActive ? "border-current bg-[var(--hover)]" : "text-[var(--chip-idle)]"}`}
       >
         {t("arquivados")}
-        <span className="opacity-60">{archivedCount}</span>
+        <span className="text-[var(--chip-count)]">{archivedCount}</span>
       </Button>
       <Tooltip>
         <TooltipTrigger
@@ -88,7 +88,7 @@ export function FilterChips({
               size="xs"
               onClick={onTogglePrioSort}
               aria-pressed={prioSort}
-              className={`text-[var(--muted-text)] ${prioSort ? "border-current text-[var(--warn)] bg-[var(--hover)]" : ""}`}
+              className={`${prioSort ? "border-current text-[var(--warn)] bg-[var(--hover)]" : "text-[var(--chip-idle)]"}`}
             >
               {t("↕ prio")}
             </Button>

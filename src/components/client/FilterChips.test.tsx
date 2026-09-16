@@ -39,4 +39,15 @@ describe("FilterChips", () => {
     render(<FilterChips {...base} archivedCount={1} archivedActive={true} onToggleArchived={() => {}} />);
     expect(screen.getByRole("button", { name: /arquivados/ })).toHaveAttribute("aria-pressed", "true");
   });
+
+  it("chips de status/arquivados inativos não usam opacity e usam token neutro", () => {
+    render(<FilterChips {...base} />);
+    const chips = screen.getAllByRole("button").filter((b) => b.getAttribute("aria-pressed") === "false");
+    expect(chips.length).toBeGreaterThanOrEqual(6);
+    for (const chip of chips) {
+      const cls = chip.className;
+      expect(cls).not.toContain("opacity-60");
+      expect(cls).toContain("text-[var(--chip-idle)]");
+    }
+  });
 });

@@ -4,7 +4,7 @@ import { useT } from "@/hooks/useT";
 import { useDroppable } from "@dnd-kit/core";
 import { SortableContext, verticalListSortingStrategy, useSortable } from "@dnd-kit/sortable";
 import { CSS } from "@dnd-kit/utilities";
-import { Modal } from "@/components/client/Modal";
+import dynamic from "next/dynamic";
 import { ConfirmDelete } from "@/components/client/ConfirmDelete";
 import { Button } from "@/components/ui/button";
 import {
@@ -18,7 +18,9 @@ import { Input } from "@/components/ui/input";
 import { sortTasks, visibleTasks, type Filters } from "@/lib/filter";
 import type { TaskPatch, SectionPatch, Task } from "@/lib/types";
 import { SortableTaskItem } from "@/components/client/dnd/SortableTaskItem";
-import { TaskEditModal } from "@/components/client/board/TaskEditModal";
+
+const Modal = dynamic(() => import("@/components/client/Modal").then((m) => m.Modal));
+const TaskEditModal = dynamic(() => import("@/components/client/board/TaskEditModal").then((m) => m.TaskEditModal));
 
 export interface SectionTaskActions {
   onToggle: (tid: string) => void;

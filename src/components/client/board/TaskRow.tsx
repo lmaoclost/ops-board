@@ -10,7 +10,7 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
-import { Modal } from "@/components/client/Modal";
+import dynamic from "next/dynamic";
 import { ConfirmDelete } from "@/components/client/ConfirmDelete";
 import {
   Select,
@@ -24,7 +24,9 @@ import { isDueSoon, isOverdue, fmtDate } from "@/lib/date";
 import { linkify } from "@/lib/escape";
 import { addSub, makeSub, mapSubs, removeSub } from "@/lib/subtasks";
 import { PRIO_KEYS, STATUS_ORDER, type Prio, type Status, type SubTask, type Task, type TaskPatch } from "@/lib/types";
-import { TaskEditModal } from "./TaskEditModal";
+
+const Modal = dynamic(() => import("@/components/client/Modal").then((m) => m.Modal));
+const TaskEditModal = dynamic(() => import("./TaskEditModal").then((m) => m.TaskEditModal));
 
 export interface TaskRowProps {
   task: Task;

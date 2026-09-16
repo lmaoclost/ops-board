@@ -46,6 +46,8 @@
   --flow: #22d3ee;
   --todo: #94a3b8;
   --violet: #a78bfa;
+  --chip-idle: #b8c0cc;
+  --chip-count: #b8c0cc;
   --bg: #0a0d12;
   --panel: #0f141b;
   --panel-2: #151c26;
@@ -87,6 +89,8 @@ html.light {
   --flow: #0e7490;
   --todo: #2563eb;
   --violet: #7c3aed;
+  --chip-idle: #57616e;
+  --chip-count: #57616e;
   --primary-foreground: #f0fdf4;
   --bg: #f2f4f7;
   --panel: #ffffff;

@@ -65,10 +65,10 @@ describe("Agenda", () => {
     expect(p.onToggle).toHaveBeenCalledWith("p1", "s1", "t1");
   });
 
-  it("clique no título abre modal de edição", () => {
+  it("clique no título abre modal de edição", async () => {
     const p = base([makeTask("t1", { due: iso(0) })]);
     render(<Agenda {...p} />);
     fireEvent.click(screen.getByRole("button", { name: /tarefa t1/ }));
-    expect(screen.getByText("editar tarefa")).toBeTruthy();
+    expect(await screen.findByText("editar tarefa")).toBeTruthy();
   });
 });

@@ -1,14 +1,16 @@
 import { DndContext, PointerSensor, TouchSensor, useSensor, useSensors, type DragEndEvent } from "@dnd-kit/core";
 import { SortableContext, verticalListSortingStrategy } from "@dnd-kit/sortable";
 import { memo, useCallback, useEffect, useMemo, useRef } from "react";
+import dynamic from "next/dynamic";
 import { useT } from "@/hooks/useT";
 import { isFiltering, prioSort, projMatches, type Filters } from "@/lib/filter";
 import { resolveDrop, smartCollision } from "@/lib/dnd";
 import type { AddSectionInput, AddTaskInput, Project, ProjectPatch, SectionPatch, Status, TaskPatch } from "@/lib/types";
 import { ProjectCard } from "./ProjectCard";
-import { Kanban } from "@/components/client/dnd/Kanban";
-import { Agenda } from "@/components/client/agenda/Agenda";
-import { Trash } from "@/components/client/trash/Trash";
+
+const Kanban = dynamic(() => import("@/components/client/dnd/Kanban").then((m) => m.Kanban));
+const Agenda = dynamic(() => import("@/components/client/agenda/Agenda").then((m) => m.Agenda));
+const Trash = dynamic(() => import("@/components/client/trash/Trash").then((m) => m.Trash));
 
 export interface BoardProjectActions {
   onAddSection: (pid: string, input: AddSectionInput) => void;
