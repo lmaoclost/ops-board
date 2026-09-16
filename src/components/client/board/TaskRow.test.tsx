@@ -216,9 +216,9 @@ describe("TaskRow", () => {
     const p = base({ subs: [sub({ id: "fazer a" })] });
     render(<TaskRow {...p} />);
     await userEvent.click(screen.getByRole("button", { name: "fazer a" }));
-    expect(screen.getByText("editar sub-tarefa")).toBeTruthy();
-    await userEvent.clear(screen.getByLabelText("tarefa"));
-    await userEvent.type(screen.getByLabelText("tarefa"), "fazer a atualizado");
+    expect(await screen.findByText("editar sub-tarefa")).toBeTruthy();
+    await userEvent.clear(await screen.findByLabelText("tarefa"));
+    await userEvent.type(await screen.findByLabelText("tarefa"), "fazer a atualizado");
     await userEvent.click(screen.getByRole("button", { name: "salvar" }));
     expect(p.onUpdate).toHaveBeenLastCalledWith({
       subs: [sub({ id: "fazer a", text: "fazer a atualizado" })],

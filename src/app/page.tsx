@@ -3,7 +3,7 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { Board } from "@/components/client/board/Board";
 import { FilterChips } from "@/components/client/FilterChips";
-import { Modal } from "@/components/client/Modal";
+import dynamic from "next/dynamic";
 import { PrivacyNotice } from "@/components/client/PrivacyNotice";
 import { Topbar } from "@/components/client/Topbar";
 import { useT } from "@/hooks/useT";
@@ -20,6 +20,8 @@ import { useBoard, setStorageErrorHandler } from "@/lib/store";
 import type { Prio, Status } from "@/lib/types";
 import { Dialog, DialogClose, DialogContent, DialogTitle } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
+
+const Modal = dynamic(() => import("@/components/client/Modal").then((m) => m.Modal));
 
 export default function Home() {
   const projetos = useBoard((s) => s.projetos);

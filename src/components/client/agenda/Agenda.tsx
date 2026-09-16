@@ -3,7 +3,9 @@ import { useT } from "@/hooks/useT";
 import { fmtDate, isOverdue, todayISO } from "@/lib/date";
 import { flatTasks, groupAgenda, type FlatTask } from "@/lib/flat";
 import { PRIO_CLS, PRIO_KEYS, type Project, type Status, type TaskPatch } from "@/lib/types";
-import { TaskEditModal } from "@/components/client/board/TaskEditModal";
+import dynamic from "next/dynamic";
+
+const TaskEditModal = dynamic(() => import("@/components/client/board/TaskEditModal").then((m) => m.TaskEditModal));
 
 interface AgendaProps {
   projetos: Project[];
