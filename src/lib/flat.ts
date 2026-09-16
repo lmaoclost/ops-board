@@ -34,11 +34,17 @@ const byDueThenPrio = (a: FlatTask, b: FlatTask) =>
 
 /** Agenda: tarefas não concluídas com due, agrupadas em vencidas / hoje / próximos 7 dias. */
 export function groupAgenda(items: FlatTask[], today: string): AgendaGroups {
-  const pending = items.filter((i) => i.task.status !== "done" && !!i.task.due).toSorted(byDueThenPrio);
   const limit = addDays(today, 7);
-  return {
-    overdue: pending.filter((i) => i.task.due < today),
-    today: pending.filter((i) => i.task.due === today),
-    upcoming: pending.filter((i) => i.task.due > today && i.task.due <= limit),
-  };
+  const pending = items
+    .filter((i) => i.task.status !== "done" && !!i.task.due)
+    .toSorted(byDueThenPrio);
+  const overdue: FlatTask[] = [];
+  const todayGroup: FlatTask[] = [];
+  const upcoming: FlatTask[] = [];
+  for (const i of pending) {
+    if (i.task.due < today) overdue.push(i);
+    else if (i.task.due === today) todayGroup.push(i);
+    else if (i.task.due <= limit) upcoming.push(i);
+  }
+  return { overdue, today: todayGroup, upcoming };
 }

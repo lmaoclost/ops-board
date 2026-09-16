@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useMemo, useState } from "react";
 import { useT } from "@/hooks/useT";
 import { fmtDate, isOverdue, todayISO } from "@/lib/date";
 import { flatTasks, groupAgenda, type FlatTask } from "@/lib/flat";
@@ -24,8 +24,10 @@ export function Agenda({ projetos, onToggle, onEditTask }: AgendaProps) {
   const { t } = useT();
   const [editing, setEditing] = useState<FlatTask | null>(null);
 
-  const items = flatTasks(projetos);
-  const { overdue, today: todayItems, upcoming } = groupAgenda(items, todayISO());
+  const { overdue, today: todayItems, upcoming } = useMemo(
+    () => groupAgenda(flatTasks(projetos), todayISO()),
+    [projetos],
+  );
   const byGroup = { vencidas: overdue, hoje: todayItems, "próximos 7 dias": upcoming };
 
   if (!overdue.length && !todayItems.length && !upcoming.length) {

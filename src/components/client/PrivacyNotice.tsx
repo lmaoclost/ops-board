@@ -13,13 +13,25 @@ export function PrivacyNotice() {
   const [open, setOpen] = useState(false);
 
   useEffect(() => {
-    // eslint-disable-next-line react-hooks/set-state-in-effect
-    if (!localStorage.getItem(NOTICE_KEY)) setOpen(true);
+    let seen = true;
+    try {
+      seen = !!localStorage.getItem(NOTICE_KEY);
+    } catch {
+      seen = true;
+    }
+    if (!seen) {
+      // eslint-disable-next-line react-hooks/set-state-in-effect
+      setOpen(true);
+    }
   }, []);
 
   const choose = (consented: boolean) => {
     setMetricsConsent(consented);
-    localStorage.setItem(NOTICE_KEY, "1");
+    try {
+      localStorage.setItem(NOTICE_KEY, "1");
+    } catch {
+      // armazenamento indisponível: aviso reaparece na próxima visita
+    }
     setOpen(false);
   };
 

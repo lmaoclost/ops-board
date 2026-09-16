@@ -148,18 +148,24 @@ function KanbanTask({
           {PRIO_KEYS[item.task.prio]}
         </button>
         {item.task.subs.length > 0 && (
-          <button
-            type="button"
-            onClick={(e) => {
-              e.stopPropagation();
-              onSubs();
-            }}
-            title={t("sub-tarefas n/m").replace("n/m", `${item.task.subs.filter((s) => s.status === "done").length}/${item.task.subs.length}`)}
-            aria-label={t("sub-tarefas n/m").replace("n/m", `${item.task.subs.filter((s) => s.status === "done").length}/${item.task.subs.length}`)}
-            className="shrink-0 rounded border border-[var(--line-soft)] px-1 py-0.5 text-[9px] text-[var(--dim)] transition-colors hover:border-[var(--muted-text)] hover:text-[var(--text)]"
-          >
-            {item.task.subs.filter((s) => s.status === "done").length}/{item.task.subs.length}
-          </button>
+          (() => {
+            const doneSubs = item.task.subs.filter((s) => s.status === "done").length;
+            const subsLabel = `${doneSubs}/${item.task.subs.length}`;
+            return (
+              <button
+                type="button"
+                onClick={(e) => {
+                  e.stopPropagation();
+                  onSubs();
+                }}
+                title={t("sub-tarefas n/m").replace("n/m", subsLabel)}
+                aria-label={t("sub-tarefas n/m").replace("n/m", subsLabel)}
+                className="shrink-0 rounded border border-[var(--line-soft)] px-1 py-0.5 text-[9px] text-[var(--dim)] transition-colors hover:border-[var(--muted-text)] hover:text-[var(--text)]"
+              >
+                {subsLabel}
+              </button>
+            );
+          })()
         )}
         <button
           type="button"
@@ -280,14 +286,12 @@ export function Kanban({ projetos, prioSort, onEditTask, onDeleteTask, onAddTask
   const [creating, setCreating] = useState<Status | null>(null);
   const [focusSubs, setFocusSubs] = useState(false);
   const [dragItem, setDragItem] = useState<FlatTask | null>(null);
-  const grouped = useMemo(
-    () =>
-      STATUS_ORDER.map((s) => ({
-        status: s,
-        items: sortTasks(flatTasks(projetos), !!prioSort, (i) => i.task.prio).filter((t) => t.task.status === s),
-      })),
-    [projetos, prioSort],
-  );
+  const grouped = useMemo(() => {
+    const flat = sortTasks(flatTasks(projetos), !!prioSort, (i) => i.task.prio);
+    const buckets = new Map<Status, FlatTask[]>(STATUS_ORDER.map((s) => [s, []]));
+    for (const item of flat) buckets.get(item.task.status)!.push(item);
+    return STATUS_ORDER.map((s) => ({ status: s, items: buckets.get(s)! }));
+  }, [projetos, prioSort]);
 
   if (!projetos.length) {
     return (

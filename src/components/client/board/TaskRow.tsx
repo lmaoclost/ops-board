@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { memo, useState } from "react";
 import { CircleSlashIcon } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { useT } from "@/hooks/useT";
@@ -200,7 +200,7 @@ function SubRow({
   );
 }
 
-export function TaskRow({ task, onToggle, onPrioCycle, onStatusChange, onEdit, onDelete, onUpdate }: TaskRowProps) {
+export const TaskRow = memo(function TaskRow({ task, onToggle, onPrioCycle, onStatusChange, onEdit, onDelete, onUpdate }: TaskRowProps) {
   const { t, status } = useT();
   const [addingSub, setAddingSub] = useState(false);
   const [subDraft, setSubDraft] = useState("");
@@ -443,4 +443,4 @@ export function TaskRow({ task, onToggle, onPrioCycle, onStatusChange, onEdit, o
       )}
     </div>
   );
-}
+});

@@ -177,6 +177,50 @@ const notifiedRef = useRef(false);
     showToast(t("desfeito"));
   }, [canUndo, undo, showToast, t]);
 
+  const projectActions = useMemo(
+    () => ({
+      onAddSection: (pid: string, input: Parameters<typeof addSection>[1]) => addSection(pid, input),
+      onEdit: (id: string, patch: Parameters<typeof editProject>[1]) => editProject(id, patch),
+      onDelete: (id: string) => deleteProject(id),
+      onToggleArchive: handleToggleArchive,
+      onCyclePrio: (id: string) => {
+        const p = projetos.find((x) => x.id === id);
+        if (!p) return;
+        setProjectPrio(id, ((p.prio % 5) + 1) as Prio);
+      },
+      onToggleCollapse: (id: string) => toggleProjectCollapsed(id),
+      onMoveProject: (pid: string, overPid: string) => moveProject(pid, overPid),
+    }),
+    [addSection, editProject, deleteProject, handleToggleArchive, projetos, setProjectPrio, toggleProjectCollapsed, moveProject],
+  );
+
+  const sectionActions = useMemo(
+    () => ({
+      onToggle: (pid: string, sid: string) => toggleSection(pid, sid),
+      onAddTask: (pid: string, sid: string, text: string) => addTask(pid, sid, text),
+      onAddTaskFull: (pid: string, sid: string, input: Parameters<typeof addTaskFull>[2]) => addTaskFull(pid, sid, input),
+      onEdit: (pid: string, sid: string, patch: Parameters<typeof editSection>[2]) => editSection(pid, sid, patch),
+      onMoveSection: (pid: string, sid: string, index: number) => moveSection(pid, sid, index),
+      onDelete: (pid: string, sid: string) => deleteSection(pid, sid),
+    }),
+    [toggleSection, addTask, addTaskFull, editSection, moveSection, deleteSection],
+  );
+
+  const taskActions = useMemo(
+    () => ({
+      onToggle: handleToggleTask,
+      onPrioCycle: (pid: string, sid: string, tid: string) => cycleTaskPrio(pid, sid, tid),
+      onStatusChange: handleStatusChange,
+      onEdit: (pid: string, sid: string, tid: string, patch: Parameters<typeof editTask>[3]) => editTask(pid, sid, tid, patch),
+      onDelete: (pid: string, sid: string, tid: string) => deleteTask(pid, sid, tid),
+      onPurge: (pid: string, sid: string, tid: string) => purgeTask(pid, sid, tid),
+      onUpdate: (pid: string, sid: string, tid: string, patch: Parameters<typeof editTask>[3]) => editTask(pid, sid, tid, patch),
+      onMoveTask: (pid: string, sid: string, tid: string, toPid: string, toSid: string, index: number) =>
+        moveTask({ pid, sid, tid }, { pid: toPid, sid: toSid }, index),
+    }),
+    [handleToggleTask, cycleTaskPrio, handleStatusChange, editTask, deleteTask, purgeTask, moveTask],
+  );
+
   useShortcuts(
     {
       onNewProject: () => setNewProjectOpen(true),
@@ -246,38 +290,9 @@ const notifiedRef = useRef(false);
           filters={filters}
           onNewProject={() => setNewProjectOpen(true)}
           onClearFilters={clear}
-          projectActions={{
-            onAddSection: (pid, input) => addSection(pid, input),
-            onEdit: (id, patch) => editProject(id, patch),
-            onDelete: (id) => deleteProject(id),
-            onToggleArchive: handleToggleArchive,
-            onCyclePrio: (id) => {
-              const p = projetos.find((x) => x.id === id);
-              if (!p) return;
-              setProjectPrio(id, ((p.prio % 5) + 1) as Prio);
-            },
-            onToggleCollapse: (id) => toggleProjectCollapsed(id),
-            onMoveProject: (pid, overPid) => moveProject(pid, overPid),
-          }}
-          sectionActions={{
-            onToggle: (pid, sid) => toggleSection(pid, sid),
-            onAddTask: (pid, sid, text) => addTask(pid, sid, text),
-            onAddTaskFull: (pid, sid, input) => addTaskFull(pid, sid, input),
-            onEdit: (pid, sid, patch) => editSection(pid, sid, patch),
-            onMoveSection: (pid, sid, index) => moveSection(pid, sid, index),
-            onDelete: (pid, sid) => deleteSection(pid, sid),
-          }}
-          taskActions={{
-            onToggle: handleToggleTask,
-            onPrioCycle: (pid, sid, tid) => cycleTaskPrio(pid, sid, tid),
-            onStatusChange: handleStatusChange,
-            onEdit: (pid, sid, tid, patch) => editTask(pid, sid, tid, patch),
-            onDelete: (pid, sid, tid) => deleteTask(pid, sid, tid),
-            onPurge: (pid, sid, tid) => purgeTask(pid, sid, tid),
-            onUpdate: (pid, sid, tid, patch) => editTask(pid, sid, tid, patch),
-            onMoveTask: (pid, sid, tid, toPid, toSid, index) =>
-              moveTask({ pid, sid, tid }, { pid: toPid, sid: toSid }, index),
-          }}
+          projectActions={projectActions}
+          sectionActions={sectionActions}
+          taskActions={taskActions}
         />
       </main>
 
