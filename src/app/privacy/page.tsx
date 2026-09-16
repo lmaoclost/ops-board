@@ -5,6 +5,7 @@ import Link from "next/link";
 import { useT } from "@/hooks/useT";
 import type { TKey } from "@/lib/i18n";
 import { Switch } from "@/components/ui/switch";
+import { LocaleToggle } from "@/components/client/LocaleToggle";
 import { METRICS_EVENT, readMetricsConsent, setMetricsConsent } from "@/components/client/Metrics";
 
 function MetricsToggle() {
@@ -60,13 +61,16 @@ export default function PrivacidadePage() {
   const { t } = useT();
   return (
     <main className="mx-auto max-w-2xl px-4 py-10">
-      <Link
-        href="/"
-        className="inline-flex items-center gap-1.5 text-sm text-[var(--muted-text)] hover:text-[var(--text)]"
-        title={t("voltar para o quadro")}
-      >
-        {t("voltar")}
-      </Link>
+      <div className="flex items-center justify-between">
+        <Link
+          href="/"
+          className="inline-flex items-center gap-1.5 text-sm text-[var(--muted-text)] hover:text-[var(--text)]"
+          title={t("voltar para o quadro")}
+        >
+          {t("voltar")}
+        </Link>
+        <LocaleToggle />
+      </div>
       <h1 className="mt-4 text-2xl font-bold tracking-tight text-[var(--text)]">{t("política de privacidade")}</h1>
       <p className="mt-2 text-sm text-[var(--muted-text)]">
         {t("priv_sub")}
