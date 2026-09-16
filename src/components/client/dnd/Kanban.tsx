@@ -7,8 +7,9 @@ import { sortTasks } from "@/lib/filter";
 import { flatTasks, type FlatTask } from "@/lib/flat";
 import { useT } from "@/hooks/useT";
 import { isDueSoon, isOverdue, fmtDate } from "@/lib/date";
-import { PRIO_CHIP_CLS, NEXT_PRIO } from "@/lib/tokens";
-import { PRIO_KEYS, STATUS_ORDER, type AddTaskInput, type Project, type Status, type Task, type TaskPatch } from "@/lib/types";
+import { NEXT_PRIO } from "@/lib/tokens";
+import { PrioChip } from "@/components/client/board/badges";
+import { STATUS_ORDER, type AddTaskInput, type Project, type Status, type Task, type TaskPatch } from "@/lib/types";
 import { TaskEditModal } from "@/components/client/board/TaskEditModal";
 
 interface KanbanProps {
@@ -135,18 +136,16 @@ function KanbanTask({
             {item.ptitle} · {item.stitle}
           </span>
         </span>
-        <button
-          type="button"
+        <PrioChip
+          prio={item.task.prio}
           onClick={(e) => {
             e.stopPropagation();
             onUpdate({ prio: NEXT_PRIO[item.task.prio] });
           }}
-          aria-label={t("prioridade: clique pra mudar")}
+          ariaLabel={t("prioridade: clique pra mudar")}
           title={t("prioridade: clique pra mudar")}
-          className={`shrink-0 rounded border px-1 py-0.5 text-[9px] font-bold ${PRIO_CHIP_CLS[item.task.prio]}`}
-        >
-          {PRIO_KEYS[item.task.prio]}
-        </button>
+          className="px-1 py-0.5 text-[9px]"
+        />
         {item.task.subs.length > 0 && (
           (() => {
             const doneSubs = item.task.subs.filter((s) => s.status === "done").length;

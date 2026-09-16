@@ -20,7 +20,7 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import { isDueSoon, isOverdue, fmtDate } from "@/lib/date";
-import { PRIO_CHIP_CLS } from "@/lib/tokens";
+import { PrioChip } from "@/components/client/board/badges";
 import { PRIO_KEYS, type AddSectionInput, type Project, type ProjectPatch } from "@/lib/types";
 import {
   Section,
@@ -129,17 +129,13 @@ export const ProjectCard = memo(function ProjectCard({
         <h2 className="break-words text-[13px] font-bold tracking-wide text-[var(--text)]">
           {project.title}
         </h2>
-        <button
-          type="button"
+        <PrioChip
+          prio={project.prio}
           onClick={onCyclePrio}
-          className={`shrink-0 rounded border px-1.5 py-0.5 text-[10px] font-bold ${PRIO_CHIP_CLS[project.prio]}`}
+          ariaLabel={t(`prioridade do projeto ${PRIO_KEYS[project.prio]}` as TKey)}
           title={t("prioridade do projeto (clique pra mudar)")}
-          aria-label={t(
-            `prioridade do projeto ${PRIO_KEYS[project.prio]}` as TKey,
-          )}
-        >
-          {PRIO_KEYS[project.prio]}
-        </button>
+          className="px-1.5 py-0.5 text-[10px]"
+        />
         {project.due && (
           <span
             className={`shrink-0 rounded border px-1.5 py-0.5 text-[10px] font-bold ${overdue ? "border-[var(--fired)] text-[var(--fired)]" : dueSoon ? "border-[var(--warn)] text-[var(--warn)]" : "border-[var(--line)] text-[var(--dim)]"}`}
