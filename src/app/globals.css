@@ -48,6 +48,12 @@
   --violet: #a78bfa;
   --chip-idle: #b8c0cc;
   --chip-count: #b8c0cc;
+  --chip-todo: #8494ab;
+  --chip-flow: #1fb9d9;
+  --chip-warn: #e0b03a;
+  --chip-fired: #2fc795;
+  --chip-gave: #ef8a8a;
+  --chip-violet: #9d86f2;
   --bg: #0a0d12;
   --panel: #0f141b;
   --panel-2: #151c26;
@@ -91,6 +97,12 @@ html.light {
   --violet: #7c3aed;
   --chip-idle: #57616e;
   --chip-count: #57616e;
+  --chip-todo: #2563eb;
+  --chip-flow: #0e7490;
+  --chip-warn: #b45309;
+  --chip-fired: #047857;
+  --chip-gave: #b91c1c;
+  --chip-violet: #7c3aed;
   --primary-foreground: #f0fdf4;
   --bg: #f2f4f7;
   --panel: #ffffff;
