@@ -1,6 +1,6 @@
 import { DndContext, PointerSensor, TouchSensor, useSensor, useSensors, type DragEndEvent } from "@dnd-kit/core";
 import { SortableContext, verticalListSortingStrategy } from "@dnd-kit/sortable";
-import { useMemo } from "react";
+import { memo, useCallback, useEffect, useMemo, useRef } from "react";
 import { useT } from "@/hooks/useT";
 import { isFiltering, prioSort, projMatches, type Filters } from "@/lib/filter";
 import { resolveDrop, smartCollision } from "@/lib/dnd";
@@ -66,30 +66,40 @@ export interface BoardProps {
   taskActions: BoardTaskActions;
 }
 
-export function Board({ projetos, filters, onNewProject, onClearFilters, projectActions, sectionActions, taskActions }: BoardProps) {
+export const Board = memo(function Board({ projetos, filters, onNewProject, onClearFilters, projectActions, sectionActions, taskActions }: BoardProps) {
   const { t } = useT();
   const sensors = useSensors(
     useSensor(PointerSensor, { activationConstraint: { distance: 6 } }),
     useSensor(TouchSensor, { activationConstraint: { distance: 6 } }),
   );
 
-  const collectActions = (pid: string): { sectionActions: SectionLevelActions; taskActions: TaskLevelActions } => ({
-    sectionActions: {
-      onToggle: (sid: string) => sectionActions.onToggle(pid, sid),
-      onAddTask: (sid: string, text: string) => sectionActions.onAddTask(pid, sid, text),
-      onEdit: (sid: string, patch: SectionPatch) => sectionActions.onEdit(pid, sid, patch),
-      onDelete: (sid: string) => sectionActions.onDelete(pid, sid),
-    },
-    taskActions: {
-      onToggle: (sid: string, tid: string) => taskActions.onToggle(pid, sid, tid),
-      onPrioCycle: (sid: string, tid: string) => taskActions.onPrioCycle(pid, sid, tid),
-      onStatusChange: (sid: string, tid: string, status: Status) =>
-        taskActions.onStatusChange(pid, sid, tid, status),
-      onEdit: (sid: string, tid: string, patch: TaskPatch) => taskActions.onEdit(pid, sid, tid, patch),
-      onDelete: (sid: string, tid: string) => taskActions.onDelete(pid, sid, tid),
-      onUpdate: (sid: string, tid: string, patch: TaskPatch) => taskActions.onUpdate(pid, sid, tid, patch),
-    },
-  });
+  const actionsCache = useRef(new Map<string, { sectionActions: SectionLevelActions; taskActions: TaskLevelActions }>());
+  const collectActions = useCallback((pid: string): { sectionActions: SectionLevelActions; taskActions: TaskLevelActions } => {
+    const cached = actionsCache.current.get(pid);
+    if (cached) return cached;
+    const actions = {
+      sectionActions: {
+        onToggle: (sid: string) => sectionActions.onToggle(pid, sid),
+        onAddTask: (sid: string, text: string) => sectionActions.onAddTask(pid, sid, text),
+        onEdit: (sid: string, patch: SectionPatch) => sectionActions.onEdit(pid, sid, patch),
+        onDelete: (sid: string) => sectionActions.onDelete(pid, sid),
+      },
+      taskActions: {
+        onToggle: (sid: string, tid: string) => taskActions.onToggle(pid, sid, tid),
+        onPrioCycle: (sid: string, tid: string) => taskActions.onPrioCycle(pid, sid, tid),
+        onStatusChange: (sid: string, tid: string, status: Status) =>
+          taskActions.onStatusChange(pid, sid, tid, status),
+        onEdit: (sid: string, tid: string, patch: TaskPatch) => taskActions.onEdit(pid, sid, tid, patch),
+        onDelete: (sid: string, tid: string) => taskActions.onDelete(pid, sid, tid),
+        onUpdate: (sid: string, tid: string, patch: TaskPatch) => taskActions.onUpdate(pid, sid, tid, patch),
+      },
+    };
+    actionsCache.current.set(pid, actions);
+    return actions;
+  }, [sectionActions, taskActions]);
+  useEffect(() => {
+    actionsCache.current.clear();
+  }, [sectionActions, taskActions]);
 
   const filtered = useMemo(() => {
     const list = isFiltering(filters) ? projetos.filter((p) => projMatches(p, filters)) : projetos;
@@ -199,4 +209,4 @@ export function Board({ projetos, filters, onNewProject, onClearFilters, project
       {content}
     </DndContext>
   );
-}
+});

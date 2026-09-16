@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { memo, useMemo, useState } from "react";
 import { GripVertical } from "lucide-react";
 import { useT } from "@/hooks/useT";
 import { useDroppable } from "@dnd-kit/core";
@@ -47,7 +47,7 @@ export interface SectionProps {
   filters?: Filters;
 }
 
-export function Section({ projectId, section, onToggleSection, onAddTask, onEdit, onDelete, taskActions, prioSort, filters }: SectionProps) {
+export const Section = memo(function Section({ projectId, section, onToggleSection, onAddTask, onEdit, onDelete, taskActions, prioSort, filters }: SectionProps) {
   const { t } = useT();
   const [draft, setDraft] = useState("");
   const [editingId, setEditingId] = useState<string | null>(null);
@@ -61,6 +61,17 @@ export function Section({ projectId, section, onToggleSection, onAddTask, onEdit
 
   const open = !section.collapsed;
   const doneCount = section.tasks.filter((t) => t.status === "done").length;
+
+  const visible = useMemo(
+    () =>
+      sortTasks(
+        filters ? visibleTasks(section.tasks, filters) : section.tasks.filter((t) => !t.deletedAt),
+        !!prioSort,
+        (t) => t.prio,
+      ),
+    [section.tasks, filters, prioSort],
+  );
+  const itemIds = useMemo(() => visible.map((t) => `task:${t.id}`), [visible]);
 
   const editing = editingId ? section.tasks.find((t) => t.id === editingId) : null;
 
@@ -154,10 +165,10 @@ export function Section({ projectId, section, onToggleSection, onAddTask, onEdit
             className={`flex flex-col gap-0.5 rounded-md ${isOver ? "outline outline-1 outline-[var(--fired)]/50" : ""}`}
           >
             <SortableContext
-              items={sortTasks(filters ? visibleTasks(section.tasks, filters) : section.tasks.filter((t) => !t.deletedAt), !!prioSort, (t) => t.prio).map((t) => `task:${t.id}`)}
+              items={itemIds}
               strategy={verticalListSortingStrategy}
             >
-              {sortTasks(filters ? visibleTasks(section.tasks, filters) : section.tasks.filter((t) => !t.deletedAt), !!prioSort, (t) => t.prio).map((t) => (
+              {visible.map((t) => (
                 <SortableTaskItem
                   key={t.id}
                   task={t}
@@ -237,4 +248,4 @@ export function Section({ projectId, section, onToggleSection, onAddTask, onEdit
       )}
     </div>
   );
-}
+});

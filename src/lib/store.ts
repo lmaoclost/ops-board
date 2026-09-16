@@ -14,7 +14,13 @@ export function setStorageErrorHandler(fn: (() => void) | null) {
 }
 
 const safeLocalStorage = {
-  getItem: (name: string) => localStorage.getItem(name),
+  getItem: (name: string) => {
+    try {
+      return localStorage.getItem(name);
+    } catch {
+      return null;
+    }
+  },
   setItem: (name: string, value: string) => {
     try {
       localStorage.setItem(name, value);
@@ -22,7 +28,13 @@ const safeLocalStorage = {
       storageErrorHandler?.();
     }
   },
-  removeItem: (name: string) => localStorage.removeItem(name),
+  removeItem: (name: string) => {
+    try {
+      localStorage.removeItem(name);
+    } catch {
+      // armazenamento indisponível: nada a remover
+    }
+  },
 };
 
 interface BoardStore {

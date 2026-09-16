@@ -1,3 +1,4 @@
+import { memo } from "react";
 import { useSortable } from "@dnd-kit/sortable";
 import { CSS } from "@dnd-kit/utilities";
 import type { Task, TaskPatch } from "@/lib/types";
@@ -13,7 +14,7 @@ interface SortableTaskItemProps {
   onUpdate: (patch: TaskPatch) => void;
 }
 
-export function SortableTaskItem({ task, onToggle, onPrioCycle, onStatusChange, onEdit, onDelete, onUpdate }: SortableTaskItemProps) {
+export const SortableTaskItem = memo(function SortableTaskItem({ task, onToggle, onPrioCycle, onStatusChange, onEdit, onDelete, onUpdate }: SortableTaskItemProps) {
   const { attributes, listeners, setNodeRef, transform, transition, isDragging } = useSortable({
     id: `task:${task.id}`,
     disabled: false,
@@ -38,4 +39,4 @@ export function SortableTaskItem({ task, onToggle, onPrioCycle, onStatusChange, 
       />
     </div>
   );
-}
+});

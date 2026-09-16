@@ -35,8 +35,14 @@ export function sectMatches(s: Section, f: Filters): boolean {
 
 /** Tarefas visíveis: nunca inclui lixeira; com query/status ativos, só as que casam. */
 export function visibleTasks(tasks: Task[], f: Filters): Task[] {
-  const alive = tasks.filter((t) => !t.deletedAt);
-  return isFiltering(f) ? alive.filter((t) => matchTask(t, f)) : alive;
+  const filtering = isFiltering(f);
+  const out: Task[] = [];
+  for (const t of tasks) {
+    if (t.deletedAt) continue;
+    if (filtering && !matchTask(t, f)) continue;
+    out.push(t);
+  }
+  return out;
 }
 
 /** Projeto visível: título casa a query ou alguma seção visível. */

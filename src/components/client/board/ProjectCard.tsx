@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { memo, useState } from "react";
 import { GripVertical } from "lucide-react";
 import { useT } from "@/hooks/useT";
 import type { TKey } from "@/lib/i18n";
@@ -47,7 +47,7 @@ export interface ProjectCardProps {
 type ModalState =
   { kind: "edit" } | { kind: "add-section" } | { kind: "block" } | { kind: "delete" } | null;
 
-export function ProjectCard({
+export const ProjectCard = memo(function ProjectCard({
   project,
   collectActions,
   onAddSection,
@@ -335,4 +335,4 @@ export function ProjectCard({
       )}
     </section>
   );
-}
+});

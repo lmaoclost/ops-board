@@ -1,4 +1,4 @@
-import { render, screen, act } from "@testing-library/react";
+import { render, screen, act, waitFor } from "@testing-library/react";
 import { beforeEach, describe, expect, it, vi } from "vitest";
 import { Metrics, METRICS_KEY, METRICS_EVENT, readMetricsConsent } from "./Metrics";
 
@@ -32,31 +32,31 @@ describe("readMetricsConsent", () => {
 describe("Metrics", () => {
   beforeEach(() => localStorage.clear());
 
-  it("não renderiza sem consentimento", () => {
+  it("não renderiza sem consentimento", async () => {
     render(<Metrics />);
-    expect(screen.queryByTestId("analytics")).toBeNull();
+    await waitFor(() => expect(screen.queryByTestId("analytics")).toBeNull());
     expect(screen.queryByTestId("speed-insights")).toBeNull();
   });
 
-  it("renderiza com beforeSend quando há consentimento", () => {
+  it("renderiza com beforeSend quando há consentimento", async () => {
     localStorage.setItem(METRICS_KEY, "1");
     render(<Metrics />);
-    expect(screen.getByTestId("analytics")).toHaveAttribute("data-gated");
+    await waitFor(() => expect(screen.getByTestId("analytics")).toHaveAttribute("data-gated"));
     expect(screen.getByTestId("speed-insights")).toHaveAttribute("data-gated");
   });
 
-  it("reage a mudança de consentimento sem reload", () => {
+  it("reage a mudança de consentimento sem reload", async () => {
     render(<Metrics />);
-    expect(screen.queryByTestId("analytics")).toBeNull();
+    await waitFor(() => expect(screen.queryByTestId("analytics")).toBeNull());
     act(() => {
       localStorage.setItem(METRICS_KEY, "1");
       window.dispatchEvent(new Event(METRICS_EVENT));
     });
-    expect(screen.getByTestId("analytics")).toBeTruthy();
+    await waitFor(() => expect(screen.getByTestId("analytics")).toBeTruthy());
     act(() => {
       localStorage.setItem(METRICS_KEY, "0");
       window.dispatchEvent(new Event(METRICS_EVENT));
     });
-    expect(screen.queryByTestId("analytics")).toBeNull();
+    await waitFor(() => expect(screen.queryByTestId("analytics")).toBeNull());
   });
 });
