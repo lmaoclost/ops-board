@@ -11,10 +11,13 @@ async function seedBoard(page: Page) {
 }
 
 async function switchView(page: Page, name: string) {
-  const btn = page.getByRole("button", { name, exact: true });
-  if (await btn.count()) {
-    await btn.click();
-    return;
+  // lista↔kanban: toggle direto na barra (mobile); agenda/lixeira: dentro do ☰
+  if (name === "list" || name === "kanban") {
+    const toggle = page.getByTitle("alternar lista/kanban");
+    if (await toggle.count()) {
+      await toggle.click();
+      return;
+    }
   }
   await page.getByRole("button", { name: "menu" }).click();
   await page.getByRole("menuitem", { name, exact: true }).click();
@@ -38,14 +41,35 @@ test("360px: sem scroll horizontal e ações da tarefa no menu ⋯", async ({ pa
   await expect(page.getByRole("dialog", { name: "excluir tarefa?" })).toBeVisible();
 });
 
-test("360px: kanban e agenda sem scroll horizontal", async ({ page }) => {
+test("360px: kanban via toggle sem scroll horizontal", async ({ page }) => {
   await page.setViewportSize({ width: 360, height: 800 });
   await seedBoard(page);
 
   await switchView(page, "kanban");
   await noHorizontalScroll(page, 360);
-  await switchView(page, "agenda");
+  await switchView(page, "list");
   await noHorizontalScroll(page, 360);
+});
+
+test("360px: toggle lista↔kanban na barra; agenda/lixeira no ☰", async ({ page }) => {
+  await page.setViewportSize({ width: 360, height: 800 });
+  await seedBoard(page);
+
+  const toggle = page.getByTitle("alternar lista/kanban");
+  await expect(toggle).toBeVisible();
+  await expect(toggle).toHaveText("kanban");
+
+  await toggle.click();
+  await expect(toggle).toHaveText("lista");
+  await expect(page.getByText("a fazer 1", { exact: true })).toBeVisible();
+  await noHorizontalScroll(page, 360);
+
+  await page.getByRole("button", { name: "menu" }).click();
+  await expect(page.getByRole("menuitem", { name: "agenda" })).toBeVisible();
+  await expect(page.getByRole("menuitem", { name: "lixeira" })).toBeVisible();
+  await page.getByRole("menuitem", { name: "agenda" }).click();
+  await expect(page.getByText("nenhuma tarefa para a agenda.")).toBeVisible();
+  await expect(toggle).toHaveText("kanban");
 });
 
 test("768px: sem scroll horizontal e ações inline visíveis", async ({ page }) => {
