@@ -1,9 +1,13 @@
 import { Button } from "@/components/ui/button";
-import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip";
+import {
+  Tooltip,
+  TooltipContent,
+  TooltipTrigger,
+} from "@/components/ui/tooltip";
 import type { StatusFilter } from "@/lib/filter";
 import type { Status } from "@/lib/types";
 import { useT } from "@/hooks/useT";
-import { } from "@/lib/types";
+import {} from "@/lib/types";
 
 export interface ChipDef {
   key: StatusFilter;
@@ -14,9 +18,17 @@ export interface ChipDef {
 const CHIPS: ChipDef[] = [
   { key: "todo", cls: "text-[var(--chip-todo)]", full: "text-[var(--todo)]" },
   { key: "doing", cls: "text-[var(--chip-flow)]", full: "text-[var(--flow)]" },
-  { key: "waiting", cls: "text-[var(--chip-warn)]", full: "text-[var(--warn)]" },
+  {
+    key: "waiting",
+    cls: "text-[var(--chip-warn)]",
+    full: "text-[var(--warn)]",
+  },
   { key: "done", cls: "text-[var(--chip-fired)]", full: "text-[var(--fired)]" },
-  { key: "blocked", cls: "text-[var(--chip-gave)]", full: "text-[var(--gave)]" },
+  {
+    key: "blocked",
+    cls: "text-[var(--chip-gave)]",
+    full: "text-[var(--gave)]",
+  },
 ];
 
 interface FilterChipsProps {
@@ -48,7 +60,11 @@ export function FilterChips({
 }: FilterChipsProps) {
   const { t, status } = useT();
   return (
-    <div className="flex flex-wrap items-center gap-1.5" role="group" aria-label={t("filtros por status")}>
+    <div
+      className="flex flex-wrap justify-center items-center gap-1.5"
+      role="group"
+      aria-label={t("filtros por status")}
+    >
       {CHIPS.map(({ key, cls, full }) => {
         const count = key === "blocked" ? blockedCount : counts[key as Status];
         const isActive = active === key;
@@ -95,7 +111,9 @@ export function FilterChips({
             </Button>
           }
         />
-        <TooltipContent side="bottom">{t("filtro de prioridade (P1 no topo)")}</TooltipContent>
+        <TooltipContent side="bottom">
+          {t("filtro de prioridade (P1 no topo)")}
+        </TooltipContent>
       </Tooltip>
       {filtering && (
         <Button
