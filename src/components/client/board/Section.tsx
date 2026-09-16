@@ -1,4 +1,5 @@
 import { useState } from "react";
+import { GripVertical } from "lucide-react";
 import { useT } from "@/hooks/useT";
 import { useDroppable } from "@dnd-kit/core";
 import { SortableContext, verticalListSortingStrategy, useSortable } from "@dnd-kit/sortable";
@@ -80,11 +81,11 @@ export function Section({ projectId, section, onToggleSection, onAddTask, onEdit
           type="button"
           aria-label={t("arrastar seção p/ reordenar")}
           title={t("arrastar seção p/ reordenar")}
-          className="shrink-0 cursor-grab touch-none text-[11px] text-[var(--dimmer)] hover:text-[var(--text)] active:cursor-grabbing"
+          className="flex shrink-0 cursor-grab touch-none items-center text-[var(--dimmer)] transition-colors hover:text-[var(--text)] active:cursor-grabbing"
           {...attributes}
           {...listeners}
         >
-          ⋮⋮
+          <GripVertical size={12} strokeWidth={2.5} />
         </button>
         <button
           type="button"

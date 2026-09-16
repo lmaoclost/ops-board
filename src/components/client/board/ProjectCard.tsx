@@ -1,4 +1,5 @@
 import { useState } from "react";
+import { GripVertical } from "lucide-react";
 import { useT } from "@/hooks/useT";
 import type { TKey } from "@/lib/i18n";
 import {
@@ -104,11 +105,11 @@ export function ProjectCard({
           type="button"
           aria-label={t("arrastar projeto p/ reordenar")}
           title={t("arrastar projeto p/ reordenar")}
-          className="shrink-0 cursor-grab touch-none text-[11px] text-[var(--dimmer)] hover:text-[var(--text)] active:cursor-grabbing"
+          className="flex shrink-0 cursor-grab touch-none items-center text-[var(--dimmer)] transition-colors hover:text-[var(--text)] active:cursor-grabbing"
           {...attributes}
           {...listeners}
         >
-          ⋮⋮
+          <GripVertical size={12} strokeWidth={2.5} />
         </button>
         <button
           type="button"

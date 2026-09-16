@@ -296,7 +296,7 @@ const notifiedRef = useRef(false);
         <Dialog open onOpenChange={(o) => { if (!o) setConfirmClearOpen(false); }}>
           <DialogContent
             showCloseButton={false}
-            className="!sm:max-w-[380px] gap-0 rounded-lg border border-[var(--line-soft)] bg-[var(--panel-2)] p-0 text-[var(--text)] shadow-xl"
+            className="gap-0 rounded-lg border border-[var(--line-soft)] bg-[var(--panel-2)] p-0 text-[var(--text)] shadow-xl"
           >
             <div className="flex items-center justify-between border-b border-[var(--line)] px-4 py-3">
               <DialogTitle className="text-[13px] font-bold text-[var(--text)]">{t("apagar todos os dados")}</DialogTitle>
@@ -336,7 +336,7 @@ const notifiedRef = useRef(false);
         <Dialog open onOpenChange={(o) => { if (!o) setConfirmImportOpen(false); }}>
           <DialogContent
             showCloseButton={false}
-            className="!sm:max-w-[380px] gap-0 rounded-lg border border-[var(--line-soft)] bg-[var(--panel-2)] p-0 text-[var(--text)] shadow-xl"
+            className="gap-0 rounded-lg border border-[var(--line-soft)] bg-[var(--panel-2)] p-0 text-[var(--text)] shadow-xl"
           >
             <div className="flex items-center justify-between border-b border-[var(--line)] px-4 py-3">
               <DialogTitle className="text-[13px] font-bold text-[var(--text)]">{t("importar backup")}</DialogTitle>
@@ -394,7 +394,7 @@ const notifiedRef = useRef(false);
         <Dialog open onOpenChange={(o) => { if (!o) setHelpOpen(false); }}>
           <DialogContent
             showCloseButton={false}
-            className="!sm:max-w-[420px] gap-0 rounded-lg border border-[var(--line-soft)] bg-[var(--panel-2)] p-0 text-[var(--text)] shadow-xl"
+            className="gap-0 rounded-lg border border-[var(--line-soft)] bg-[var(--panel-2)] p-0 text-[var(--text)] shadow-xl"
           >
             <div className="flex items-center justify-between border-b border-[var(--line)] px-4 py-3">
               <DialogTitle className="text-[13px] font-bold text-[var(--text)]">{t("atalhos e dicas")}</DialogTitle>

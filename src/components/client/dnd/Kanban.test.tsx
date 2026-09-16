@@ -103,20 +103,35 @@ it("clique no card abre o modal de edição e submit chama onEditTask", () => {
     expect(onEditTask).toHaveBeenCalledWith("p1", "s1", "t1", expect.objectContaining({ text: "correr pro topo" }));
   });
 
-  it("click após drag (>6px) não abre o modal", () => {
+  it("grip da tarefa tem label acessível e card não é mais draggable inteiro", () => {
+    renderKanban();
+    const card = screen.getAllByTestId("kanban-task")[0];
+    expect(within(card).getByRole("button", { name: "arrastar tarefa p/ reordenar" })).toBeTruthy();
+    expect(screen.getAllByRole("button", { name: "arrastar tarefa p/ reordenar" })).toHaveLength(4);
+  });
+
+  it("grip usa o mesmo ícone da lista (svg GripVertical)", () => {
+    renderKanban();
+    const grip = screen.getAllByRole("button", { name: "arrastar tarefa p/ reordenar" })[0];
+    expect(grip.querySelector("svg")).not.toBeNull();
+    expect(grip.textContent).not.toContain("⋮");
+  });
+
+  it("KanbanCardFace: clone do card tem ring/shadow e id de overlay", () => {
+    renderKanban();
+    const card = screen.getAllByTestId("kanban-task")[0];
+    const grip = within(card).getByRole("button", { name: "arrastar tarefa p/ reordenar" });
+    fireEvent.pointerDown(grip, { button: 0, clientX: 10, clientY: 10, isPrimary: true });
+    fireEvent.pointerMove(document, { clientX: 40, clientY: 10 });
+    fireEvent.pointerUp(document, { clientX: 40, clientY: 10 });
+  });
+
+  it("clique no card abre o modal mesmo após mover o mouse (sem guard 6px)", () => {
     const onEditTask = vi.fn();
     renderKanban({ onEditTask });
     const card = screen.getByRole("button", { name: /editar tarefa correr pra base/ });
     fireEvent.pointerDown(card, { clientX: 10, clientY: 10 });
     fireEvent.click(card, { clientX: 40, clientY: 10 });
-    expect(screen.queryByText("editar tarefa")).toBeNull();
-  });
-
-  it("click sem movimento abre o modal", () => {
-    renderKanban();
-    const card = screen.getByRole("button", { name: /editar tarefa correr pra base/ });
-    fireEvent.pointerDown(card, { clientX: 10, clientY: 10 });
-    fireEvent.click(card, { clientX: 12, clientY: 11 });
     expect(screen.getByText("editar tarefa")).toBeTruthy();
   });
 

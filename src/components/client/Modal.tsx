@@ -64,7 +64,7 @@ export function Modal({ title, fields, submitLabel = "salvar", onSubmit, onCance
       <DialogContent
         showCloseButton={false}
         initialFocus={() => document.querySelector<HTMLElement>("[data-modal-first]")}
-        className="!sm:max-w-[460px] gap-0 rounded-lg border border-[var(--line-soft)] bg-[var(--panel-2)] p-0 text-[var(--text)] shadow-xl"
+        className="gap-0 rounded-lg border border-[var(--line-soft)] bg-[var(--panel-2)] p-0 text-[var(--text)] shadow-xl"
       >
         <div className="flex items-center justify-between border-b border-[var(--line)] px-4 py-3">
           <DialogTitle className="text-[13px] font-bold text-[var(--text)]">{title}</DialogTitle>

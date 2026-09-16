@@ -1,5 +1,7 @@
-import { useMemo, useRef, useState } from "react";
-import { useDraggable, useDroppable } from "@dnd-kit/core";
+import { useMemo, useState } from "react";
+import { GripVertical } from "lucide-react";
+import { DragOverlay, useDroppable } from "@dnd-kit/core";
+import { useSortable } from "@dnd-kit/sortable";
 import { CSS } from "@dnd-kit/utilities";
 import { sortTasks } from "@/lib/filter";
 import { flatTasks, type FlatTask } from "@/lib/flat";
@@ -17,51 +19,88 @@ interface KanbanProps {
   onAddTask: (pid: string, sid: string, input: AddTaskInput) => void;
 }
 
+function KanbanCardFace({ item }: { item: FlatTask }) {
+  const { t } = useT();
+  const overdue = isOverdue(item.task.due, item.task.status);
+  const dueSoon = isDueSoon(item.task.due, item.task.status);
+  return (
+    <div
+      className="rotate-2 cursor-grabbing rounded-md border border-[var(--fired)]/60 bg-[var(--panel-2)] px-2.5 py-1.5 text-xs shadow-xl ring-2 ring-[var(--fired)]/70"
+      data-testid="kanban-drag-overlay"
+    >
+      <div className="flex items-start gap-1.5">
+        <span className="flex shrink-0 items-center text-[var(--dimmer)]">
+          <GripVertical size={12} strokeWidth={2.5} />
+        </span>
+        <span className="min-w-0 flex-1">
+          <span className={item.task.status === "done" ? "line-through text-[var(--dim)]" : "text-[var(--text)]"}>
+            {item.task.text}
+          </span>
+          {item.task.note && <span className="text-[var(--dim)]"> — {item.task.note}</span>}
+          <span className="mt-0.5 block text-[10px] text-[var(--dim)]">
+            {item.ptitle} · {item.stitle}
+          </span>
+        </span>
+      </div>
+      <div className="mt-1 flex items-center gap-1.5">
+        {item.task.blocked && (
+          <span className="text-[10px] font-bold uppercase tracking-[0.08em] text-[var(--gave)]">
+            ⛔ {t("bloqueada")}
+          </span>
+        )}
+        {item.task.due &&
+          (overdue ? (
+            <span className="text-[10px] font-bold uppercase text-[var(--gave)]">
+              {fmtDate(item.task.due)} {t("vencida")}
+            </span>
+          ) : (
+            <span className={`text-[10px] font-semibold ${dueSoon ? "text-[var(--warn)]" : "text-[var(--muted-text)]"}`}>
+              {fmtDate(item.task.due)}
+            </span>
+          ))}
+      </div>
+    </div>
+  );
+}
+
 function KanbanTask({
   item,
   onEdit,
   onUpdate,
   onDelete,
   onSubs,
+  onDragItem,
 }: {
   item: FlatTask;
   onEdit: () => void;
   onUpdate: (patch: TaskPatch) => void;
   onDelete: () => void;
   onSubs: () => void;
+  onDragItem: (item: FlatTask | null) => void;
 }) {
   const { t } = useT();
-  const { attributes, listeners, setNodeRef, transform, isDragging } = useDraggable({ id: `task:${item.task.id}` });
-  const { setNodeRef: setCardDropRef } = useDroppable({ id: `task:${item.task.id}` });
+  const { attributes, listeners, setNodeRef: setCardNodeRef, transform, isDragging } = useSortable({ id: `task:${item.task.id}` });
+  const { setNodeRef: setDropRef } = useDroppable({ id: `task:${item.task.id}` });
   const setRefs = (el: HTMLDivElement | null) => {
-    setNodeRef(el);
-    setCardDropRef(el);
+    setCardNodeRef(el);
+    setDropRef(el);
   };
-  const start = useRef<{ x: number; y: number } | null>(null);
   const overdue = isOverdue(item.task.due, item.task.status);
   const dueSoon = isDueSoon(item.task.due, item.task.status);
   const onInteractive = (e: { target: EventTarget }) => (e.target as HTMLElement).closest("button") != null;
   return (
     <div
       ref={setRefs}
-      style={{ transform: CSS.Translate.toString(transform) }}
-      className={`cursor-grab rounded-md border border-[var(--line)] bg-[var(--panel-2)] px-2.5 py-1.5 text-xs hover:bg-[var(--panel-3)] ${isDragging ? "opacity-90 shadow-lg ring-2 ring-[var(--fired)]/70 z-10" : ""}`}
+      style={{ transform: CSS.Transform.toString(transform) }}
+      className={`cursor-pointer rounded-md border border-[var(--line)] bg-[var(--panel-2)] px-2.5 py-1.5 text-xs hover:bg-[var(--panel-3)] ${isDragging ? "opacity-40" : ""}`}
       data-testid="kanban-task"
+      role="button"
+      tabIndex={0}
       aria-label={t("editar tarefa X").replace("X", item.task.text)}
       title={item.task.text}
-      onPointerDown={(e) => {
-        start.current = { x: e.clientX, y: e.clientY };
-      }}
       onClick={(e) => {
         if (onInteractive(e)) return;
-        const s = start.current;
-        start.current = null;
-        if (!s) {
-          onEdit();
-          return;
-        }
-        const moved = Math.abs(e.clientX - s.x) > 6 || Math.abs(e.clientY - s.y) > 6;
-        if (!moved) onEdit();
+        onEdit();
       }}
       onKeyDown={(e) => {
         if (onInteractive(e)) return;
@@ -70,10 +109,23 @@ function KanbanTask({
           onEdit();
         }
       }}
-      {...attributes}
-      {...listeners}
     >
       <div className="flex items-start gap-1.5">
+        <button
+          type="button"
+          aria-label={t("arrastar tarefa p/ reordenar")}
+          title={t("arrastar tarefa p/ reordenar")}
+          className="flex shrink-0 cursor-grab touch-none items-center text-[var(--dimmer)] transition-colors hover:text-[var(--text)] active:cursor-grabbing"
+          {...attributes}
+          onPointerDown={(e) => {
+            onDragItem(item);
+            listeners?.onPointerDown?.(e);
+          }}
+          onPointerUp={() => onDragItem(null)}
+          onPointerCancel={() => onDragItem(null)}
+        >
+          <GripVertical size={12} strokeWidth={2.5} />
+        </button>
         <span className="min-w-0 flex-1">
           <span className={item.task.status === "done" ? "line-through text-[var(--dim)]" : "text-[var(--text)]"}>
             {item.task.text}
@@ -160,6 +212,7 @@ function DroppableCol({
   onSubs,
   onCreate,
   empty,
+  onDragItem,
 }: {
   status: Status;
   items: FlatTask[];
@@ -169,13 +222,14 @@ function DroppableCol({
   onSubs: (item: FlatTask) => void;
   onCreate: () => void;
   empty: boolean;
+  onDragItem: (item: FlatTask | null) => void;
 }) {
   const { t, status: statusLabel } = useT();
   const { setNodeRef, isOver } = useDroppable({ id: `k:${status}` });
   return (
     <div
       ref={setNodeRef}
-      className={`group flex min-w-[200px] flex-1 flex-col rounded-lg border ${isOver ? "border-[var(--fired)]/60" : "border-[var(--line)]"} bg-[var(--panel)]`}
+      className={`group flex min-w-[min(200px,100%)] flex-1 flex-col rounded-lg border ${isOver ? "border-[var(--fired)] bg-[var(--fired)]/5" : "border-[var(--line)]"} bg-[var(--panel)]`}
     >
       <header className="flex items-center justify-between gap-2 border-b border-[var(--line)] px-3 py-2">
         <span className="text-[11px] font-bold uppercase tracking-wider text-[var(--muted-text)]">
@@ -200,6 +254,7 @@ function DroppableCol({
             onUpdate={(patch) => onUpdate(item, patch)}
             onDelete={() => onDelete(item)}
             onSubs={() => onSubs(item)}
+            onDragItem={onDragItem}
           />
         ))}
       </div>
@@ -224,6 +279,7 @@ export function Kanban({ projetos, prioSort, onEditTask, onDeleteTask, onAddTask
   const [editing, setEditing] = useState<FlatTask | null>(null);
   const [creating, setCreating] = useState<Status | null>(null);
   const [focusSubs, setFocusSubs] = useState(false);
+  const [dragItem, setDragItem] = useState<FlatTask | null>(null);
   const grouped = useMemo(
     () =>
       STATUS_ORDER.map((s) => ({
@@ -263,9 +319,13 @@ export function Kanban({ projetos, prioSort, onEditTask, onDeleteTask, onAddTask
               if (available.length) setCreating(status);
             }}
             empty={items.length === 0}
+            onDragItem={setDragItem}
           />
         ))}
       </div>
+      <DragOverlay dropAnimation={null}>
+        {dragItem ? <KanbanCardFace item={dragItem} /> : null}
+      </DragOverlay>
       {editing && (
         <TaskEditModal
           task={editing.task}

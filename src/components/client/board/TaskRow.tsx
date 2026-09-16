@@ -3,6 +3,13 @@ import { CircleSlashIcon } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { useT } from "@/hooks/useT";
 import { Button } from "@/components/ui/button";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuSeparator,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
 import { Modal } from "@/components/client/Modal";
 import { ConfirmDelete } from "@/components/client/ConfirmDelete";
 import {
@@ -316,7 +323,7 @@ export function TaskRow({ task, onToggle, onPrioCycle, onStatusChange, onEdit, o
             size="sm"
             aria-label={t("mudar status")}
             title={t("mudar status")}
-            className="h-7 border-[var(--line)] bg-[var(--field)] px-2 text-[11px] text-[var(--muted-text)] hover:border-[var(--muted-text)] hover:text-[var(--text)]"
+            className="hidden h-7 border-[var(--line)] bg-[var(--field)] px-2 text-[11px] text-[var(--muted-text)] hover:border-[var(--muted-text)] hover:text-[var(--text)] sm:flex"
           >
             <SelectValue>{status(task.status)}</SelectValue>
           </SelectTrigger>
@@ -335,11 +342,11 @@ export function TaskRow({ task, onToggle, onPrioCycle, onStatusChange, onEdit, o
           onClick={() => (task.blocked ? onUpdate({ blocked: false }) : setBlocking(true))}
           title={t(task.blocked ? "desbloquear tarefa" : "bloquear tarefa")}
           aria-label={t(task.blocked ? "desbloquear tarefa" : "bloquear tarefa")}
-          className={`transition-opacity ${task.blocked ? "text-[var(--gave)] opacity-100 hover:text-[var(--gave)]" : "text-[var(--dimmer)] opacity-0 group-hover:opacity-100 focus-visible:opacity-100 hover:text-[var(--gave)]"}`}
+          className={`hidden transition-opacity sm:inline-flex ${task.blocked ? "text-[var(--gave)] opacity-100 hover:text-[var(--gave)]" : "text-[var(--dimmer)] opacity-0 group-hover:opacity-100 focus-visible:opacity-100 hover:text-[var(--gave)]"}`}
         >
           <CircleSlashIcon />
         </Button>
-        <Button type="button" variant="ghost" size="icon-xs" onClick={onEdit} title={t("editar")} aria-label={t("editar")}>
+        <Button type="button" variant="ghost" size="icon-xs" onClick={onEdit} title={t("editar")} aria-label={t("editar")} className="hidden sm:inline-flex">
           ✎
         </Button>
         <Button
@@ -349,9 +356,47 @@ export function TaskRow({ task, onToggle, onPrioCycle, onStatusChange, onEdit, o
           onClick={() => setConfirmingDelete(true)}
           title="excluir"
           aria-label="excluir"
+          className="hidden sm:inline-flex"
         >
           ×
         </Button>
+        <span className="shrink-0 sm:hidden">
+          <DropdownMenu>
+            <DropdownMenuTrigger
+              render={
+                <Button
+                  type="button"
+                  variant="ghost"
+                  size="icon-xs"
+                  title={t("ações da tarefa")}
+                  aria-label={t("ações da tarefa")}
+                >
+                  ⋯
+                </Button>
+              }
+            />
+            <DropdownMenuContent align="end" className="bg-[var(--panel-2)] text-[var(--text)]">
+              {STATUS_ORDER.map((k) => (
+                <DropdownMenuItem key={k} className="text-xs" onClick={() => onStatusChange(k)}>
+                  {status(k)}
+                </DropdownMenuItem>
+              ))}
+              <DropdownMenuSeparator className="bg-[var(--line)]" />
+              <DropdownMenuItem
+                className="text-xs"
+                onClick={() => (task.blocked ? onUpdate({ blocked: false }) : setBlocking(true))}
+              >
+                {t(task.blocked ? "desbloquear tarefa" : "bloquear tarefa")}
+              </DropdownMenuItem>
+              <DropdownMenuItem className="text-xs" onClick={onEdit}>
+                {t("editar")}
+              </DropdownMenuItem>
+              <DropdownMenuItem variant="destructive" className="text-xs" onClick={() => setConfirmingDelete(true)}>
+                {t("excluir")}
+              </DropdownMenuItem>
+            </DropdownMenuContent>
+          </DropdownMenu>
+        </span>
       </div>
       {task.subs.length > 0 && (
         <div className="pb-1">

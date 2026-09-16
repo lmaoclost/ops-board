@@ -16,7 +16,7 @@ export function ConfirmDelete({ title, message, confirmLabel, onConfirm, onCance
     <Dialog open onOpenChange={(o) => { if (!o) onCancel(); }}>
       <DialogContent
         showCloseButton={false}
-        className="!sm:max-w-[380px] gap-0 rounded-lg border border-[var(--line-soft)] bg-[var(--panel-2)] p-0 text-[var(--text)] shadow-xl"
+        className="gap-0 rounded-lg border border-[var(--line-soft)] bg-[var(--panel-2)] p-0 text-[var(--text)] shadow-xl"
       >
         <div className="flex items-center justify-between border-b border-[var(--line)] px-4 py-3">
           <DialogTitle className="text-[13px] font-bold text-[var(--text)]">{title}</DialogTitle>

@@ -24,7 +24,9 @@ async function addTask(page: Page, text: string, section = 0) {
 }
 
 async function drag(page: Page, src: Locator, dst: Locator) {
-  const sb = await src.boundingBox();
+  const grip = src.getByRole("button", { name: "arrastar tarefa p/ reordenar" });
+  const anchor = (await grip.count()) > 0 ? grip : src;
+  const sb = await anchor.boundingBox();
   const db = await dst.boundingBox();
   if (!sb || !db) throw new Error("bounding box indisponível");
   await page.mouse.move(sb.x + sb.width / 2, sb.y + sb.height / 2);
@@ -93,7 +95,8 @@ test("muda status via kanban: arrasta para a coluna concluída e dispara confete
   await page.getByRole("button", { name: "kanban" }).click();
   await expect(page.getByText("a fazer 1", { exact: true })).toBeVisible();
 
-  await drag(page, page.getByText("na fila", { exact: true }), page.getByText("concluída 0", { exact: true }));
+  const srcCard = page.getByTestId("kanban-task").filter({ hasText: "na fila" });
+  await drag(page, srcCard, page.getByText("concluída 0", { exact: true }));
 
   await expect(page.getByText("concluída 1", { exact: true })).toBeVisible();
   await expect(page.getByText("a fazer 0", { exact: true })).toBeVisible();
@@ -107,7 +110,8 @@ test("kanban: move tarefa entre colunas (todo → em andamento)", async ({ page 
 
   await page.getByRole("button", { name: "kanban" }).click();
 
-  await drag(page, page.getByText("na fila", { exact: true }), page.getByText("em andamento 0", { exact: true }));
+  const srcCard = page.getByTestId("kanban-task").filter({ hasText: "na fila" });
+  await drag(page, srcCard, page.getByText("em andamento 0", { exact: true }));
 
   await expect(page.getByText("em andamento 1", { exact: true })).toBeVisible();
   await expect(page.getByText("a fazer 0", { exact: true })).toBeVisible();
