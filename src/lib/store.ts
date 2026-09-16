@@ -8,6 +8,17 @@ import { todayISO } from "./date";
 import type { AddProjectInput, AddSectionInput, AddTaskInput, Prio, Project, ProjectPatch, SectionPatch, Status, SubTask, Task, TaskPatch } from "./types";
 import { uid } from "./uid";
 
+// Contrato do store:
+// - único estado global do app (zustand); persiste em localStorage["opsboard.v1"]
+//   via `persist`, com `partialize` controlando o que sai (projetos + locale).
+// - TODA mutação de projetos passa por `commit()`: ele salva um snapshot JSON
+//   pré-mutação na pilha de undo (máx 50) — Ctrl+Z desfaz 1 commit inteiro.
+// - `merge` do persist roda em TODA reidratação (não só em mudança de schema):
+//   é ali que purgeExpired() apaga tarefas com deletedAt >= 7d.
+// - Erros de quota de storage são notificados via setStorageErrorHandler
+//   (page.tsx registra um handler que mostra toast).
+// - Migrar schema: subir SCHEMA_VERSION em migrate.ts + atualizar e2e export-import.spec.
+
 let storageErrorHandler: (() => void) | null = null;
 
 export function setStorageErrorHandler(fn: (() => void) | null) {
