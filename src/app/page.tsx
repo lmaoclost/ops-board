@@ -1,27 +1,27 @@
 "use client";
 
-import { useCallback, useEffect, useMemo, useRef, useState } from "react";
+import { useCallback, useMemo, useRef, useState } from "react";
 import { Board } from "@/components/client/board/Board";
 import { FilterChips } from "@/components/client/FilterChips";
 import dynamic from "next/dynamic";
+import { ConfirmDialog } from "@/components/client/ConfirmDialog";
+import { HelpDialog } from "@/components/client/HelpDialog";
+import { Toast, useToast } from "@/components/client/Toast";
 import { PrivacyNotice } from "@/components/client/PrivacyNotice";
 import { FooterLinks } from "@/components/client/FooterLinks";
 import { Topbar } from "@/components/client/Topbar";
 import { useT } from "@/hooks/useT";
 import { useFilters } from "@/hooks/useFilters";
 import { useShortcuts } from "@/hooks/useShortcuts";
+import { useDueReminder } from "@/hooks/useDueReminder";
 import { useTheme } from "next-themes";
 import { celebrate, wasTransitionedToDone } from "@/lib/celebrate";
 import { exportJson, parseImport } from "@/lib/io";
 import { deriveStats } from "@/lib/selectors";
 import { visibleProjetos } from "@/lib/filter";
-import { todayISO } from "@/lib/date";
-import { dueReminder } from "@/lib/notify";
-import { useBoard, setStorageErrorHandler } from "@/lib/store";
+import { useBoard } from "@/lib/store";
 import { cyclePrio } from "@/lib/tokens";
 import type { Status } from "@/lib/types";
-import { Dialog, DialogClose, DialogContent, DialogTitle } from "@/components/ui/dialog";
-import { Button } from "@/components/ui/button";
 
 const Modal = dynamic(() => import("@/components/client/Modal").then((m) => m.Modal));
 
@@ -31,7 +31,6 @@ export default function Home() {
   const editProject = useBoard((s) => s.editProject);
   const deleteProject = useBoard((s) => s.deleteProject);
   const toggleProjectArchive = useBoard((s) => s.toggleProjectArchive);
-  const { t } = useT();
   const setProjectPrio = useBoard((s) => s.setProjectPrio);
   const toggleProjectCollapsed = useBoard((s) => s.toggleProjectCollapsed);
   const addSection = useBoard((s) => s.addSection);
@@ -53,6 +52,8 @@ export default function Home() {
   const reset = useBoard((s) => s.reset);
   const undo = useBoard((s) => s.undo);
   const canUndo = useBoard((s) => s.canUndo);
+  const { t } = useT();
+
   const [confirmClearOpen, setConfirmClearOpen] = useState(false);
   const [confirmImportOpen, setConfirmImportOpen] = useState(false);
   const { filters, setQuery, toggleStatus, togglePrioSort, setView, toggleView, toggleArchived, clear } = useFilters();
@@ -61,42 +62,11 @@ export default function Home() {
   const toggleTheme = () => setTheme(isDark ? "light" : "dark");
   const [newProjectOpen, setNewProjectOpen] = useState(false);
   const [helpOpen, setHelpOpen] = useState(false);
-  const [toast, setToast] = useState<string | null>(null);
-  const toastTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const { showToast, toast } = useToast();
   const fileRef = useRef<HTMLInputElement | null>(null);
   const searchRef = useRef<HTMLInputElement | null>(null);
 
-  const showToast = useCallback((msg: string) => {
-    setToast(msg);
-    if (toastTimer.current) clearTimeout(toastTimer.current);
-    toastTimer.current = setTimeout(() => setToast(null), 2500);
-  }, []);
-
-const notifiedRef = useRef(false);
-
-  useEffect(() => {
-    if (notifiedRef.current || typeof Notification === "undefined") return;
-    const reminder = dueReminder(projetos, todayISO());
-    if (!reminder) return;
-    notifiedRef.current = true;
-    const fire = () =>
-      new Notification(
-        `${reminder.count} ${reminder.count === 1 ? t("tarefa pendente") : t("tarefas pendentes")}`,
-        { body: reminder.texts.join(" · ") + (reminder.count > 3 ? "…" : "") },
-      );
-    if (Notification.permission === "granted") {
-      fire();
-    } else if (Notification.permission === "default") {
-      void Notification.requestPermission().then((p) => {
-        if (p === "granted") fire();
-      });
-    }
-  }, [projetos, t]);
-
-  useEffect(() => {
-    setStorageErrorHandler(() => showToast(t("armazenamento cheio: alterações podem não ser salvas")));
-    return () => setStorageErrorHandler(null);
-  }, [showToast, t]);
+  useDueReminder();
 
   const boardProjetos = useMemo(() => visibleProjetos(projetos, filters), [projetos, filters]);
   const stats = useMemo(() => deriveStats(boardProjetos), [boardProjetos]);
@@ -317,82 +287,27 @@ const notifiedRef = useRef(false);
       {/* --- dialogs --- */}
 
       {confirmClearOpen && (
-        <Dialog open onOpenChange={(o) => { if (!o) setConfirmClearOpen(false); }}>
-          <DialogContent
-            showCloseButton={false}
-            className="gap-0 rounded-lg border border-[var(--line-soft)] bg-[var(--panel-2)] p-0 text-[var(--text)] shadow-xl"
-          >
-            <div className="flex items-center justify-between border-b border-[var(--line)] px-4 py-3">
-              <DialogTitle className="text-[13px] font-bold text-[var(--text)]">{t("apagar todos os dados")}</DialogTitle>
-              <DialogClose
-                render={
-                  <Button type="button" variant="ghost" size="icon-xs" title={t("fechar")} aria-label={t("fechar")}>
-                    ×
-                  </Button>
-                }
-              />
-            </div>
-            <div className="px-4 py-4 text-xs leading-relaxed text-[var(--muted-text)]">
-              {t("apagar_txt").replace("{n}", String(projetos.length))}
-            </div>
-            <div className="flex justify-end gap-2 px-4 pb-4">
-              <Button type="button" variant="ghost" size="xs" onClick={() => setConfirmClearOpen(false)}>
-                {t("cancelar")}
-              </Button>
-              <Button
-                type="button"
-                variant="destructive"
-                size="sm"
-                onClick={() => {
-                  reset();
-                  setConfirmClearOpen(false);
-                  showToast(t("todos os dados apagados"));
-                }}
-              >
-                {t("apagar tudo")}
-              </Button>
-            </div>
-          </DialogContent>
-        </Dialog>
+        <ConfirmDialog
+          title={t("apagar todos os dados")}
+          body={t("apagar_txt").replace("{n}", String(projetos.length))}
+          confirmLabel={t("apagar tudo")}
+          onConfirm={() => {
+            reset();
+            showToast(t("todos os dados apagados"));
+          }}
+          onCancel={() => setConfirmClearOpen(false)}
+        />
       )}
 
       {confirmImportOpen && (
-        <Dialog open onOpenChange={(o) => { if (!o) setConfirmImportOpen(false); }}>
-          <DialogContent
-            showCloseButton={false}
-            className="gap-0 rounded-lg border border-[var(--line-soft)] bg-[var(--panel-2)] p-0 text-[var(--text)] shadow-xl"
-          >
-            <div className="flex items-center justify-between border-b border-[var(--line)] px-4 py-3">
-              <DialogTitle className="text-[13px] font-bold text-[var(--text)]">{t("importar backup")}</DialogTitle>
-              <DialogClose
-                render={
-                  <Button type="button" variant="ghost" size="icon-xs" title={t("fechar")} aria-label={t("fechar")}>
-                    ×
-                  </Button>
-                }
-              />
-            </div>
-            <div className="px-4 py-4 text-xs leading-relaxed text-[var(--muted-text)]">
-              {t("importar_txt").replace("{n}", String(projetos.length))}
-            </div>
-            <div className="flex justify-end gap-2 px-4 pb-4">
-              <Button type="button" variant="ghost" size="xs" onClick={() => setConfirmImportOpen(false)}>
-                {t("cancelar")}
-              </Button>
-              <Button
-                type="button"
-                variant="default"
-                size="sm"
-                onClick={() => {
-                  setConfirmImportOpen(false);
-                  fileRef.current?.click();
-                }}
-              >
-                {t("escolher arquivo")}
-              </Button>
-            </div>
-          </DialogContent>
-        </Dialog>
+        <ConfirmDialog
+          title={t("importar backup")}
+          body={t("importar_txt").replace("{n}", String(projetos.length))}
+          confirmLabel={t("escolher arquivo")}
+          confirmVariant="default"
+          onConfirm={() => fileRef.current?.click()}
+          onCancel={() => setConfirmImportOpen(false)}
+        />
       )}
 
       {newProjectOpen && (
@@ -414,51 +329,11 @@ const notifiedRef = useRef(false);
         />
       )}
 
-      {helpOpen && (
-        <Dialog open onOpenChange={(o) => { if (!o) setHelpOpen(false); }}>
-          <DialogContent
-            showCloseButton={false}
-            className="gap-0 rounded-lg border border-[var(--line-soft)] bg-[var(--panel-2)] p-0 text-[var(--text)] shadow-xl"
-          >
-            <div className="flex items-center justify-between border-b border-[var(--line)] px-4 py-3">
-              <DialogTitle className="text-[13px] font-bold text-[var(--text)]">{t("atalhos e dicas")}</DialogTitle>
-              <DialogClose
-                render={
-                  <Button type="button" variant="ghost" size="icon-xs" title={t("fechar")} aria-label={t("fechar")}>
-                    ×
-                  </Button>
-                }
-              />
-            </div>
-            <div className="grid grid-cols-[auto_1fr] gap-x-4 gap-y-1.5 px-4 py-4 text-xs">
-              <span className="text-[var(--dimmer)]">p</span><span>{t("novo projeto")}</span>
-              <span className="text-[var(--dimmer)]">n</span><span>{t("focar nova tarefa")}</span>
-              <span className="text-[var(--dimmer)]">/</span><span>{t("buscar tarefas")}</span>
-              <span className="text-[var(--dimmer)]">1–5</span><span>{t("filtrar por status")}</span>
-              <span className="text-[var(--dimmer)]">k</span><span>{t("alternar lista/kanban (k)")}</span>
-              <span className="text-[var(--dimmer)]">t</span><span>{t("alternar tema claro/escuro")}</span>
-              <span className="text-[var(--dimmer)]">? </span><span>{t("esta ajuda")}</span>
-              <span className="text-[var(--dimmer)]">esc</span><span>{t("limpar filtros")}</span>
-              <span className="text-[var(--dimmer)]">ctrl+z</span><span>{t("desfazer (Ctrl+Z)")}</span>
-            </div>
-            <div className="border-t border-[var(--line)] px-4 py-3 text-xs leading-relaxed text-[var(--muted-text)]">
-              {t("ajuda_txt")}
-            </div>
-          </DialogContent>
-        </Dialog>
-      )}
+      {helpOpen && <HelpDialog onCancel={() => setHelpOpen(false)} />}
 
       <PrivacyNotice />
 
-      {toast && (
-        <div
-          role="status"
-          aria-live="polite"
-          className="fixed bottom-16 left-1/2 -translate-x-1/2 z-50 bg-[var(--panel-3)] border border-[var(--line)] text-[var(--text)] text-xs px-4 py-2 rounded-md shadow-lg"
-        >
-          {toast}
-        </div>
-      )}
+      <Toast message={toast} />
     </div>
   );
 }
