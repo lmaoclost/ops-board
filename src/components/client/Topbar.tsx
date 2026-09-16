@@ -14,6 +14,7 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import type { View } from "@/lib/filter";
+import { cn } from "@/lib/utils";
 import { Stats } from "@/components/client/Stats";
 import type { BoardStats } from "@/lib/selectors";
 
@@ -161,7 +162,7 @@ export function Topbar({
             </Button>
             <Link
               href="/privacy"
-              className={buttonVariants({ variant: "ghost", size: "xs" }) + " hidden text-[var(--muted-text)] hover:text-[var(--text)] lg:inline-flex"}
+              className={cn(buttonVariants({ variant: "ghost", size: "xs" }), "hidden text-[var(--muted-text)] hover:text-[var(--text)] lg:inline-flex")}
               title={t("política de privacidade")}
             >
               {t("privacidade")}
