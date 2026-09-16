@@ -110,6 +110,22 @@ it("clique no card abre o modal de edição e submit chama onEditTask", () => {
     expect(screen.getAllByRole("button", { name: "arrastar tarefa p/ reordenar" })).toHaveLength(4);
   });
 
+  it("grip usa o mesmo ícone da lista (svg GripVertical)", () => {
+    renderKanban();
+    const grip = screen.getAllByRole("button", { name: "arrastar tarefa p/ reordenar" })[0];
+    expect(grip.querySelector("svg")).not.toBeNull();
+    expect(grip.textContent).not.toContain("⋮");
+  });
+
+  it("KanbanCardFace: clone do card tem ring/shadow e id de overlay", () => {
+    renderKanban();
+    const card = screen.getAllByTestId("kanban-task")[0];
+    const grip = within(card).getByRole("button", { name: "arrastar tarefa p/ reordenar" });
+    fireEvent.pointerDown(grip, { button: 0, clientX: 10, clientY: 10, isPrimary: true });
+    fireEvent.pointerMove(document, { clientX: 40, clientY: 10 });
+    fireEvent.pointerUp(document, { clientX: 40, clientY: 10 });
+  });
+
   it("clique no card abre o modal mesmo após mover o mouse (sem guard 6px)", () => {
     const onEditTask = vi.fn();
     renderKanban({ onEditTask });

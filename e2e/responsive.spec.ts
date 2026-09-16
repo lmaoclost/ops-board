@@ -95,7 +95,13 @@ test("360px: kanban arrasta pelo grip da tarefa entre colunas", async ({ page })
   await page.mouse.move(sb.x + sb.width / 2, sb.y + sb.height / 2);
   await page.mouse.down();
   await page.mouse.move(sb.x + sb.width / 2 + 12, sb.y + sb.height / 2, { steps: 4 });
-  await page.mouse.move(db.x + db.width / 2, db.y + db.height / 2, { steps: 12 });
+  await page.mouse.move(db.x + db.width / 2, db.y + db.height / 2, { steps: 6 });
+
+  const overlay = page.getByTestId("kanban-drag-overlay");
+  await expect(overlay).toBeVisible();
+  await expect(overlay).toContainText("tarefa longa");
+  await expect(card).toHaveClass(/opacity-40/);
+
   await page.mouse.up();
 
   await expect(page.getByText("em andamento 1", { exact: true })).toBeVisible();
