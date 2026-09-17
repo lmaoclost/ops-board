@@ -39,7 +39,7 @@ export interface BoardTaskActions {
   onDelete: (pid: string, sid: string, tid: string) => void;
   onPurge: (pid: string, sid: string, tid: string) => void;
   onUpdate: (pid: string, sid: string, tid: string, patch: TaskPatch) => void;
-  onMoveTask: (pid: string, sid: string, tid: string, toPid: string, toSid: string, index: number) => void;
+  onMoveTask: (pid: string, sid: string, tid: string, toPid: string, toSid: string, index: number, parentId: string | null) => void;
 }
 
 export interface SectionLevelActions {
@@ -114,7 +114,7 @@ export const Board = memo(function Board({ projetos, filters, onNewProject, onCl
     if (!over) return;
     const drop = resolveDrop({ projetos, active, over });
     if (drop.kind === "move") {
-      taskActions.onMoveTask(drop.src.pid, drop.src.sid, drop.src.tid, drop.dest.pid, drop.dest.sid, drop.index);
+      taskActions.onMoveTask(drop.src.pid, drop.src.sid, drop.src.tid, drop.dest.pid, drop.dest.sid, drop.index, drop.dest.parentId);
     } else if (drop.kind === "status") {
       taskActions.onStatusChange(drop.task.pid, drop.task.sid, drop.task.tid, drop.status);
     } else if (drop.kind === "secmove") {

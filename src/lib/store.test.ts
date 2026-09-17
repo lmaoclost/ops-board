@@ -360,6 +360,181 @@ describe("board store", () => {
     expect(store.getState().projetos[0].sections[0].tasks.map((t) => t.id)).toEqual(["t2", "t1"]);
   });
 
+  it("moveTask aninha em outra task (parentId)", () => {
+    store.getState().moveTask({ pid: "p1", sid: "s1", tid: "t1" }, { pid: "p1", sid: "s1", parentId: "t2" }, 0);
+    const t2 = store.getState().projetos[0].sections[0].tasks[0];
+    expect(t2.id).toBe("t2");
+    expect(t2.subs.map((s) => s.id)).toEqual(["t1"]);
+    expect(store.getState().projetos[0].sections[0].tasks.map((t) => t.id)).toEqual(["t2"]);
+  });
+
+  it("moveTask aninhada mantém a sub-árvore da task movida", () => {
+    store.setState({
+      projetos: [
+        {
+          ...seedProjeto(),
+          sections: [
+            {
+              id: "s1", title: "geral", notes: "", collapsed: false,
+              tasks: [
+                { ...seedProjeto().sections[0].tasks[0], subs: [{ id: "t1a", text: "filha", status: "todo" as const, note: "", blocked: false, blockedReason: "", prio: 3, due: "", subs: [] }] },
+                seedProjeto().sections[0].tasks[1],
+              ],
+            },
+          ],
+        },
+      ],
+    });
+    store.getState().moveTask({ pid: "p1", sid: "s1", tid: "t1" }, { pid: "p1", sid: "s1", parentId: "t2" }, 0);
+    const t2 = store.getState().projetos[0].sections[0].tasks[0];
+    expect(t2.id).toBe("t2");
+    expect(t2.subs[0].id).toBe("t1");
+    expect(t2.subs[0].subs.map((s) => s.id)).toEqual(["t1a"]);
+  });
+
+  it("moveTask de sub pra raiz (promote)", () => {
+    store.setState({
+      projetos: [
+        {
+          ...seedProjeto(),
+          sections: [
+            {
+              id: "s1", title: "geral", notes: "", collapsed: false,
+              tasks: [
+                seedProjeto().sections[0].tasks[0],
+                { ...seedProjeto().sections[0].tasks[1], subs: [{ id: "t2a", text: "sub do t2", status: "todo" as const, note: "", blocked: false, blockedReason: "", prio: 3, due: "", subs: [] }] },
+              ],
+            },
+          ],
+        },
+      ],
+    });
+    store.getState().moveTask({ pid: "p1", sid: "s1", tid: "t2a" }, { pid: "p1", sid: "s1", parentId: null }, 2);
+    const tasks = store.getState().projetos[0].sections[0].tasks;
+    expect(tasks.map((t) => t.id)).toEqual(["t1", "t2", "t2a"]);
+    expect(tasks[2].subs).toEqual([]);
+  });
+
+  it("moveTask entre projetos aninhando", () => {
+    store.setState({
+      projetos: [
+        seedProjeto(),
+        { id: "p2", title: "B", note: "", blocked: false, blockedReason: "", archived: false, prio: 3, due: "", collapsed: false, sections: [{ id: "s9", title: "x", notes: "", collapsed: false, tasks: [{ id: "t9", text: "destino", status: "todo" as const, note: "", blocked: false, blockedReason: "", prio: 3, due: "", doneAt: null, subs: [] }] }] },
+      ],
+    });
+    store.getState().moveTask({ pid: "p1", sid: "s1", tid: "t1" }, { pid: "p2", sid: "s9", parentId: "t9" }, 0);
+    const s9 = store.getState().projetos[1].sections[0];
+    expect(s9.tasks[0].id).toBe("t9");
+    expect(s9.tasks[0].subs.map((s) => s.id)).toEqual(["t1"]);
+    expect(store.getState().projetos[0].sections[0].tasks.map((t) => t.id)).toEqual(["t2"]);
+  });
+
+  it("moveTask rejeita aninhar task nela mesma", () => {
+    const before = store.getState().projetos;
+    store.getState().moveTask({ pid: "p1", sid: "s1", tid: "t1" }, { pid: "p1", sid: "s1", parentId: "t1" }, 0);
+    expect(store.getState().projetos).toBe(before);
+    expect(store.getState().projetos[0].sections[0].tasks.map((t) => t.id)).toEqual(["t1", "t2"]);
+  });
+
+  it("moveTask rejeita aninhar task num descendente dela", () => {
+    store.setState({
+      projetos: [
+        {
+          ...seedProjeto(),
+          sections: [
+            {
+              id: "s1", title: "geral", notes: "", collapsed: false,
+              tasks: [
+                { ...seedProjeto().sections[0].tasks[0], subs: [{ id: "t1a", text: "filha", status: "todo" as const, note: "", blocked: false, blockedReason: "", prio: 3, due: "", subs: [] }] },
+                seedProjeto().sections[0].tasks[1],
+              ],
+            },
+          ],
+        },
+      ],
+    });
+    const before = store.getState().projetos;
+    store.getState().moveTask({ pid: "p1", sid: "s1", tid: "t1" }, { pid: "p1", sid: "s1", parentId: "t1a" }, 0);
+    expect(store.getState().projetos).toEqual(before);
+  });
+
+  it("moveTask rejeita aninhar além da profundidade 2 (task > sub > subsub)", () => {
+    store.setState({
+      projetos: [
+        {
+          ...seedProjeto(),
+          sections: [
+            {
+              id: "s1", title: "geral", notes: "", collapsed: false,
+              tasks: [
+                { ...seedProjeto().sections[0].tasks[0], subs: [{ id: "t1a", text: "filha", status: "todo" as const, note: "", blocked: false, blockedReason: "", prio: 3, due: "", subs: [{ id: "t1a1", text: "neta", status: "todo" as const, note: "", blocked: false, blockedReason: "", prio: 3, due: "", subs: [] }] }] },
+                seedProjeto().sections[0].tasks[1],
+              ],
+            },
+          ],
+        },
+      ],
+    });
+    const before = store.getState().projetos;
+    // t1a1 é subsub (nível 2): mover t2 pra dentro dela criaria nível 3
+    store.getState().moveTask({ pid: "p1", sid: "s1", tid: "t2" }, { pid: "p1", sid: "s1", parentId: "t1a1" }, 0);
+    expect(store.getState().projetos).toEqual(before);
+    expect(store.getState().projetos[0].sections[0].tasks.map((t) => t.id)).toEqual(["t1", "t2"]);
+  });
+
+  it("moveTask rejeita task com sub-árvore que estouraria a profundidade 2", () => {
+    store.setState({
+      projetos: [
+        {
+          ...seedProjeto(),
+          sections: [
+            {
+              id: "s1", title: "geral", notes: "", collapsed: false,
+              tasks: [
+                { ...seedProjeto().sections[0].tasks[0], subs: [{ id: "t1a", text: "filha", status: "todo" as const, note: "", blocked: false, blockedReason: "", prio: 3, due: "", subs: [] }] },
+                { ...seedProjeto().sections[0].tasks[1], subs: [{ id: "t2a", text: "filha t2", status: "todo" as const, note: "", blocked: false, blockedReason: "", prio: 3, due: "", subs: [] }] },
+              ],
+            },
+          ],
+        },
+      ],
+    });
+    const before = store.getState().projetos;
+    // mover t2 (com sub t2a) pra dentro de t1a (sub de t1) → t2 nível 2, t2a nível 3 = estoura
+    store.getState().moveTask({ pid: "p1", sid: "s1", tid: "t2" }, { pid: "p1", sid: "s1", parentId: "t1a" }, 0);
+    expect(store.getState().projetos).toEqual(before);
+  });
+
+  it("moveTask aninhada reconcilia status do pai (todas done → done)", () => {
+    store.setState({
+      projetos: [
+        {
+          ...seedProjeto(),
+          sections: [
+            {
+              id: "s1", title: "geral", notes: "", collapsed: false,
+              tasks: [
+                { ...seedProjeto().sections[0].tasks[0], subs: [{ id: "t1a", text: "a", status: "done" as const, note: "", blocked: false, blockedReason: "", prio: 3, due: "", subs: [] }] },
+                seedProjeto().sections[0].tasks[1],
+              ],
+            },
+          ],
+        },
+      ],
+    });
+    store.getState().moveTask({ pid: "p1", sid: "s1", tid: "t1a" }, { pid: "p1", sid: "s1", parentId: "t2" }, 0);
+    const t2 = store.getState().projetos[0].sections[0].tasks[1];
+    expect(t2.id).toBe("t2");
+    expect(t2.status).toBe("done");
+  });
+
+  it("moveTask aninhada é desfeita (undo restaura)", () => {
+    store.getState().moveTask({ pid: "p1", sid: "s1", tid: "t1" }, { pid: "p1", sid: "s1", parentId: "t2" }, 0);
+    expect(store.getState().canUndo).toBe(true);
+    store.getState().undo();
+    expect(store.getState().projetos[0].sections[0].tasks.map((t) => t.id)).toEqual(["t1", "t2"]);
+  });
+
   it("reset limpa tudo", () => {
     store.getState().reset();
     expect(store.getState().projetos).toEqual([]);

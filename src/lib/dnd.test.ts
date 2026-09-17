@@ -14,7 +14,7 @@ const projeto = (over: Partial<Project> = {}): Project => ({
       collapsed: false,
       tasks: [
         { id: "t1", text: "a", status: "todo", note: "", blocked: false, blockedReason: "", prio: 3, due: "", doneAt: null, subs: [] },
-        { id: "t2", text: "b", status: "todo", note: "", blocked: false, blockedReason: "", prio: 3, due: "", doneAt: null, subs: [] },
+        { id: "t2", text: "b", status: "todo", note: "", blocked: false, blockedReason: "", prio: 3, due: "", doneAt: null, subs: [{ id: "t2a", text: "sub", status: "todo", note: "", blocked: false, blockedReason: "", prio: 3, due: "", subs: [] }] },
         { id: "t3", text: "c", status: "doing", note: "", blocked: false, blockedReason: "", prio: 3, due: "", doneAt: null, subs: [] },
       ],
     },
@@ -29,8 +29,68 @@ describe("resolveDrop", () => {
     expect(r.kind).toBe("move");
     if (r.kind !== "move") return;
     expect(r.src).toEqual({ pid: "p1", sid: "s1", tid: "t1" });
-    expect(r.dest).toEqual({ pid: "p1", sid: "s1" });
+    expect(r.dest).toEqual({ pid: "p1", sid: "s1", parentId: null });
     expect(r.index).toBe(1);
+  });
+
+  it("zona sib-acima de t2: irmão (raiz), índice de t2", () => {
+    const r = resolveDrop({ projetos: [projeto()], active: "task:t1", over: "task:t2:sib-ab" });
+    expect(r.kind).toBe("move");
+    if (r.kind !== "move") return;
+    expect(r.dest).toEqual({ pid: "p1", sid: "s1", parentId: null });
+    expect(r.index).toBe(1);
+  });
+
+  it("zona sib-abaixo de t2: irmão, índice depois de t2", () => {
+    const r = resolveDrop({ projetos: [projeto()], active: "task:t1", over: "task:t2:sib-ae" });
+    expect(r.kind).toBe("move");
+    if (r.kind !== "move") return;
+    expect(r.dest).toEqual({ pid: "p1", sid: "s1", parentId: null });
+    expect(r.index).toBe(2);
+  });
+
+  it("zona sib de sub: irmão dentro do pai da sub", () => {
+    const r = resolveDrop({ projetos: [projeto()], active: "task:t1", over: "task:t2a:sib-ab" });
+    expect(r.kind).toBe("move");
+    if (r.kind !== "move") return;
+    expect(r.dest).toEqual({ pid: "p1", sid: "s1", parentId: "t2" });
+    expect(r.index).toBe(0);
+  });
+
+  it("sub arrastada pra zona sib de task raiz: promote (parentId null)", () => {
+    const r = resolveDrop({ projetos: [projeto()], active: "task:t2a", over: "task:t1:sib-ab" });
+    expect(r.kind).toBe("move");
+    if (r.kind !== "move") return;
+    expect(r.src).toEqual({ pid: "p1", sid: "s1", tid: "t2a" });
+    expect(r.dest).toEqual({ pid: "p1", sid: "s1", parentId: null });
+    expect(r.index).toBe(0);
+  });
+
+  it("zona nest: vira filha da task alvo (última posição)", () => {
+    const r = resolveDrop({ projetos: [projeto()], active: "task:t1", over: "task:t2:nest" });
+    expect(r.kind).toBe("move");
+    if (r.kind !== "move") return;
+    expect(r.dest).toEqual({ pid: "p1", sid: "s1", parentId: "t2" });
+    expect(r.index).toBe(1);
+  });
+
+  it("zona nest com alvo sendo sub: vira filha da sub (última posição)", () => {
+    const r = resolveDrop({ projetos: [projeto()], active: "task:t1", over: "task:t2a:nest" });
+    expect(r.kind).toBe("move");
+    if (r.kind !== "move") return;
+    expect(r.dest).toEqual({ pid: "p1", sid: "s1", parentId: "t2a" });
+    expect(r.index).toBe(0);
+  });
+
+  it("sub arrastada pra nest de outra sub: filha da sub alvo", () => {
+    const p = projeto();
+    p.sections[0].tasks[2] = { ...p.sections[0].tasks[2], id: "t3", subs: [{ id: "t3a", text: "sub do t3", status: "todo", note: "", blocked: false, blockedReason: "", prio: 3, due: "", subs: [] }] };
+    const r = resolveDrop({ projetos: [p], active: "task:t2a", over: "task:t3a:nest" });
+    expect(r.kind).toBe("move");
+    if (r.kind !== "move") return;
+    expect(r.src).toEqual({ pid: "p1", sid: "s1", tid: "t2a" });
+    expect(r.dest).toEqual({ pid: "p1", sid: "s1", parentId: "t3a" });
+    expect(r.index).toBe(0);
   });
 
   it("mover para baixo ajusta índice pela remoção", () => {
@@ -44,7 +104,7 @@ describe("resolveDrop", () => {
     const r = resolveDrop({ projetos: [projeto()], active: "task:t1", over: "sec:p1:s2" });
     expect(r.kind).toBe("move");
     if (r.kind !== "move") return;
-    expect(r.dest).toEqual({ pid: "p1", sid: "s2" });
+    expect(r.dest).toEqual({ pid: "p1", sid: "s2", parentId: null });
     expect(r.index).toBe(0);
   });
 
@@ -52,7 +112,7 @@ describe("resolveDrop", () => {
     const r = resolveDrop({ projetos: [projeto()], active: "task:t1", over: "sec-end:p1:s1" });
     expect(r.kind).toBe("move");
     if (r.kind !== "move") return;
-    expect(r.dest).toEqual({ pid: "p1", sid: "s1" });
+    expect(r.dest).toEqual({ pid: "p1", sid: "s1", parentId: null });
     expect(r.index).toBe(projeto().sections[0].tasks.length);
   });
 
@@ -60,7 +120,7 @@ describe("resolveDrop", () => {
     const r = resolveDrop({ projetos: [projeto()], active: "task:t1", over: "sec-end:p1:s2" });
     expect(r.kind).toBe("move");
     if (r.kind !== "move") return;
-    expect(r.dest).toEqual({ pid: "p1", sid: "s2" });
+    expect(r.dest).toEqual({ pid: "p1", sid: "s2", parentId: null });
     expect(r.index).toBe(0);
   });
 
@@ -132,7 +192,7 @@ it("retorna none quando o alvo task não existe", () => {
     const r = resolveDrop({ projetos: [comTarefaNaSegunda], active: "task:t1", over: "task:t4" });
     expect(r.kind).toBe("move");
     if (r.kind !== "move") return;
-    expect(r.dest).toEqual({ pid: "p1", sid: "s2" });
+    expect(r.dest).toEqual({ pid: "p1", sid: "s2", parentId: null });
     expect(r.index).toBe(0);
   });
 

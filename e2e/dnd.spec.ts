@@ -27,13 +27,13 @@ async function drag(page: Page, src: Locator, dst: Locator) {
   const grip = src.getByRole("button", { name: "arrastar tarefa p/ reordenar" });
   await grip.waitFor({ state: "attached", timeout: 2000 }).catch(() => {});
   const anchor = (await grip.count()) > 0 ? grip : src;
-  const sb = await anchor.boundingBox();
+  const rb = await anchor.boundingBox();
   const db = await dst.boundingBox();
-  if (!sb || !db) throw new Error("bounding box indisponível");
-  await page.mouse.move(sb.x + sb.width / 2, sb.y + sb.height / 2);
+  if (!rb || !db) throw new Error("bounding box indisponível");
+  await page.mouse.move(rb.x + 10, rb.y + rb.height / 2);
   await page.mouse.down();
-  await page.mouse.move(sb.x + sb.width / 2 + 12, sb.y + sb.height / 2, { steps: 4 });
-  await page.mouse.move(db.x + db.width / 2, db.y + db.height / 2, { steps: 12 });
+  await page.mouse.move(rb.x + 24, rb.y + rb.height / 2, { steps: 4 });
+  await page.mouse.move(db.x + 40, db.y + 2, { steps: 12 });
   await page.mouse.up();
 }
 

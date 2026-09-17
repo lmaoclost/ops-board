@@ -13,7 +13,14 @@ import {
 } from "@/components/ui/dropdown-menu";
 import { ConfirmDelete } from "@/components/client/ConfirmDelete";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { STATUS_ORDER, type Status, type Task, type TaskPatch } from "@/lib/types";
+import { STATUS_ORDER, type Status, type TaskPatch } from "@/lib/types";
+
+export interface ActionableTask {
+  text: string;
+  status: Status;
+  blocked: boolean;
+  blockedReason?: string;
+}
 import dynamic from "next/dynamic";
 
 const Modal = dynamic(() => import("@/components/client/Modal").then((m) => m.Modal));
@@ -25,7 +32,7 @@ export function TaskActions({
   onDelete,
   onUpdate,
 }: {
-  task: Task;
+  task: ActionableTask;
   onStatusChange: (status: Status) => void;
   onEdit: () => void;
   onDelete: () => void;
