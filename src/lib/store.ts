@@ -4,6 +4,7 @@ import { migrateLegacy, normalizeState, purgeExpired, SCHEMA_VERSION } from "./m
 import type { Locale } from "./i18n";
 import { nextDue } from "./repeat";
 import { cyclePrio } from "./tokens";
+import { findSubTree, insertTaskAt, isDescendant, MAX_SUB_DEPTH, removeSubTask, subLevel } from "./subtasks";
 import { todayISO } from "./date";
 import type { AddProjectInput, AddSectionInput, AddTaskInput, Prio, Project, ProjectPatch, SectionPatch, Status, SubTask, Task, TaskPatch } from "./types";
 import { uid } from "./uid";
@@ -78,7 +79,7 @@ interface BoardStore {
   toggleSection: (pid: string, sid: string) => void;
   moveTask: (
     src: { pid: string; sid: string; tid: string },
-    dest: { pid: string; sid: string },
+    dest: { pid: string; sid: string; parentId?: string | null },
     index: number,
   ) => void;
   reset: () => void;
@@ -488,23 +489,67 @@ export function createBoardStore(initial: Project[] = []) {
           })),
 
         moveTask: (src, dest, index) =>
-          commit(() =>
-            set((s) => {
+          commit(() => {
+            const taskSubDepth = (t: Task | SubTask): number => (t.subs.length === 0 ? 0 : 1 + Math.max(...t.subs.map(taskSubDepth)));
+            return set((s): BoardStore => {
               const srcSec = findSection(s.projetos, src.pid, src.sid);
               const destSec = findSection(s.projetos, dest.pid, dest.sid);
               if (!srcSec || !destSec) return s;
-              const task = srcSec.tasks.find((t) => t.id === src.tid);
+
+              const inRoot = srcSec.tasks.some((t) => t.id === src.tid);
+              let task: Task | null;
+              if (inRoot) {
+                task = srcSec.tasks.find((t) => t.id === src.tid) ?? null;
+              } else {
+                const found = findSubTree(srcSec.tasks, src.tid);
+                if (!found) return s;
+                task = { ...found, doneAt: found.status === "done" ? new Date().toISOString() : null };
+              }
               if (!task) return s;
 
-              const next = s.projetos.map((p) => {
-                const secs = p.sections.map((sec) => {
-                  if (sec.id === src.sid) {
-                    return { ...sec, tasks: sec.tasks.filter((t) => t.id !== src.tid) };
-                  }
-                  return sec;
-                });
+              if (dest.parentId != null) {
+                if (dest.parentId === src.tid) return s;
+                if (isDescendant(task.subs, src.tid, dest.parentId)) return s;
+                // parentLevel = nível do pai como sub da task raiz (1 = sub, 2 = subsub).
+                // A task movida ocuparia parentLevel + 1; profundidade final = isso + altura da sub-árvore movida.
+                const parentTask = destSec.tasks.find((t) => findSubTree(t.subs, dest.parentId!));
+                const parentLevel = parentTask ? subLevel(parentTask.subs, dest.parentId) : null;
+                if (parentLevel !== null && parentLevel + 1 + taskSubDepth(task) > MAX_SUB_DEPTH) return s;
+              }
+
+              const next: Project[] = s.projetos.map((p) => {
+                const secs = p.sections.map((sec) =>
+                  sec.id === src.sid
+                    ? { ...sec, tasks: inRoot ? sec.tasks.filter((t) => t.id !== src.tid) : removeSubTask(sec.tasks, src.tid) }
+                    : sec,
+                );
                 return { ...p, sections: secs };
               });
+
+              if (dest.parentId) {
+                const destProj = next.find((p) => p.id === dest.pid);
+                const destSection = destProj?.sections.find((sec) => sec.id === dest.sid);
+                if (!destSection || !findSubTree(destSection.tasks, dest.parentId)) return s;
+                const patched = { ...task, subs: reconcileSubs(task.subs) };
+                const projetos = next.map((p) =>
+                  p.id === dest.pid
+                    ? {
+                        ...p,
+                        sections: p.sections.map((sec) => {
+                          if (sec.id !== dest.sid) return sec;
+                          const after = insertTaskAt(sec.tasks, dest.parentId!, patched, index);
+                          return {
+                            ...sec,
+                            tasks: after.map((tk) =>
+                              tk.id === dest.parentId ? { ...tk, subs: reconcileSubs(tk.subs) } : tk,
+                            ),
+                          };
+                        }),
+                      }
+                    : p,
+                );
+                return { ...s, projetos };
+              }
 
               const destSecAfter = findSection(next, dest.pid, dest.sid)!;
               const insertAt = Math.max(0, Math.min(index, destSecAfter.tasks.length));
@@ -512,6 +557,7 @@ export function createBoardStore(initial: Project[] = []) {
               tasks.splice(insertAt, 0, task);
 
               return {
+                ...s,
                 projetos: next.map((p) =>
                   p.id === dest.pid
                     ? {
@@ -521,8 +567,8 @@ export function createBoardStore(initial: Project[] = []) {
                     : p,
                 ),
               };
-            }),
-          ),
+            });
+          }),
 
         reset: () => commit(() => set({ projetos: [] })),
 

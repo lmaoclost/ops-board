@@ -166,7 +166,8 @@ describe("TaskRow", () => {
     render(<TaskRow {...p} />);
     await userEvent.click(screen.getByRole("checkbox", { name: "sub-tarefa fazer x" }));
     expect(p.onUpdate).toHaveBeenLastCalledWith({ subs: [sub({ id: "fazer x", status: "done" })] });
-    await userEvent.click(screen.getByLabelText("remover sub-tarefa fazer x"));
+    await userEvent.click(screen.getAllByTitle("excluir")[1]);
+    await userEvent.click(await screen.findByRole("button", { name: "excluir" }));
     expect(p.onUpdate).toHaveBeenLastCalledWith({ subs: [] });
   });
 
@@ -192,7 +193,8 @@ describe("TaskRow", () => {
   it("remove sub em profundidade", async () => {
     const p = base({ subs: [sub({ id: "a", subs: [sub({ id: "neta" })] })] });
     render(<TaskRow {...p} />);
-    await userEvent.click(screen.getByLabelText("remover sub-tarefa neta"));
+    await userEvent.click(screen.getAllByTitle("excluir")[2]);
+    await userEvent.click(await screen.findByRole("button", { name: "excluir" }));
     expect(p.onUpdate).toHaveBeenLastCalledWith({
       subs: [sub({ id: "a", subs: [] })],
     });
@@ -215,7 +217,7 @@ describe("TaskRow", () => {
   it("clique no texto da sub abre modal editar sub-tarefa e salvar aplica patch em profundidade", async () => {
     const p = base({ subs: [sub({ id: "fazer a" })] });
     render(<TaskRow {...p} />);
-    await userEvent.click(screen.getByRole("button", { name: "fazer a" }));
+    await userEvent.click(screen.getAllByTitle("editar")[1]);
     expect(await screen.findByText("editar sub-tarefa")).toBeTruthy();
     await userEvent.clear(await screen.findByLabelText("tarefa"));
     await userEvent.type(await screen.findByLabelText("tarefa"), "fazer a atualizado");

@@ -191,8 +191,8 @@ export default function Home() {
       onDelete: (pid: string, sid: string, tid: string) => deleteTask(pid, sid, tid),
       onPurge: (pid: string, sid: string, tid: string) => purgeTask(pid, sid, tid),
       onUpdate: (pid: string, sid: string, tid: string, patch: Parameters<typeof editTask>[3]) => editTask(pid, sid, tid, patch),
-      onMoveTask: (pid: string, sid: string, tid: string, toPid: string, toSid: string, index: number) =>
-        moveTask({ pid, sid, tid }, { pid: toPid, sid: toSid }, index),
+      onMoveTask: (pid: string, sid: string, tid: string, toPid: string, toSid: string, index: number, parentId: string | null) =>
+        moveTask({ pid, sid, tid }, { pid: toPid, sid: toSid, parentId }, index),
     }),
     [handleToggleTask, cycleTaskPrio, handleStatusChange, editTask, deleteTask, purgeTask, moveTask],
   );

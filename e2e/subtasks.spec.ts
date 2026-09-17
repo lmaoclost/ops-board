@@ -83,7 +83,9 @@ test("adiciona sub-tarefa inline na lista, alterna e remove", async ({ page }) =
   await expect(page.getByLabel("sub-tarefas 1/2")).toBeVisible();
 
   await page.getByRole("button", { name: "lista" }).click();
-  await page.getByLabel("remover sub-tarefa configurar env").click();
+  const subRow = page.locator('[data-testid^="sub-row:"]').filter({ hasText: "configurar env" });
+  await subRow.getByTitle("excluir").click();
+  await page.getByRole("button", { name: "excluir" }).click();
   await expect(page.getByText("configurar env")).toHaveCount(0);
 
   await page.getByRole("button", { name: "kanban" }).click();
@@ -122,7 +124,7 @@ test("edita sub-tarefa no modal: prio, vencimento, nota e bloqueada", async ({ p
   await page.getByRole("textbox", { name: "nova sub-tarefa" }).fill("instalar deps");
   await page.getByRole("textbox", { name: "nova sub-tarefa" }).press("Enter");
 
-  await page.getByRole("button", { name: "instalar deps", exact: true }).click();
+  await page.locator('[data-testid^="sub-row:"]').getByTitle("editar").click();
   const dialog = page.getByRole("dialog", { name: "editar sub-tarefa" });
   await expect(dialog).toBeVisible();
   await dialog.getByLabel("prioridade").selectOption({ label: "P2 — em breve" });
@@ -149,7 +151,7 @@ test("altera texto da sub-tarefa pelo modal", async ({ page }) => {
   await page.getByRole("textbox", { name: "nova sub-tarefa" }).fill("instalar deps");
   await page.getByRole("textbox", { name: "nova sub-tarefa" }).press("Enter");
 
-  await page.getByRole("button", { name: "instalar deps", exact: true }).click();
+  await page.locator('[data-testid^="sub-row:"]').getByTitle("editar").click();
   const dialog = page.getByRole("dialog", { name: "editar sub-tarefa" });
   await dialog.getByLabel("tarefa", { exact: true }).fill("instalar pacotes");
   await dialog.getByRole("button", { name: "salvar" }).click();

@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { addSub, makeSub, mapSubs, removeSub } from "./subtasks";
+import { addSub, findSubTree, insertSubAt, isDescendant, makeSub, mapSubs, MAX_SUB_DEPTH, removeSub, subLevel } from "./subtasks";
 import type { SubTask } from "./types";
 
 const sub = (id: string, subs: SubTask[] = []): SubTask => ({
@@ -85,5 +85,84 @@ describe("addSub", () => {
 
   it("id inexistente não altera nada", () => {
     expect(addSub(tree(), "zzz", sub("x"))).toEqual(tree());
+  });
+});
+
+describe("findSubTree", () => {
+  it("encontra sub no topo", () => {
+    expect(findSubTree(tree(), "b")?.id).toBe("b");
+  });
+
+  it("encontra sub em profundidade", () => {
+    expect(findSubTree(tree(), "a1x")?.id).toBe("a1x");
+  });
+
+  it("retorna null para id inexistente", () => {
+    expect(findSubTree(tree(), "zzz")).toBeNull();
+  });
+});
+
+describe("isDescendant", () => {
+  it("filho direto é descendente", () => {
+    expect(isDescendant(tree(), "a", "a1")).toBe(true);
+  });
+
+  it("neto é descendente (recursivo)", () => {
+    expect(isDescendant(tree(), "a", "a1x")).toBe(true);
+  });
+
+  it("irmão não é descendente", () => {
+    expect(isDescendant(tree(), "a1", "a2")).toBe(false);
+  });
+
+  it("a própria sub não é descendente de si", () => {
+    expect(isDescendant(tree(), "a", "a")).toBe(false);
+  });
+
+  it("pai não é descendente do filho", () => {
+    expect(isDescendant(tree(), "a1x", "a")).toBe(false);
+  });
+
+  it("id inexistente não é descendente de nada", () => {
+    expect(isDescendant(tree(), "a", "zzz")).toBe(false);
+  });
+});
+
+describe("insertSubAt", () => {
+  it("insere como filho no índice 0", () => {
+    const out = insertSubAt(tree(), "a", sub("anew"), 0);
+    expect(out[0].subs.map((s) => s.id)).toEqual(["anew", "a1", "a2"]);
+  });
+
+  it("insere como filho no meio", () => {
+    const out = insertSubAt(tree(), "a", sub("anew"), 1);
+    expect(out[0].subs.map((s) => s.id)).toEqual(["a1", "anew", "a2"]);
+  });
+
+  it("insere em profundidade", () => {
+    const out = insertSubAt(tree(), "a1x", sub("deep"), 0);
+    expect(out[0].subs[0].subs[0].subs.map((s) => s.id)).toEqual(["deep"]);
+  });
+
+  it("índice fora do range clampa pro fim", () => {
+    const out = insertSubAt(tree(), "a", sub("anew"), 99);
+    expect(out[0].subs.map((s) => s.id)).toEqual(["a1", "a2", "anew"]);
+  });
+
+  it("pai inexistente não altera nada", () => {
+    expect(insertSubAt(tree(), "zzz", sub("x"), 0)).toEqual(tree());
+  });
+});
+describe("subLevel / MAX_SUB_DEPTH", () => {
+  it("subLevel retorna 1 pra sub de task, 2 pra subsub, null se não acha", () => {
+    const tree = [sub("a", [sub("a1", [sub("a1x")]), sub("a2")]), sub("b")];
+    expect(subLevel(tree, "a")).toBe(1);
+    expect(subLevel(tree, "a1")).toBe(2);
+    expect(subLevel(tree, "a1x")).toBe(3);
+    expect(subLevel(tree, "zzz")).toBe(null);
+  });
+
+  it("MAX_SUB_DEPTH é 2", () => {
+    expect(MAX_SUB_DEPTH).toBe(2);
   });
 });
