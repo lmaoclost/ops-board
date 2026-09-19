@@ -202,7 +202,9 @@ test("modal de subsub (neta) não exibe a seção de sub-tarefas", async ({ page
   await taskRow.getByRole("textbox", { name: "nova sub-tarefa instalar deps" }).press("Enter");
 
   // modal da neta (subsub): sem seção de subs
-  const netaRow = page.locator('[data-testid^="sub-row"]').filter({ hasText: "rodar setup" }).first();
+  // filter hasText bate no sub-row pai (contém a neta no DOM); pega o mais profundo = o que
+  // NÃO contém o texto do pai. last() entre os matches com o texto da neta = mais interno.
+  const netaRow = page.locator('[data-testid^="sub-row"]').filter({ hasText: "rodar setup" }).last();
   await netaRow.getByTitle("editar").first().click();
   const dialog = page.getByRole("dialog", { name: "editar sub-tarefa" });
   await expect(dialog).toBeVisible();
