@@ -528,6 +528,53 @@ describe("board store", () => {
     expect(t2.status).toBe("done");
   });
 
+  it("editTask rejeita patch com subs que criariam nível 3", () => {
+    store.setState({
+      projetos: [
+        {
+          ...seedProjeto(),
+          sections: [
+            {
+              id: "s1", title: "geral", notes: "", collapsed: false,
+              tasks: [
+                { ...seedProjeto().sections[0].tasks[0], subs: [{ id: "t1a", text: "sub", status: "todo" as const, note: "", blocked: false, blockedReason: "", prio: 3, due: "", subs: [] }] },
+              ],
+            },
+          ],
+        },
+      ],
+    });
+    store.getState().editTask("p1", "s1", "t1", {
+      subs: [{ id: "t1a", text: "sub", status: "todo", note: "", blocked: false, blockedReason: "", prio: 3, due: "", subs: [{ id: "t1a1", text: "neta", status: "todo", note: "", blocked: false, blockedReason: "", prio: 3, due: "", subs: [{ id: "t1a1x", text: "bisneta", status: "todo", note: "", blocked: false, blockedReason: "", prio: 3, due: "", subs: [] }] }] }],
+    });
+    const t1 = store.getState().projetos[0].sections[0].tasks[0];
+    expect(t1.subs[0].subs).toEqual([]); // bisneta (nível 3) rejeitada
+  });
+
+  it("editTask aceita patch de mesma altura em árvore legacy profunda (edit de nível 3)", () => {
+    store.setState({
+      projetos: [
+        {
+          ...seedProjeto(),
+          sections: [
+            {
+              id: "s1", title: "geral", notes: "", collapsed: false,
+              tasks: [
+                { ...seedProjeto().sections[0].tasks[0], subs: [{ id: "t1a", text: "sub", status: "todo" as const, note: "", blocked: false, blockedReason: "", prio: 3, due: "", subs: [{ id: "t1a1", text: "neta", status: "todo" as const, note: "", blocked: false, blockedReason: "", prio: 3, due: "", subs: [] }] }] },
+              ],
+            },
+          ],
+        },
+      ],
+    });
+    // mesma altura (2): togglear a neta continua funcionando apesar do cap
+    store.getState().editTask("p1", "s1", "t1", {
+      subs: [{ id: "t1a", text: "sub", status: "todo", note: "", blocked: false, blockedReason: "", prio: 3, due: "", subs: [{ id: "t1a1", text: "neta", status: "done", note: "", blocked: false, blockedReason: "", prio: 3, due: "", subs: [] }] }],
+    });
+    const t1 = store.getState().projetos[0].sections[0].tasks[0];
+    expect(t1.subs[0].subs[0].status).toBe("done");
+  });
+
   it("moveTask aninhada é desfeita (undo restaura)", () => {
     store.getState().moveTask({ pid: "p1", sid: "s1", tid: "t1" }, { pid: "p1", sid: "s1", parentId: "t2" }, 0);
     expect(store.getState().canUndo).toBe(true);

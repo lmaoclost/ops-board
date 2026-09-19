@@ -98,3 +98,13 @@ function subLevelIn(node: SubLike, id: string, level: number): number | null {
   }
   return null;
 }
+
+// Altura da árvore de subs: 0 = sem subs, 1 = só subs diretas, 2 = com subsubs.
+export function subTreeHeight(subs: SubTask[]): number {
+  let height = 0;
+  for (const s of subs) {
+    const h = 1 + subTreeHeight(s.subs);
+    if (h > height) height = h;
+  }
+  return height;
+}

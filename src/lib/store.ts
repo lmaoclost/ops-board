@@ -4,7 +4,7 @@ import { migrateLegacy, normalizeState, purgeExpired, SCHEMA_VERSION } from "./m
 import type { Locale } from "./i18n";
 import { nextDue } from "./repeat";
 import { cyclePrio } from "./tokens";
-import { findSubTree, insertTaskAt, isDescendant, MAX_SUB_DEPTH, removeSubTask, subLevel } from "./subtasks";
+import { findSubTree, insertTaskAt, isDescendant, MAX_SUB_DEPTH, removeSubTask, subLevel, subTreeHeight } from "./subtasks";
 import { todayISO } from "./date";
 import type { AddProjectInput, AddSectionInput, AddTaskInput, Prio, Project, ProjectPatch, SectionPatch, Status, SubTask, Task, TaskPatch } from "./types";
 import { uid } from "./uid";
@@ -305,48 +305,57 @@ export function createBoardStore(initial: Project[] = []) {
 
         editTask: (pid, sid, tid, patch) =>
           commit(() =>
-            set((s) => ({
-              projetos: s.projetos.map((p) =>
-                p.id === pid
-                  ? {
-                      ...p,
-                      sections: p.sections.map((sec) =>
-                        sec.id === sid
-                          ? {
-                              ...sec,
-                              tasks: sec.tasks.map((t) =>
-                                t.id === tid
-                                  ? (() => {
-                                      const subs = patch.subs !== undefined ? reconcileSubs(patch.subs) : t.subs;
-                                      const status: Status =
-                                        patch.subs !== undefined && subs.length > 0
-                                          ? subs.every((s) => s.status === "done")
-                                            ? "done"
-                                            : "todo"
-                                          : t.status;
-                                      return {
-                                        ...t,
-                                        text: patch.text ?? t.text,
-                                        note: patch.note ?? t.note,
-                                        blocked: patch.blocked ?? t.blocked,
-                                        blockedReason: patch.blockedReason ?? t.blockedReason,
-                                        prio: patch.prio ?? t.prio,
-                                        due: patch.due ?? t.due,
-                                        subs,
-                                        status,
-                                        repeat: patch.repeat !== undefined ? (patch.repeat ?? undefined) : t.repeat,
-                                        deletedAt: patch.deletedAt !== undefined ? patch.deletedAt : t.deletedAt,
-                                      };
-                                    })()
-                                  : t,
-                              ),
-                            }
-                          : sec,
-                      ),
-                    }
-                  : p,
-              ),
-            })),
+            set((s) => {
+              const sec = findSection(s.projetos, pid, sid);
+              const current = sec ? findSubTree(sec.tasks, tid) : null;
+              // Guard de profundidade: patch com subs não pode aprofundar além do cap —
+              // nem além da altura já existente (edit de legado nível 3+ continua válido).
+              if (sec && current && patch.subs !== undefined && subTreeHeight(patch.subs) > Math.max(MAX_SUB_DEPTH, subTreeHeight(current.subs))) {
+                return s;
+              }
+              return {
+                projetos: s.projetos.map((p) =>
+                  p.id === pid
+                    ? {
+                        ...p,
+                        sections: p.sections.map((sec) =>
+                          sec.id === sid
+                            ? {
+                                ...sec,
+                                tasks: sec.tasks.map((t) =>
+                                  t.id === tid
+                                    ? (() => {
+                                        const subs = patch.subs !== undefined ? reconcileSubs(patch.subs) : t.subs;
+                                        const status: Status =
+                                          patch.subs !== undefined && subs.length > 0
+                                            ? subs.every((s) => s.status === "done")
+                                              ? "done"
+                                              : "todo"
+                                            : t.status;
+                                        return {
+                                          ...t,
+                                          text: patch.text ?? t.text,
+                                          note: patch.note ?? t.note,
+                                          blocked: patch.blocked ?? t.blocked,
+                                          blockedReason: patch.blockedReason ?? t.blockedReason,
+                                          prio: patch.prio ?? t.prio,
+                                          due: patch.due ?? t.due,
+                                          subs,
+                                          status,
+                                          repeat: patch.repeat !== undefined ? (patch.repeat ?? undefined) : t.repeat,
+                                          deletedAt: patch.deletedAt !== undefined ? patch.deletedAt : t.deletedAt,
+                                        };
+                                      })()
+                                    : t,
+                                ),
+                              }
+                            : sec,
+                        ),
+                      }
+                    : p,
+                ),
+              };
+            }),
           ),
 
         deleteTask: (pid, sid, tid) =>

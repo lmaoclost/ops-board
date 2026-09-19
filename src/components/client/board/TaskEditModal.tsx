@@ -2,7 +2,7 @@ import { useEffect, useRef, useState } from "react";
 import { Modal, type ModalField } from "@/components/client/Modal";
 import { Label } from "@/components/ui/label";
 import { useT } from "@/hooks/useT";
-import { makeSub } from "@/lib/subtasks";
+import { makeSub, MAX_SUB_DEPTH } from "@/lib/subtasks";
 import type { Project, Repeat, Status, SubTask, Task, TaskPatch } from "@/lib/types";
 import {
   Select,
@@ -18,11 +18,14 @@ export interface TaskEditModalProps {
   status?: Status;
   projetos?: Project[];
   focusSubs?: boolean;
+  /** Nível que uma sub nova teria se criada neste modal (1 = sub de task, 2 = subsub).
+   *  Acima de MAX_SUB_DEPTH a seção de sub-tarefas é oculta e o patch não inclui subs. */
+  subDepth?: number;
   onSubmit: (patch: TaskPatch, pid?: string) => void;
   onCancel: () => void;
 }
 
-export function TaskEditModal({ task, isSub, status, projetos, focusSubs, onSubmit, onCancel }: TaskEditModalProps) {
+export function TaskEditModal({ task, isSub, status, projetos, focusSubs, subDepth = 1, onSubmit, onCancel }: TaskEditModalProps) {
   const { t, status: statusLabel } = useT();
   const isCreate = status !== undefined;
   const taskFields = (task as Task | undefined);
@@ -56,6 +59,7 @@ export function TaskEditModal({ task, isSub, status, projetos, focusSubs, onSubm
     setSubs((prev) => prev.map((s) => (s.id === id ? { ...s, status: s.status === "done" ? "todo" : "done" } : s)));
 
   const removeSub = (id: string) => setSubs((prev) => prev.filter((s) => s.id !== id));
+  const canEditSubs = subDepth <= MAX_SUB_DEPTH;
   const submit = (v: Record<string, string | boolean>) => {
     onSubmit(
       {
@@ -65,7 +69,7 @@ export function TaskEditModal({ task, isSub, status, projetos, focusSubs, onSubm
         blockedReason: String(v.blockedReason ?? "").trim(),
         prio: (Number(v.prio) || 5) as Task["prio"],
         due: String(v.due ?? ""),
-        subs,
+        ...(canEditSubs ? { subs } : {}),
         ...(isSub
           ? {}
           : {
@@ -156,12 +160,13 @@ export function TaskEditModal({ task, isSub, status, projetos, focusSubs, onSubm
       onSubmit={submit}
       onCancel={onCancel}
     >
-      <div
-        ref={subsRef}
-        data-testid="subs-section"
-        data-focus={focusSubs ? "" : undefined}
-        className="rounded-md border border-[var(--line)] bg-[var(--panel)] p-2.5"
-      >
+      {canEditSubs && (
+        <div
+          ref={subsRef}
+          data-testid="subs-section"
+          data-focus={focusSubs ? "" : undefined}
+          className="rounded-md border border-[var(--line)] bg-[var(--panel)] p-2.5"
+        >
         <Label className="mb-1.5 block text-[11px] font-semibold uppercase tracking-wider text-[var(--muted-text)]">
           {t("sub-tarefas")}
         </Label>
@@ -218,7 +223,8 @@ export function TaskEditModal({ task, isSub, status, projetos, focusSubs, onSubm
             +
           </button>
         </div>
-      </div>
+        </div>
+      )}
     </Modal>
   );
 }
