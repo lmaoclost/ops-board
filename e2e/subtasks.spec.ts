@@ -186,3 +186,33 @@ test("sub de sub: adiciona, alterna neta e sub pai vira done (regra recursiva)",
   await expect(page.getByLabel("sub-tarefas 1/1")).toBeVisible();
   await expect(page.getByText("concluída 1")).toBeVisible();
 });
+
+test("modal de subsub (neta) não exibe a seção de sub-tarefas", async ({ page }) => {
+  await page.goto("/");
+  await createProject(page, "app");
+  await page.getByLabel("nova tarefa").first().fill("setup");
+  await page.getByLabel("nova tarefa").first().press("Enter");
+
+  const taskRow = page.getByTestId("task-row");
+  await taskRow.getByRole("button", { name: "nova sub-tarefa", exact: true }).click();
+  await page.getByRole("textbox", { name: "nova sub-tarefa" }).fill("instalar deps");
+  await page.getByRole("textbox", { name: "nova sub-tarefa" }).press("Enter");
+  await taskRow.getByRole("button", { name: "nova sub-tarefa instalar deps" }).click();
+  await taskRow.getByRole("textbox", { name: "nova sub-tarefa instalar deps" }).fill("rodar setup");
+  await taskRow.getByRole("textbox", { name: "nova sub-tarefa instalar deps" }).press("Enter");
+
+  // modal da neta (subsub): sem seção de subs
+  const netaRow = page.locator('[data-testid^="sub-row"]').filter({ hasText: "rodar setup" }).first();
+  await netaRow.getByTitle("editar").first().click();
+  const dialog = page.getByRole("dialog", { name: "editar sub-tarefa" });
+  await expect(dialog).toBeVisible();
+  await expect(dialog.getByTestId("subs-section")).toHaveCount(0);
+
+  // modal da sub de nível 1: seção presente
+  const subRow = page.locator('[data-testid^="sub-row"]').filter({ hasText: "instalar deps" }).first();
+  await page.getByRole("button", { name: "cancelar" }).click();
+  await subRow.getByTitle("editar").first().click();
+  const dialog2 = page.getByRole("dialog", { name: "editar sub-tarefa" });
+  await expect(dialog2).toBeVisible();
+  await expect(dialog2.getByTestId("subs-section")).toBeVisible();
+});

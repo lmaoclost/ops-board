@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { addSub, findSubTree, insertSubAt, isDescendant, makeSub, mapSubs, MAX_SUB_DEPTH, removeSub, subLevel } from "./subtasks";
+import { addSub, findSubTree, insertSubAt, isDescendant, makeSub, mapSubs, MAX_SUB_DEPTH, removeSub, subLevel, subTreeHeight } from "./subtasks";
 import type { SubTask } from "./types";
 
 const sub = (id: string, subs: SubTask[] = []): SubTask => ({
@@ -164,5 +164,13 @@ describe("subLevel / MAX_SUB_DEPTH", () => {
 
   it("MAX_SUB_DEPTH é 2", () => {
     expect(MAX_SUB_DEPTH).toBe(2);
+  });
+});
+
+describe("subTreeHeight", () => {
+  it("0 sem subs, 1 só subs diretas, 2 com subsub", () => {
+    expect(subTreeHeight([])).toBe(0);
+    expect(subTreeHeight([sub("a"), sub("b", [sub("b1")])])).toBe(2);
+    expect(subTreeHeight([sub("a", [sub("a1", [sub("a1x")])])])).toBe(3);
   });
 });

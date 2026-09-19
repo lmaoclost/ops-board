@@ -15,7 +15,7 @@ import {
 import dynamic from "next/dynamic";
 import { isDueSoon, isOverdue } from "@/lib/date";
 import { linkify } from "@/lib/escape";
-import { makeSub, mapSubs } from "@/lib/subtasks";
+import { makeSub, mapSubs, subLevel } from "@/lib/subtasks";
 import { StatusLed, DueBadge, PrioChip } from "./badges";
 import { DropZone, NestZone } from "./DropZones";
 import { SubRow } from "./SubRow";
@@ -205,6 +205,7 @@ export const TaskRow = memo(function TaskRow({
         <TaskEditModal
           task={editingSub}
           isSub
+          subDepth={(subLevel(task.subs, editingSub.id) ?? 0) + 1}
           onSubmit={(patch) => {
             onUpdate({
               subs: mapSubs(task.subs, editingSub.id, (x) => ({
